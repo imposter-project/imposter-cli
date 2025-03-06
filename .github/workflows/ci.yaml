@@ -1,16 +1,13 @@
 name: CI
-on: [push]
+on:
+  - push
+  - pull_request
 jobs:
   build:
     runs-on: ubuntu-latest-l
-    permissions:
-      contents: read
-      packages: write
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -27,6 +24,22 @@ jobs:
         run: go test -v ./...
       - name: Build
         run: go build
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest-l
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.3'
 
       - name: Dry run
         uses: goreleaser/goreleaser-action@v6
