@@ -18,9 +18,9 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/engine"
-	"gatehill.io/imposter/engine/enginetests"
-	"gatehill.io/imposter/proxy"
+	"gatehill.io/imposter/internal/engine"
+	"gatehill.io/imposter/internal/engine/enginetests"
+	"gatehill.io/imposter/internal/proxy"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"

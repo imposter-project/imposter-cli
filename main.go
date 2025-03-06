@@ -17,35 +17,26 @@ limitations under the License.
 package main
 
 import (
+	"gatehill.io/imposter/internal/config"
+	"gatehill.io/imposter/internal/logging"
+	"gatehill.io/imposter/internal/remote/awslambda"
+	"gatehill.io/imposter/internal/remote/cloudmocks"
+	"gatehill.io/imposter/internal/stringutil"
 	"os"
 
 	"gatehill.io/imposter/cmd"
-	"gatehill.io/imposter/config"
-	awslambdaengine "gatehill.io/imposter/engine/awslambda"
-	"gatehill.io/imposter/engine/docker"
-	"gatehill.io/imposter/engine/golang"
-	"gatehill.io/imposter/engine/jvm"
-	"gatehill.io/imposter/logging"
-	"gatehill.io/imposter/remote/awslambda"
-	"gatehill.io/imposter/remote/cloudmocks"
-	"gatehill.io/imposter/stringutil"
+	awslambdaengine "gatehill.io/imposter/internal/engine/awslambda"
+	"gatehill.io/imposter/internal/engine/docker"
+	"gatehill.io/imposter/internal/engine/golang"
+	"gatehill.io/imposter/internal/engine/jvm"
 )
 
 const defaultLogLevel = "debug"
 
-var version string
-
 func main() {
 	lvl := stringutil.GetFirstNonEmpty(os.Getenv("LOG_LEVEL"), os.Getenv("IMPOSTER_CLI_LOG_LEVEL"), defaultLogLevel)
+	config.SetCliConfig(lvl)
 	logging.SetLogLevel(lvl)
-
-	if version == "" {
-		version = config.DevCliVersion
-	}
-	config.Config = config.CliConfig{
-		LogLevel: lvl,
-		Version:  version,
-	}
 
 	// engines
 	awslambdaengine.EnableEngine()

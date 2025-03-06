@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/impostermodel"
+	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
@@ -47,8 +47,8 @@ If DIR is not specified, the current working directory is used.`,
 		} else {
 			configDir, _ = filepath.Abs(args[0])
 		}
-		scriptEngine := impostermodel.ParseScriptEngine(scaffoldFlags.scriptEngine)
-		impostermodel.Create(configDir, scaffoldFlags.generateResources, scaffoldFlags.forceOverwrite, scriptEngine, false)
+		scriptEngine := impostermodel2.ParseScriptEngine(scaffoldFlags.scriptEngine)
+		impostermodel2.Create(configDir, scaffoldFlags.generateResources, scaffoldFlags.forceOverwrite, scriptEngine, false)
 	},
 }
 

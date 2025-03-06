@@ -18,8 +18,8 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/config"
-	"gatehill.io/imposter/engine"
+	config2 "gatehill.io/imposter/internal/config"
+	"gatehill.io/imposter/internal/engine"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
@@ -51,12 +51,12 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 		} else {
 			configDir, _ = filepath.Abs(args[0])
 		}
-		if err := config.ValidateConfigExists(configDir, false); err != nil {
+		if err := config2.ValidateConfigExists(configDir, false); err != nil {
 			logger.Fatal(err)
 		}
 
 		// Search for CLI config files in the mock config dir.
-		config.MergeCliConfigIfExists(configDir)
+		config2.MergeCliConfigIfExists(configDir)
 
 		engineType := engine.GetConfiguredType(bundleFlags.engineType)
 		lib := engine.GetLibrary(engineType)

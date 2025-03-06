@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/plugin"
+	"gatehill.io/imposter/internal/plugin"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"os"

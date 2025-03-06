@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"gatehill.io/imposter/engine"
+	"gatehill.io/imposter/internal/engine"
 	"github.com/spf13/cobra"
 )
 

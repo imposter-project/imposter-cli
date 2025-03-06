@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/remote"
+	"gatehill.io/imposter/internal/remote"
 	"github.com/spf13/cobra"
 	"os"
 )

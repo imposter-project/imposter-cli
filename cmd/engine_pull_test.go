@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/engine"
+	"gatehill.io/imposter/internal/engine"
 	"testing"
 )
 

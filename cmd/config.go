@@ -18,10 +18,10 @@ package cmd
 
 import (
 	"fmt"
+	"gatehill.io/imposter/internal/config"
 	"os"
 	"strings"
 
-	"gatehill.io/imposter/config"
 	"github.com/spf13/cobra"
 )
 

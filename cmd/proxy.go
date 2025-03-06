@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/proxy"
+	proxy2 "gatehill.io/imposter/internal/proxy"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
@@ -53,7 +53,7 @@ var proxyCmd = &cobra.Command{
 			}
 			outputDir = workingDir
 		}
-		options := proxy.RecorderOptions{
+		options := proxy2.RecorderOptions{
 			CaptureRequestBody:        proxyFlags.captureRequestBody,
 			CaptureRequestHeaders:     proxyFlags.captureRequestHeaders,
 			IgnoreDuplicateRequests:   proxyFlags.ignoreDuplicateRequests,
@@ -76,9 +76,9 @@ func init() {
 	rootCmd.AddCommand(proxyCmd)
 }
 
-func proxyUpstream(upstream string, port int, dir string, rewrite bool, options proxy.RecorderOptions) {
+func proxyUpstream(upstream string, port int, dir string, rewrite bool, options proxy2.RecorderOptions) {
 	logger.Infof("starting proxy for upstream %s on port %v", upstream, port)
-	recorderC, err := proxy.StartRecorder(upstream, dir, options)
+	recorderC, err := proxy2.StartRecorder(upstream, dir, options)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -88,11 +88,11 @@ func proxyUpstream(upstream string, port int, dir string, rewrite bool, options 
 		_, _ = fmt.Fprintf(writer, "ok\n")
 	})
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		proxy.Handle(upstream, writer, request, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
+		proxy2.Handle(upstream, writer, request, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
 			if rewrite {
-				respBody = proxy.Rewrite(respHeaders, respBody, upstream, port)
+				respBody = proxy2.Rewrite(respHeaders, respBody, upstream, port)
 			}
-			recorderC <- proxy.HttpExchange{
+			recorderC <- proxy2.HttpExchange{
 				Request:         request,
 				RequestBody:     reqBody,
 				StatusCode:      statusCode,

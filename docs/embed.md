@@ -15,8 +15,8 @@ Here is a simple sample application that starts Imposter on port 8080, using the
 ```go
 package main
 
-import "gatehill.io/imposter/engine"
-import "gatehill.io/imposter/engine/docker"
+import "gatehill.io/imposter/internal/engine"
+import "gatehill.io/imposter/internal/engine/docker"
 
 func main() {
     configDir := "/path/to/imposter/config"

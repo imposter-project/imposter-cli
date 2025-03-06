@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/remote"
+	"gatehill.io/imposter/internal/remote"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"

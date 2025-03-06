@@ -17,8 +17,8 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/config"
-	"gatehill.io/imposter/plugin"
+	"gatehill.io/imposter/internal/config"
+	"gatehill.io/imposter/internal/plugin"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"os"

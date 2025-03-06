@@ -17,8 +17,8 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/fileutil"
-	"gatehill.io/imposter/impostermodel"
+	"gatehill.io/imposter/internal/fileutil"
+	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -39,7 +39,7 @@ func Test_createMockConfig(t *testing.T) {
 	type args struct {
 		generateResources bool
 		forceOverwrite    bool
-		scriptEngine      impostermodel.ScriptEngine
+		scriptEngine      impostermodel2.ScriptEngine
 		copySpecs         bool
 		anchorFileName    string
 		checkResponseFile bool
@@ -53,7 +53,7 @@ func Test_createMockConfig(t *testing.T) {
 			args: args{
 				generateResources: false,
 				forceOverwrite:    true,
-				scriptEngine:      impostermodel.ScriptEngineNone,
+				scriptEngine:      impostermodel2.ScriptEngineNone,
 				anchorFileName:    "order_service",
 				copySpecs:         true,
 				checkResponseFile: false,
@@ -64,7 +64,7 @@ func Test_createMockConfig(t *testing.T) {
 			args: args{
 				generateResources: false,
 				forceOverwrite:    true,
-				scriptEngine:      impostermodel.ScriptEngineJavaScript,
+				scriptEngine:      impostermodel2.ScriptEngineJavaScript,
 				anchorFileName:    "order_service",
 				copySpecs:         true,
 				checkResponseFile: false,
@@ -75,7 +75,7 @@ func Test_createMockConfig(t *testing.T) {
 			args: args{
 				generateResources: true,
 				forceOverwrite:    true,
-				scriptEngine:      impostermodel.ScriptEngineNone,
+				scriptEngine:      impostermodel2.ScriptEngineNone,
 				anchorFileName:    "order_service",
 				copySpecs:         true,
 				checkResponseFile: false,
@@ -86,7 +86,7 @@ func Test_createMockConfig(t *testing.T) {
 			args: args{
 				generateResources: true,
 				forceOverwrite:    true,
-				scriptEngine:      impostermodel.ScriptEngineJavaScript,
+				scriptEngine:      impostermodel2.ScriptEngineJavaScript,
 				anchorFileName:    "order_service",
 				copySpecs:         true,
 				checkResponseFile: false,
@@ -97,7 +97,7 @@ func Test_createMockConfig(t *testing.T) {
 			args: args{
 				generateResources: true,
 				forceOverwrite:    true,
-				scriptEngine:      impostermodel.ScriptEngineNone,
+				scriptEngine:      impostermodel2.ScriptEngineNone,
 				anchorFileName:    "mock",
 				copySpecs:         false,
 				checkResponseFile: true,
@@ -108,7 +108,7 @@ func Test_createMockConfig(t *testing.T) {
 			args: args{
 				generateResources: true,
 				forceOverwrite:    true,
-				scriptEngine:      impostermodel.ScriptEngineJavaScript,
+				scriptEngine:      impostermodel2.ScriptEngineJavaScript,
 				anchorFileName:    "mock",
 				copySpecs:         false,
 				checkResponseFile: true,
@@ -124,7 +124,7 @@ func Test_createMockConfig(t *testing.T) {
 			if tt.args.copySpecs {
 				prepTestData(t, configDir, testConfigPath)
 			}
-			impostermodel.Create(configDir, tt.args.generateResources, tt.args.forceOverwrite, tt.args.scriptEngine, false)
+			impostermodel2.Create(configDir, tt.args.generateResources, tt.args.forceOverwrite, tt.args.scriptEngine, false)
 
 			if !doesFileExist(filepath.Join(configDir, tt.args.anchorFileName+"-config.yaml")) {
 				t.Fatalf("imposter config file should exist")
@@ -134,7 +134,7 @@ func Test_createMockConfig(t *testing.T) {
 			}
 
 			scriptPath := filepath.Join(configDir, tt.args.anchorFileName+".js")
-			if impostermodel.IsScriptEngineEnabled(tt.args.scriptEngine) {
+			if impostermodel2.IsScriptEngineEnabled(tt.args.scriptEngine) {
 				if !doesFileExist(scriptPath) {
 					t.Fatalf("script file should exist")
 				}

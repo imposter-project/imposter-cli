@@ -18,11 +18,11 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/config"
-	"gatehill.io/imposter/engine"
-	"gatehill.io/imposter/fileutil"
-	"gatehill.io/imposter/plugin"
-	"gatehill.io/imposter/stringutil"
+	config2 "gatehill.io/imposter/internal/config"
+	"gatehill.io/imposter/internal/engine"
+	"gatehill.io/imposter/internal/fileutil"
+	"gatehill.io/imposter/internal/plugin"
+	"gatehill.io/imposter/internal/stringutil"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -67,12 +67,12 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 		} else {
 			configDir, _ = filepath.Abs(args[0])
 		}
-		if err := config.ValidateConfigExists(configDir, upFlags.scaffoldMissing); err != nil {
+		if err := config2.ValidateConfigExists(configDir, upFlags.scaffoldMissing); err != nil {
 			logger.Fatal(err)
 		}
 
 		// Search for CLI config files in the mock config dir.
-		config.MergeCliConfigIfExists(configDir)
+		config2.MergeCliConfigIfExists(configDir)
 
 		var pullPolicy engine.PullPolicy
 		if upFlags.forcePull {
@@ -102,7 +102,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 			Port:            upFlags.port,
 			Version:         version,
 			PullPolicy:      pullPolicy,
-			LogLevel:        config.Config.LogLevel,
+			LogLevel:        config2.Config.LogLevel,
 			ReplaceRunning:  true,
 			Deduplicate:     upFlags.deduplicate,
 			EnablePlugins:   upFlags.enablePlugins,
