@@ -59,7 +59,7 @@ The currently supported elements are as follows:
 engine: "docker"
 
 # the engine version - valid values are "latest", or a binary release such as "2.0.1"
-# see: https://github.com/outofcoffee/imposter/releases
+# see: https://github.com/imposter-project/imposter-jvm-engine/releases
 version: "latest"
 
 # Docker engine specific configuration

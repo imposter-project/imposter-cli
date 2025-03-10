@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const latestReleaseApi = "https://api.github.com/repos/outofcoffee/imposter/releases/latest"
+const latestReleaseApi = "https://api.github.com/repos/imposter-project/imposter-jvm-engine/releases/latest"
 const checkThresholdSeconds = 86_400
 
 func ResolveLatestToVersion(allowCached bool) (string, error) {

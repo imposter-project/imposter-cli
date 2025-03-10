@@ -401,7 +401,7 @@ Learn more about [configuration](./docs/config.md).
 
 📖 **[Read the user documentation here](https://docs.imposter.sh)**
 
-![Imposter logo](https://raw.githubusercontent.com/outofcoffee/imposter/main/docs/images/composite_logo13_cropped.png)
+![Imposter logo](https://raw.githubusercontent.com/imposter-project/imposter-jvm-engine/main/docs/images/composite_logo13_cropped.png)
 
 ---
 

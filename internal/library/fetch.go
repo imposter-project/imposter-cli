@@ -6,8 +6,8 @@ import (
 )
 
 var defaultConfig = DownloadConfig{
-	LatestBaseUrlTemplate:    "https://github.com/outofcoffee/imposter/releases/latest/download",
-	VersionedBaseUrlTemplate: "https://github.com/outofcoffee/imposter/releases/download/v%v",
+	LatestBaseUrlTemplate:    "https://github.com/imposter-project/imposter-jvm-engine/releases/latest/download",
+	VersionedBaseUrlTemplate: "https://github.com/imposter-project/imposter-jvm-engine/releases/download/v%v",
 }
 
 func DownloadBinary(localPath string, remoteFileName string, version string) error {
