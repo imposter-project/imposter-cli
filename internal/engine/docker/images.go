@@ -23,7 +23,6 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -109,7 +108,7 @@ func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAn
 	if logger.IsLevelEnabled(logrus.TraceLevel) {
 		pullLogDestination = os.Stdout
 	} else {
-		pullLogDestination = ioutil.Discard
+		pullLogDestination = io.Discard
 	}
 	_, err = io.Copy(pullLogDestination, reader)
 	if err != nil {
@@ -119,6 +118,7 @@ func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAn
 }
 
 func getImageRepo(engineType engine.EngineType) string {
+	registry := os.Getenv("IMPOSTER_CLI_REGISTRY")
 	var imageRepo string
 	switch engineType {
 	case engine.EngineTypeDockerCore:
@@ -133,5 +133,5 @@ func getImageRepo(engineType engine.EngineType) string {
 	default:
 		panic("Unsupported engine type: " + engineType)
 	}
-	return imageRepo
+	return registry + imageRepo
 }
