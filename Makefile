@@ -1,5 +1,8 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-LDFLAGS := -X gatehill.io/imposter/internal/config.version=$(VERSION)
+# Strip 'v' from version as it breaks the build
+VERSION_STRIPPED := $(patsubst v%,%,$(VERSION))
+
+LDFLAGS := -X gatehill.io/imposter/internal/config.version=$(VERSION_STRIPPED)
 
 .PHONY: build
 build:
