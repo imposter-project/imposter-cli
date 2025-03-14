@@ -118,7 +118,7 @@ func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAn
 }
 
 func getImageRepo(engineType engine.EngineType) string {
-	registry := os.Getenv("IMPOSTER_CLI_REGISTRY")
+	registry := os.Getenv("IMPOSTER_REGISTRY")
 	var imageRepo string
 	switch engineType {
 	case engine.EngineTypeDockerCore:
