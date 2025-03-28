@@ -32,11 +32,9 @@ If you don't want to set your user defaults you can set the following environmen
 
     IMPOSTER_ENGINE=docker
 
-You can also change the registry to use by setting the `IMPOSTER_CLI_REGISTRY` environment variable:
+You can also change the registry to use by setting the `IMPOSTER_DOCKER_REGISTRY` environment variable:
 
-    IMPOSTER_CLI_REGISTRY=ghcr.io/someorg/
-
-
+    IMPOSTER_DOCKER_REGISTRY=ghcr.io/someorg/
 
 ### Command line argument
 

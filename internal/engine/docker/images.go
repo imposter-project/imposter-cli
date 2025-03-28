@@ -22,9 +22,16 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io"
 	"os"
+	"strings"
 )
+
+const defaultDockerRegistry = "docker.io"
+const dockerImageCore = "outofcoffee/imposter"
+const dockerImageAll = "outofcoffee/imposter-all"
+const dockerImageDistroless = "outofcoffee/imposter-distroless"
 
 type EngineImageProvider struct {
 	engine.EngineMetadata
@@ -118,23 +125,25 @@ func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAn
 }
 
 func getImageRepo(engineType engine.EngineType) string {
-	registry := os.Getenv("IMPOSTER_REGISTRY")
+	registry := viper.GetString("docker.registry")
 	if registry == "" {
-		logger.Infof("Using default registry docker.io")
-	} else {
-		logger.Infof("Using custom registry: '%s'", registry)
+		registry = defaultDockerRegistry
 	}
+	if !strings.HasSuffix(registry, "/") {
+		registry += "/"
+	}
+	logger.Debugf("using docker registry: '%s'", registry)
 
 	var imageRepo string
 	switch engineType {
 	case engine.EngineTypeDockerCore:
-		imageRepo = "outofcoffee/imposter"
+		imageRepo = dockerImageCore
 		break
 	case engine.EngineTypeDockerAll:
-		imageRepo = "outofcoffee/imposter-all"
+		imageRepo = dockerImageAll
 		break
 	case engine.EngineTypeDockerDistroless:
-		imageRepo = "outofcoffee/imposter-distroless"
+		imageRepo = dockerImageDistroless
 		break
 	default:
 		panic("Unsupported engine type: " + engineType)
