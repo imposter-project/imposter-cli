@@ -3,7 +3,7 @@ package docker
 import (
 	"gatehill.io/imposter/internal/engine"
 	"github.com/sirupsen/logrus"
-	"os"
+	"github.com/spf13/viper"
 	"testing"
 )
 
@@ -44,10 +44,10 @@ func TestImages_getImageRepo_customReg(t *testing.T) {
 		"docker-distroless",
 	}
 
-	err := os.Setenv("IMPOSTER_REGISTRY", expectedPrefix)
-	if err != nil {
-		t.Errorf("Unable to set Env Var: %s", err)
-	}
+	viper.Set("docker.registry", expectedPrefix)
+	t.Cleanup(func() {
+		viper.Set("docker.registry", nil)
+	})
 
 	for _, engineType := range engines {
 		actual := getImageRepo(engineType)
