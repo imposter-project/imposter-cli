@@ -168,6 +168,7 @@ func forward(
 func sendResponse(w http.ResponseWriter, headers *http.Header, statusCode int, body *[]byte, client string) (err error) {
 	clientRespHeaders := w.Header()
 	copyHeaders(headers, &clientRespHeaders)
+	w.WriteHeader(statusCode)
 	_, err = w.Write(*body)
 	if err != nil {
 		return fmt.Errorf("error writing response: %v", err)
