@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 project_name: imposter-cli
 before:
@@ -22,18 +23,17 @@ archives:
       {{ .ProjectName }}_
       {{- tolower .Os }}_
       {{- .Arch }}
-    # Use format_overrides instead of format at the top level
-    # Define format per OS using format_overrides
+    # Use the formats array for v2
+    formats:
+      - tar.gz
     format_overrides:
-    - goos: windows
-      format: zip
-    # Default to tar.gz for all other platforms
-    format: tar.gz
+      - goos: windows
+        format: zip
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  # Updated to modern format
-  tag_template: "{{ .Tag }}-next"
+  # Proper v2 configuration using version_template
+  version_template: "{{ incpatch .Version }}-dev"
 changelog:
   sort: asc
   filters:
