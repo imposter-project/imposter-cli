@@ -1,3 +1,4 @@
+version: 2
 project_name: imposter-cli
 before:
   hooks:
@@ -17,18 +18,22 @@ builds:
     ldflags:
       - -s -w -X gatehill.io/imposter/internal/config.version={{.Version}}
 archives:
-  - format: tar.gz
-    name_template: >-
+  - name_template: >-
       {{ .ProjectName }}_
       {{- tolower .Os }}_
       {{- .Arch }}
+    # Use format_overrides instead of format at the top level
+    # Define format per OS using format_overrides
     format_overrides:
-      - goos: windows
-        format: zip
+    - goos: windows
+      format: zip
+    # Default to tar.gz for all other platforms
+    format: tar.gz
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  # Updated to modern format
+  tag_template: "{{ .Tag }}-next"
 changelog:
   sort: asc
   filters:
