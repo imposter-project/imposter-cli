@@ -32,6 +32,10 @@ If you don't want to set your user defaults you can set the following environmen
 
     IMPOSTER_ENGINE=docker
 
+You can also change the registry to use by setting the `IMPOSTER_DOCKER_REGISTRY` environment variable:
+
+    IMPOSTER_DOCKER_REGISTRY=ghcr.io/someorg/
+
 ### Command line argument
 
 You can also provide the `--engine-type` (or `-t`) command line argument to the `imposter up` command:
