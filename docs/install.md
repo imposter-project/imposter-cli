@@ -21,7 +21,7 @@ Use these instructions to get up and running quickly.
 
 If you have Homebrew installed:
 
-    brew tap gatehill/imposter
+    brew tap imposter-project/imposter
     brew install imposter
 
 ### Shell script

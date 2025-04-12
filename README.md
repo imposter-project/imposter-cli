@@ -77,7 +77,7 @@ See the [Installation](./docs/install.md) instructions for your system or follow
 
 If you have Homebrew installed:
 
-    brew tap gatehill/imposter
+    brew tap imposter-project/imposter
     brew install imposter
 
 #### Shell script
