@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.1] - 2025-04-12
+### Changed
+- ci: updates brew formula repo.
+
+### Fixed
+- fix: update format_overrides to use formats array in goreleaser config
+- fix: update goreleaser config to fix deprecation warnings
+- fix: update goreleaser config to v2 standards
+
 ## [1.1.0] - 2025-03-30
 ### Added
 - feat: allow container registry to be set. (#40)
