@@ -43,38 +43,79 @@ changelog:
       - Merge branch
 brews:
   -
+    # Primary brew configuration
+    
     # Name template of the recipe
     # Default to project name
     name: imposter
-
+    
     # GOARM to specify which 32-bit arm version to use if there are multiple versions
     # from the build section. Brew formulas support atm only one 32-bit version.
     # Default is 6 for all artifacts or each id if there are multiple versions.
     goarm: 6
-
+    
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
     # GitHub/GitLab repository to push the formula to
     # Gitea is not supported yet, but the support coming
     repository:
-      owner: gatehill
+      owner: imposter-project
       name: homebrew-imposter
-
+    
     # Git author used to commit to the repository.
     # Defaults are shown.
     commit_author:
-      name: gatehillbot
+      name: imposterbot
       email: outofcoffee@gmail.com
-
+    
     # Caveats for the user of your binary.
     # Default is empty.
-    caveats: "Requires Docker to be installed."
-
+    caveats: ""
+    
     # Your app's homepage.
     # Default is empty.
     homepage: "https://www.imposter.sh"
-
+    
     # Template of your app's description.
     # Default is empty.
     description: "Reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, SOAP/WSDL web services, Salesforce and HBase APIs."
+
+  # -
+  #   # Legacy brew configuration
+
+  #   # Name template of the recipe
+  #   # Default to project name
+  #   name: imposter
+
+  #   # GOARM to specify which 32-bit arm version to use if there are multiple versions
+  #   # from the build section. Brew formulas support atm only one 32-bit version.
+  #   # Default is 6 for all artifacts or each id if there are multiple versions.
+  #   goarm: 6
+
+  #   # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
+  #   # same kind. We will probably unify this in the next major version like it is done with scoop.
+
+  #   # GitHub/GitLab repository to push the formula to
+  #   # Gitea is not supported yet, but the support coming
+  #   repository:
+  #     owner: gatehill
+  #     name: homebrew-imposter
+
+  #   # Git author used to commit to the repository.
+  #   # Defaults are shown.
+  #   commit_author:
+  #     name: imposterbot
+  #     email: outofcoffee@gmail.com
+
+  #   # Caveats for the user of your binary.
+  #   # Default is empty.
+  #   caveats: ""
+
+  #   # Your app's homepage.
+  #   # Default is empty.
+  #   homepage: "https://www.imposter.sh"
+
+  #   # Template of your app's description.
+  #   # Default is empty.
+  #   description: "Reliable, scriptable and extensible mock server for REST APIs, OpenAPI (and Swagger) specifications, SOAP/WSDL web services, Salesforce and HBase APIs."
