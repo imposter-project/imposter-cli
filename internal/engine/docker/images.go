@@ -19,7 +19,7 @@ package docker
 import (
 	"context"
 	"gatehill.io/imposter/internal/engine"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -105,7 +105,7 @@ func ensureContainerImage(
 
 func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAndTag string) error {
 	logger.Infof("pulling '%v' engine image", imageTag)
-	reader, err := cli.ImagePull(ctx, "docker.io/"+imageAndTag, types.ImagePullOptions{})
+	reader, err := cli.ImagePull(ctx, "docker.io/"+imageAndTag, image.PullOptions{})
 	if err != nil {
 		return err
 	}

@@ -3,8 +3,8 @@ package docker
 import (
 	"fmt"
 	"gatehill.io/imposter/internal/engine"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"strings"
 )
@@ -47,7 +47,7 @@ func (l DockerEngineLibrary) List() ([]engine.EngineMetadata, error) {
 	}
 	imageRepo := getImageRepo(l.engineType)
 	var available []engine.EngineMetadata
-	imageSummaries, err := cli.ImageList(ctx, types.ImageListOptions{
+	imageSummaries, err := cli.ImageList(ctx, image.ListOptions{
 		Filters: filters.NewArgs(filters.Arg("reference", imageRepo+":*")),
 	})
 	if err != nil {

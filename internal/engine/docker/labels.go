@@ -22,6 +22,7 @@ import (
 	"gatehill.io/imposter/internal/engine"
 	"gatehill.io/imposter/internal/stringutil"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	filters2 "github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 )
@@ -40,7 +41,7 @@ func findContainersWithLabels(cli *client.Client, ctx context.Context, labels ma
 	for key, value := range labels {
 		filters.Add("label", fmt.Sprintf("%v=%v", key, value))
 	}
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{Filters: filters})
+	containers, err := cli.ContainerList(ctx, container.ListOptions{Filters: filters})
 	if err != nil {
 		return nil, err
 	}

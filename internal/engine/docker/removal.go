@@ -19,7 +19,6 @@ package docker
 import (
 	"context"
 	"gatehill.io/imposter/internal/debounce"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"sync"
@@ -54,7 +53,7 @@ func removeContainer(d *DockerMockEngine, wg *sync.WaitGroup, containerId string
 		return
 	}
 
-	err = cli.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{Force: true})
+	err = cli.ContainerRemove(ctx, containerId, container.RemoveOptions{Force: true})
 	if err != nil {
 		if !client.IsErrNotFound(err) {
 			logger.Warnf("failed to remove mock engine container %v: %v", containerId, err)
