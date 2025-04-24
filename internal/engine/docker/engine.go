@@ -24,7 +24,6 @@ import (
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/plugin"
 	"gatehill.io/imposter/internal/stringutil"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -95,7 +94,7 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 
 	containerId := resp.ID
 	d.debouncer.Register(wg, containerId)
-	if err := cli.ContainerStart(ctx, containerId, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, containerId, container.StartOptions{}); err != nil {
 		logger.Fatalf("error starting mock engine container: %v", err)
 	}
 	logger.Trace("starting Docker mock engine")
@@ -229,7 +228,7 @@ func streamLogsToStdIo(cli *client.Client, ctx context.Context, containerId stri
 }
 
 func streamLogs(cli *client.Client, ctx context.Context, containerId string, outStream io.Writer, errStream io.Writer) error {
-	containerLogs, err := cli.ContainerLogs(ctx, containerId, types.ContainerLogsOptions{
+	containerLogs, err := cli.ContainerLogs(ctx, containerId, container.LogsOptions{
 		ShowStdout: true,
 		Follow:     true,
 	})
@@ -347,7 +346,7 @@ func (d *DockerMockEngine) GetVersionString() (string, error) {
 
 	wg := &sync.WaitGroup{}
 	d.debouncer.Register(wg, containerId)
-	if err := cli.ContainerStart(ctx, containerId, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, containerId, container.StartOptions{}); err != nil {
 		return "", fmt.Errorf("error starting mock engine container: %v", err)
 	}
 	if err = streamLogs(cli, ctx, containerId, output, errOutput); err != nil {
