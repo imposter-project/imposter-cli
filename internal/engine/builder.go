@@ -152,21 +152,22 @@ func SanitiseVersionOutput(s string) string {
 	return strings.TrimSpace(s)
 }
 
-func BuildEnv(options StartOptions, includeHome bool) []string {
-	env := buildEnvFromParent(os.Environ(), options, includeHome)
+func BuildEnv(options StartOptions, envOptions EnvOptions) []string {
+	env := buildEnvFromParent(os.Environ(), options, envOptions)
 	if options.DebugMode {
 		env = append(env, fmt.Sprintf("JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:%v", DefaultDebugPort))
 	}
 	return env
 }
 
-func buildEnvFromParent(parentEnv []string, options StartOptions, includeHome bool) []string {
+func buildEnvFromParent(parentEnv []string, options StartOptions, envOptions EnvOptions) []string {
 	env := options.Environment
 
 	for _, e := range parentEnv {
 		if strings.HasPrefix(e, "IMPOSTER_") ||
 			strings.HasPrefix(e, "JAVA_TOOL_OPTIONS=") ||
-			(includeHome && strings.HasPrefix(e, "HOME=")) {
+			(envOptions.IncludeHome && strings.HasPrefix(e, "HOME=")) ||
+			(envOptions.IncludePath && strings.HasPrefix(e, "PATH=")) {
 
 			// explicit environment takes precedence over parent
 			key := strings.Split(e, "=")[0]

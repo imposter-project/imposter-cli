@@ -67,7 +67,7 @@ func (j *JvmMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.Star
 }
 
 func buildEnv(options engine.StartOptions) []string {
-	env := engine.BuildEnv(options, true)
+	env := engine.BuildEnv(options, engine.EnvOptions{IncludeHome: true, IncludePath: true})
 	if options.EnablePlugins {
 		logger.Tracef("plugins are enabled")
 		pluginDir, err := plugin.EnsurePluginDir(options.Version)
@@ -174,7 +174,8 @@ func (j *JvmMockEngine) GetVersionString() (string, error) {
 	args := []string{
 		"--version",
 	}
-	command := (*j.provider).GetStartCommand(args, engine.BuildEnv(j.options, true))
+	env := engine.BuildEnv(j.options, engine.EnvOptions{IncludeHome: true, IncludePath: true})
+	command := (*j.provider).GetStartCommand(args, env)
 	command.Stdout = output
 	command.Stderr = errOutput
 	err := command.Run()

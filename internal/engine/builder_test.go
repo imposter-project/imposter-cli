@@ -86,24 +86,44 @@ func TestSanitiseVersionOutput(t *testing.T) {
 
 func TestBuildEnvFromParent(t *testing.T) {
 	type args struct {
-		options     StartOptions
-		includeHome bool
-		env         []string
+		options    StartOptions
+		envOptions EnvOptions
+		env        []string
 	}
 	tests := []struct {
 		name         string
 		args         args
 		wantPrefixes []string
 	}{
-		{name: "should include home", args: args{options: StartOptions{LogLevel: "WARN"}, includeHome: true, env: []string{"HOME=/home/example"}}, wantPrefixes: []string{"HOME="}},
-		{name: "should exclude home", args: args{options: StartOptions{LogLevel: "WARN"}, includeHome: false, env: []string{"HOME=/home/example"}}, wantPrefixes: []string{""}},
-		{name: "should set log level", args: args{options: StartOptions{LogLevel: "WARN"}, includeHome: false, env: []string{}}, wantPrefixes: []string{"IMPOSTER_LOG_LEVEL=WARN"}},
-		{name: "should pass through imposter env var", args: args{options: StartOptions{LogLevel: "WARN"}, includeHome: false, env: []string{"IMPOSTER_TEST=foo"}}, wantPrefixes: []string{"IMPOSTER_TEST=foo"}},
-		{name: "should pass through log level env var", args: args{options: StartOptions{LogLevel: "WARN"}, includeHome: false, env: []string{"IMPOSTER_LOG_LEVEL=ERROR"}}, wantPrefixes: []string{"IMPOSTER_LOG_LEVEL=ERROR"}},
+		{
+			name:         "should include home",
+			args:         args{options: StartOptions{LogLevel: "WARN"}, envOptions: EnvOptions{IncludeHome: true, IncludePath: true}, env: []string{"HOME=/home/example"}},
+			wantPrefixes: []string{"HOME="},
+		},
+		{
+			name:         "should exclude home",
+			args:         args{options: StartOptions{LogLevel: "WARN"}, envOptions: EnvOptions{IncludeHome: false, IncludePath: false}, env: []string{"HOME=/home/example"}},
+			wantPrefixes: []string{""},
+		},
+		{
+			name:         "should set log level",
+			args:         args{options: StartOptions{LogLevel: "WARN"}, envOptions: EnvOptions{IncludeHome: false, IncludePath: false}, env: []string{}},
+			wantPrefixes: []string{"IMPOSTER_LOG_LEVEL=WARN"},
+		},
+		{
+			name:         "should pass through imposter env var",
+			args:         args{options: StartOptions{LogLevel: "WARN"}, envOptions: EnvOptions{IncludeHome: false, IncludePath: false}, env: []string{"IMPOSTER_TEST=foo"}},
+			wantPrefixes: []string{"IMPOSTER_TEST=foo"},
+		},
+		{
+			name:         "should pass through log level env var",
+			args:         args{options: StartOptions{LogLevel: "WARN"}, envOptions: EnvOptions{IncludeHome: false, IncludePath: false}, env: []string{"IMPOSTER_LOG_LEVEL=ERROR"}},
+			wantPrefixes: []string{"IMPOSTER_LOG_LEVEL=ERROR"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := buildEnvFromParent(tt.args.env, tt.args.options, tt.args.includeHome)
+			got := buildEnvFromParent(tt.args.env, tt.args.options, tt.args.envOptions)
 
 			found := false
 			for _, prefix := range tt.wantPrefixes {

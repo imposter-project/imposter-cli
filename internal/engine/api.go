@@ -32,6 +32,11 @@ type StartOptions struct {
 	DebugMode       bool
 }
 
+type EnvOptions struct {
+	IncludeHome bool
+	IncludePath bool
+}
+
 type PullPolicy int
 
 const (

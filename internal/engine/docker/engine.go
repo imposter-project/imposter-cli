@@ -138,7 +138,7 @@ func buildPorts(options engine.StartOptions) (nat.PortSet, nat.PortMap) {
 }
 
 func buildEnv(options engine.StartOptions) []string {
-	env := engine.BuildEnv(options, false)
+	env := engine.BuildEnv(options, engine.EnvOptions{IncludeHome: false, IncludePath: false})
 	if options.EnableFileCache {
 		env = append(env, "IMPOSTER_CACHE_DIR=/tmp/imposter-cache", "IMPOSTER_OPENAPI_REMOTE_FILE_CACHE=true")
 	}
