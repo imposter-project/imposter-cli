@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.3] - 2025-04-24
+### Changed
+- chore(deps): bump github.com/docker/docker
+
+### Fixed
+- fix: update Docker API references for v28.1.1 compatibility
+
 ## [1.1.2] - 2025-04-24
 ### Changed
 - chore(deps): bump github.com/shirou/gopsutil/v4 from 4.25.1 to 4.25.3
