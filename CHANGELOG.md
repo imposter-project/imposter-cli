@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.4] - 2025-05-15
+### Changed
+- chore(deps): bump github.com/aws/aws-sdk-go from 1.55.6 to 1.55.7
+- chore(deps): bump github.com/shirou/gopsutil/v4 from 4.25.3 to 4.25.4
+
+### Fixed
+- fix(docker): don't prefix docker.io when a custom registry is set.
+
 ## [1.1.3] - 2025-04-24
 ### Changed
 - chore(deps): bump github.com/docker/docker
