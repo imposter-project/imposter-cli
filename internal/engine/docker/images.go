@@ -28,9 +28,11 @@ import (
 	"strings"
 )
 
-const dockerImageCore = "outofcoffee/imposter"
-const dockerImageAll = "outofcoffee/imposter-all"
-const dockerImageDistroless = "outofcoffee/imposter-distroless"
+const defaultImageBase = "outofcoffee"
+
+const dockerImageCore = "imposter"
+const dockerImageAll = "imposter-all"
+const dockerImageDistroless = "imposter-distroless"
 
 type EngineImageProvider struct {
 	engine.EngineMetadata
@@ -105,7 +107,7 @@ func ensureContainerImage(
 
 func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAndTag string) error {
 	logger.Infof("pulling '%v' engine image", imageTag)
-	reader, err := cli.ImagePull(ctx, "docker.io/"+imageAndTag, image.PullOptions{})
+	reader, err := cli.ImagePull(ctx, imageAndTag, image.PullOptions{})
 	if err != nil {
 		return err
 	}
@@ -124,27 +126,31 @@ func pullImage(cli *client.Client, ctx context.Context, imageTag string, imageAn
 }
 
 func getImageRepo(engineType engine.EngineType) string {
+	var imageBase string
 	registry := viper.GetString("docker.registry")
 	if len(registry) > 0 {
-		if !strings.HasSuffix(registry, "/") {
-			registry = registry + "/"
+		imageBase = registry
+		if !strings.HasSuffix(imageBase, "/") {
+			imageBase = imageBase + "/"
 		}
-		logger.Debugf("using docker registry: %s", registry[:len(registry)-1])
+		logger.Debugf("using docker registry: %s", registry)
+	} else {
+		imageBase = defaultImageBase + "/"
 	}
 
-	var imageRepo string
+	var imageName string
 	switch engineType {
 	case engine.EngineTypeDockerCore:
-		imageRepo = dockerImageCore
+		imageName = dockerImageCore
 		break
 	case engine.EngineTypeDockerAll:
-		imageRepo = dockerImageAll
+		imageName = dockerImageAll
 		break
 	case engine.EngineTypeDockerDistroless:
-		imageRepo = dockerImageDistroless
+		imageName = dockerImageDistroless
 		break
 	default:
 		panic("Unsupported engine type: " + engineType)
 	}
-	return registry + imageRepo
+	return imageBase + imageName
 }

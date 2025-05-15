@@ -31,11 +31,11 @@ func TestImages_getImageRepo_defaultReg(t *testing.T) {
 
 func TestImages_getImageRepo_customReg(t *testing.T) {
 	logger.SetLevel(logrus.TraceLevel)
-	expectedPrefix := "test.repo/"
+	expectedPrefix := "test.repo/imposter/"
 	expected := map[string]string{
-		"docker":            expectedPrefix + "outofcoffee/imposter",
-		"docker-all":        expectedPrefix + "outofcoffee/imposter-all",
-		"docker-distroless": expectedPrefix + "outofcoffee/imposter-distroless",
+		"docker":            expectedPrefix + "imposter",
+		"docker-all":        expectedPrefix + "imposter-all",
+		"docker-distroless": expectedPrefix + "imposter-distroless",
 	}
 
 	engines := []engine.EngineType{
