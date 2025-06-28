@@ -20,6 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var pluginFlags struct {
+	engineType string
+}
+
 // pluginCmd represents the plugin command
 var pluginCmd = &cobra.Command{
 	Use:   "plugin",
@@ -27,5 +31,6 @@ var pluginCmd = &cobra.Command{
 }
 
 func init() {
+	pluginCmd.PersistentFlags().StringVarP(&pluginFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,jvm)")
 	rootCmd.AddCommand(pluginCmd)
 }

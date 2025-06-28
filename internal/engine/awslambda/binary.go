@@ -8,6 +8,12 @@ import (
 	"path/filepath"
 )
 
+var downloadConfig = library2.NewDownloadConfig(
+	"https://github.com/imposter-project/imposter-jvm-engine/releases/latest/download",
+	"https://github.com/imposter-project/imposter-jvm-engine/releases/download/v%v",
+	false,
+)
+
 func checkOrDownloadBinary(version string) (string, error) {
 	binFilePath := viper.GetString("lambda.binary")
 	if binFilePath == "" {
@@ -28,7 +34,7 @@ func checkOrDownloadBinary(version string) (string, error) {
 			return binFilePath, nil
 		}
 
-		if err := library2.DownloadBinary(binFilePath, "imposter-awslambda.zip", version); err != nil {
+		if err := library2.DownloadBinary(downloadConfig, binFilePath, "imposter-awslambda.zip", version); err != nil {
 			return "", fmt.Errorf("failed to fetch lambda binary: %v", err)
 		}
 	}

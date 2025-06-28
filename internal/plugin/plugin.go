@@ -3,6 +3,7 @@ package plugin
 import (
 	"fmt"
 	"gatehill.io/imposter/internal/config"
+	"gatehill.io/imposter/internal/engine"
 	library2 "gatehill.io/imposter/internal/library"
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/stringutil"
@@ -13,25 +14,23 @@ import (
 )
 
 type PluginMetadata struct {
-	Name    string
-	Version string
+	Name       string
+	EngineType engine.EngineType
+	Version    string
 }
 
 const pluginBaseDir = ".imposter/plugins/"
 const defaultPluginsConfigKey = "default.plugins"
-const pluginFileNamePrefix = "imposter-plugin-"
-
-var supportedPluginExtensions = []string{".jar", ".zip"}
 
 var logger = logging.GetLogger()
 
-func EnsurePlugins(plugins []string, version string, saveDefault bool) (int, error) {
+func EnsurePlugins(plugins []string, engineType engine.EngineType, version string, saveDefault bool) (int, error) {
 	logger.Tracef("ensuring %d plugins: %v", len(plugins), plugins)
 	if len(plugins) == 0 {
 		return 0, nil
 	}
 	for _, plugin := range plugins {
-		err := EnsurePlugin(plugin, version)
+		err := EnsurePlugin(plugin, engineType, version)
 		if err != nil {
 			return 0, fmt.Errorf("error ensuring plugin %s: %s", plugin, err)
 		}
@@ -49,7 +48,7 @@ func EnsurePlugins(plugins []string, version string, saveDefault bool) (int, err
 // EnsureConfiguredPlugins collects the plugins from both the global CLI
 // config, as well those within the current configuration context, such
 // as config files within the working directory
-func EnsureConfiguredPlugins(version string) (int, error) {
+func EnsureConfiguredPlugins(engineType engine.EngineType, version string) (int, error) {
 	// this includes the config from the current configuration context,
 	// not just the global CLI config file, so it includes any
 	// configuration in the working directory
@@ -68,11 +67,11 @@ func EnsureConfiguredPlugins(version string) (int, error) {
 	plugins = stringutil.Unique(plugins)
 
 	logger.Tracef("found %d configured plugin(s): %v", len(plugins), plugins)
-	return EnsurePlugins(plugins, version, false)
+	return EnsurePlugins(plugins, engineType, version, false)
 }
 
-func EnsurePlugin(pluginName string, version string) error {
-	_, pluginFilePath, err := getPluginFilePath(pluginName, version)
+func EnsurePlugin(pluginName string, engineType engine.EngineType, version string) error {
+	_, pluginFilePath, err := getPluginFilePath(pluginName, engineType, version)
 	if err != nil {
 		return err
 	}
@@ -85,7 +84,7 @@ func EnsurePlugin(pluginName string, version string) error {
 		return nil
 	}
 	logger.Debugf("plugin %s version %s is not installed", pluginName, version)
-	err = downloadPlugin(pluginName, version)
+	err = downloadPlugin(engineType, pluginName, version)
 	if err != nil {
 		return err
 	}
@@ -122,12 +121,13 @@ func getBasePluginDir() (string, error) {
 	return library2.EnsureDirUsingConfig("plugin.baseDir", pluginBaseDir)
 }
 
-func downloadPlugin(pluginName string, version string) error {
-	fullPluginFileName, pluginFilePath, err := getPluginFilePath(pluginName, version)
+func downloadPlugin(engineType engine.EngineType, pluginName string, version string) error {
+	fullPluginFileName, pluginFilePath, err := getPluginFilePath(pluginName, engineType, version)
 	if err != nil {
 		return err
 	}
-	err = library2.DownloadBinary(pluginFilePath, fullPluginFileName, version)
+	downloadConfig := determineDownloadConfig(engineType)
+	err = library2.DownloadBinary(downloadConfig, pluginFilePath, fullPluginFileName, version)
 	if err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func downloadPlugin(pluginName string, version string) error {
 	return nil
 }
 
-func getPluginFilePath(pluginName string, version string) (fullPluginFileName string, pluginFilePath string, err error) {
+func getPluginFilePath(pluginName string, engineType engine.EngineType, version string) (fullPluginFileName string, pluginFilePath string, err error) {
 	pluginDir, err := EnsurePluginDir(version)
 	if err != nil {
 		return "", "", err
@@ -151,6 +151,7 @@ func getPluginFilePath(pluginName string, version string) (fullPluginFileName st
 		pluginExtension = "jar"
 	}
 
+	pluginFileNamePrefix := determinePluginFileNamePrefix(engineType)
 	fullPluginFileName = fmt.Sprintf("%s%s.%s", pluginFileNamePrefix, pluginName, pluginExtension)
 	pluginFilePath = filepath.Join(pluginDir, fullPluginFileName)
 	return fullPluginFileName, pluginFilePath, err
@@ -216,7 +217,7 @@ func parseConfigFile() (*viper.Viper, error) {
 	return v, nil
 }
 
-func List(version string) ([]PluginMetadata, error) {
+func List(engineType engine.EngineType, version string) ([]PluginMetadata, error) {
 	pluginDir, err := getFullPluginDir(version)
 	if err != nil {
 		return nil, err
@@ -225,16 +226,21 @@ func List(version string) ([]PluginMetadata, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading plugin directory: %v: %v", pluginDir, err)
 	}
+
 	var available []PluginMetadata
 	for _, file := range files {
-		supportedSuffix := stringutil.GetMatchingSuffix(file.Name(), supportedPluginExtensions)
-		if supportedSuffix == "" || file.IsDir() {
+		if file.IsDir() {
 			continue
 		}
-		pluginName := strings.TrimPrefix(strings.TrimSuffix(file.Name(), supportedSuffix), pluginFileNamePrefix)
+		validPlugin, pluginName := isValidPluginFile(file.Name(), engineType)
+		if !validPlugin {
+			logger.Tracef("ignoring file: %s, not a valid plugin file", file.Name())
+			continue
+		}
 		available = append(available, PluginMetadata{
-			Name:    pluginName,
-			Version: version,
+			Name:       pluginName,
+			EngineType: engineType,
+			Version:    version,
 		})
 	}
 	return available, nil

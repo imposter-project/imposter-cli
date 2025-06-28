@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"gatehill.io/imposter/internal/config"
+	"gatehill.io/imposter/internal/engine"
 	"gatehill.io/imposter/internal/plugin"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -39,15 +40,16 @@ func Test_installPlugins(t *testing.T) {
 		configPlugins []string
 		version       string
 		saveDefault   bool
+		engineType    engine.EngineType
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
-		{name: "install no plugins", args: args{argPlugins: nil, configPlugins: nil, version: "4.2.2"}},
-		{name: "install plugins from args", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, version: "4.2.2"}},
-		{name: "install plugins from config", args: args{argPlugins: nil, configPlugins: []string{"store-redis"}, version: "4.2.2"}},
-		{name: "install and save plugins as default", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, version: "4.2.2", saveDefault: true}},
+		{name: "install no plugins", args: args{argPlugins: nil, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.2.2"}},
+		{name: "install plugins from args", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.2.2"}},
+		{name: "install plugins from config", args: args{argPlugins: nil, configPlugins: []string{"store-redis"}, engineType: engine.EngineTypeDockerCore, version: "4.2.2"}},
+		{name: "install and save plugins as default", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.2.2", saveDefault: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -56,7 +58,7 @@ func Test_installPlugins(t *testing.T) {
 			t.Cleanup(func() {
 				viper.Set("plugins", nil)
 			})
-			installPlugins(tt.args.argPlugins, tt.args.version, tt.args.saveDefault)
+			installPlugins(tt.args.argPlugins, tt.args.engineType, tt.args.version, tt.args.saveDefault)
 
 			if tt.args.saveDefault {
 				defaultPlugins, err := plugin.ListDefaultPlugins()

@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"gatehill.io/imposter/internal/engine"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -53,18 +54,19 @@ func TestEnsurePlugin(t *testing.T) {
 	type args struct {
 		pluginName string
 		version    string
+		engineType engine.EngineType
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{name: "fetch plugin", args: args{pluginName: "store-redis", version: "4.2.2"}, wantErr: false},
-		{name: "fetch nonexistent plugin version", args: args{pluginName: "store-redis", version: "0.0.0"}, wantErr: true},
+		{name: "fetch plugin", args: args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.2.2"}, wantErr: false},
+		{name: "fetch nonexistent plugin version", args: args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "0.0.0"}, wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := EnsurePlugin(tt.args.pluginName, tt.args.version); (err != nil) != tt.wantErr {
+			if err := EnsurePlugin(tt.args.pluginName, tt.args.engineType, tt.args.version); (err != nil) != tt.wantErr {
 				t.Errorf("EnsurePlugin() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -73,7 +75,8 @@ func TestEnsurePlugin(t *testing.T) {
 
 func TestEnsurePlugins(t *testing.T) {
 	type args struct {
-		version string
+		version    string
+		engineType engine.EngineType
 	}
 	tests := []struct {
 		name    string
@@ -81,12 +84,12 @@ func TestEnsurePlugins(t *testing.T) {
 		plugins []string
 		wantErr bool
 	}{
-		{name: "no op if no plugins configured", args: args{version: "4.2.2"}, plugins: nil, wantErr: false},
-		{name: "fetch configured plugins", args: args{version: "4.2.2"}, plugins: []string{"store-redis"}, wantErr: false},
+		{name: "no op if no plugins configured", args: args{engineType: engine.EngineTypeDockerCore, version: "4.2.2"}, plugins: nil, wantErr: false},
+		{name: "fetch configured plugins", args: args{engineType: engine.EngineTypeDockerCore, version: "4.2.2"}, plugins: []string{"store-redis"}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ensured, err := EnsurePlugins(tt.plugins, tt.args.version, false)
+			ensured, err := EnsurePlugins(tt.plugins, tt.args.engineType, tt.args.version, false)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EnsurePlugins() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -106,6 +109,7 @@ func Test_getPluginFilePath(t *testing.T) {
 	type args struct {
 		pluginName string
 		version    string
+		engineType engine.EngineType
 	}
 	tests := []struct {
 		name                   string
@@ -116,14 +120,14 @@ func Test_getPluginFilePath(t *testing.T) {
 	}{
 		{
 			name:                   "get plugin file path",
-			args:                   args{pluginName: "store-redis", version: "4.2.2"},
+			args:                   args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.2.2"},
 			wantFullPluginFileName: "imposter-plugin-store-redis.jar",
 			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-store-redis.jar"),
 			wantErr:                false,
 		},
 		{
 			name:                   "get plugin file path with zip suffix",
-			args:                   args{pluginName: "js-graal:zip", version: "4.2.2"},
+			args:                   args{pluginName: "js-graal:zip", engineType: engine.EngineTypeDockerCore, version: "4.2.2"},
 			wantFullPluginFileName: "imposter-plugin-js-graal.zip",
 			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-js-graal.zip"),
 			wantErr:                false,
@@ -131,7 +135,7 @@ func Test_getPluginFilePath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotFullPluginFileName, gotPluginFilePath, err := getPluginFilePath(tt.args.pluginName, tt.args.version)
+			gotFullPluginFileName, gotPluginFilePath, err := getPluginFilePath(tt.args.pluginName, tt.args.engineType, tt.args.version)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPluginFilePath() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -91,7 +91,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 
 			// only ensure (and potentially fetch) default plugins if not a sealed distro
 			if upFlags.ensurePlugins && lib.ShouldEnsurePlugins() {
-				_, err := plugin.EnsureConfiguredPlugins(version)
+				_, err := plugin.EnsureConfiguredPlugins(engineType, version)
 				if err != nil {
 					logger.Fatal(err)
 				}

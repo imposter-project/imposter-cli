@@ -20,6 +20,12 @@ const binCacheDir = ".imposter/engines/jvm"
 
 var singleJarInitialised = false
 
+var downloadConfig = library2.NewDownloadConfig(
+	"https://github.com/imposter-project/imposter-jvm-engine/releases/latest/download",
+	"https://github.com/imposter-project/imposter-jvm-engine/releases/download/v%v",
+	false,
+)
+
 // EnableEngine is a convenience function that delegates to EnableSingleJarEngine.
 func EnableEngine() {
 	EnableSingleJarEngine()
@@ -141,5 +147,5 @@ func ensureBinCache() (string, error) {
 
 func downloadBinary(localPath string, version string) error {
 	fallbackRemoteFileName := fmt.Sprintf("imposter-%v.jar", version)
-	return library2.DownloadBinaryWithFallback(localPath, "imposter.jar", version, fallbackRemoteFileName)
+	return library2.DownloadBinaryWithFallback(downloadConfig, localPath, "imposter.jar", version, fallbackRemoteFileName)
 }

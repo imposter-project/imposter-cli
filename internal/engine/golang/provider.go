@@ -3,15 +3,13 @@ package golang
 import (
 	"fmt"
 	"gatehill.io/imposter/internal/compression"
+	"gatehill.io/imposter/internal/engine"
 	"gatehill.io/imposter/internal/library"
 	"gatehill.io/imposter/internal/logging"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
-
-	"gatehill.io/imposter/internal/engine"
 )
 
 var providerLogger = logging.GetLogger()
@@ -22,10 +20,11 @@ const (
 	binaryName  = "imposter-go"
 )
 
-var downloadConfig = library.DownloadConfig{
-	LatestBaseUrlTemplate:    fmt.Sprintf("https://github.com/%s/%s/releases/latest/download", githubOwner, githubRepo),
-	VersionedBaseUrlTemplate: fmt.Sprintf("https://github.com/%s/%s/releases/download/v%%s", githubOwner, githubRepo),
-}
+var downloadConfig = library.NewDownloadConfig(
+	fmt.Sprintf("https://github.com/%s/%s/releases/latest/download", githubOwner, githubRepo),
+	fmt.Sprintf("https://github.com/%s/%s/releases/download/v%%s", githubOwner, githubRepo),
+	false,
+)
 
 // Provider handles downloading and managing the golang binary
 type Provider struct {
@@ -122,7 +121,7 @@ func downloadAndExtractBinary(version string, binDir string) error {
 	}
 
 	// Extract the binary
-	if err := extractArchive(downloadPath, binDir); err != nil {
+	if err := compression.ExtractArchive(downloadPath, binDir); err != nil {
 		return fmt.Errorf("failed to extract binary: %v", err)
 	}
 
@@ -156,15 +155,6 @@ func (p *Provider) GetStartCommand(args []string, env []string) *exec.Cmd {
 	cmd := exec.Command(p.binaryPath, args...)
 	cmd.Env = append(os.Environ(), env...)
 	return cmd
-}
-
-func extractArchive(src, dest string) error {
-	if strings.HasSuffix(src, ".zip") {
-		return compression.ExtractZip(src, dest)
-	} else if strings.HasSuffix(src, ".tar.gz") {
-		return compression.ExtractTarGz(src, dest)
-	}
-	return fmt.Errorf("unsupported archive format: %s", src)
 }
 
 func (p *Provider) getBinaryPath() string {

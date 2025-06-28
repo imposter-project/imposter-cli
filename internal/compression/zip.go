@@ -10,6 +10,8 @@ import (
 
 // ExtractZip extracts a zip archive to the specified destination directory
 func ExtractZip(src, dest string) error {
+	logger.Tracef("extracting zip archive from %v", src)
+
 	r, err := zip.OpenReader(src)
 	if err != nil {
 		return fmt.Errorf("failed to open zip file: %w", err)

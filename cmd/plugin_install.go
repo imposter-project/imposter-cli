@@ -45,8 +45,9 @@ Example 2: Install all plugins in config file
 	imposter plugin install`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
+		engineType := engine.GetConfiguredType(pluginFlags.engineType)
 		version := engine.GetConfiguredVersion(pluginInstallFlags.engineVersion, true)
-		installPlugins(args, version, pluginInstallFlags.saveDefault)
+		installPlugins(args, engineType, version, pluginInstallFlags.saveDefault)
 	},
 }
 
@@ -56,13 +57,13 @@ func init() {
 	pluginCmd.AddCommand(pluginInstallCmd)
 }
 
-func installPlugins(plugins []string, version string, saveDefault bool) {
+func installPlugins(plugins []string, engineType engine.EngineType, version string, saveDefault bool) {
 	var ensured int
 	var err error
 	if len(plugins) == 0 {
-		ensured, err = plugin.EnsureConfiguredPlugins(version)
+		ensured, err = plugin.EnsureConfiguredPlugins(engineType, version)
 	} else {
-		ensured, err = plugin.EnsurePlugins(plugins, version, saveDefault)
+		ensured, err = plugin.EnsurePlugins(plugins, engineType, version, saveDefault)
 
 		if !saveDefault {
 			println(fmt.Sprintf(`ℹ️ Note that these plugins have not been saved as default plugins.

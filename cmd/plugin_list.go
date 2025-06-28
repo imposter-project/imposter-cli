@@ -17,6 +17,7 @@ limitations under the License.
 package cmd
 
 import (
+	"gatehill.io/imposter/internal/engine"
 	"gatehill.io/imposter/internal/plugin"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -34,6 +35,8 @@ var pluginListCmd = &cobra.Command{
 	Short:   "List installed plugins",
 	Long:    `Lists all versions of installed plugins.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		engineType := engine.GetConfiguredType(pluginFlags.engineType)
+
 		var versions []string
 		if pluginListFlags.engineVersion != "" {
 			versions = []string{pluginListFlags.engineVersion}
@@ -44,16 +47,16 @@ var pluginListCmd = &cobra.Command{
 			}
 			versions = v
 		}
-		listPlugins(versions)
+		listPlugins(engineType, versions)
 	},
 }
 
-func listPlugins(versions []string) {
+func listPlugins(engineType engine.EngineType, versions []string) {
 	logger.Tracef("listing plugins")
 	var available []plugin.PluginMetadata
 
 	for _, version := range versions {
-		plugins, err := plugin.List(version)
+		plugins, err := plugin.List(engineType, version)
 		if err != nil {
 			logger.Debugf("could not list plugins for version: %s", version)
 			logger.Trace(err)

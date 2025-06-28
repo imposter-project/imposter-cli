@@ -2,6 +2,7 @@ package library
 
 import (
 	"fmt"
+	"gatehill.io/imposter/internal/compression"
 	"io"
 	"net/http"
 	"os"
@@ -9,8 +10,25 @@ import (
 )
 
 type DownloadConfig struct {
-	LatestBaseUrlTemplate    string
-	VersionedBaseUrlTemplate string
+	latestBaseUrlTemplate    string
+	versionedBaseUrlTemplate string
+	extractIfCompressed      bool
+}
+
+func NewDownloadConfig(latestBaseUrlTemplate, versionedBaseUrlTemplate string, extractIfCompressed bool) DownloadConfig {
+	return DownloadConfig{
+		latestBaseUrlTemplate:    latestBaseUrlTemplate,
+		versionedBaseUrlTemplate: versionedBaseUrlTemplate,
+		extractIfCompressed:      extractIfCompressed,
+	}
+}
+
+func DownloadBinary(downloadConfig DownloadConfig, localPath string, remoteFileName string, version string) error {
+	return DownloadBinaryWithFallback(downloadConfig, localPath, remoteFileName, version, "")
+}
+
+func DownloadBinaryWithFallback(downloadConfig DownloadConfig, localPath string, remoteFileName string, version string, fallbackRemoteFileName string) error {
+	return DownloadBinaryWithConfig(downloadConfig, localPath, remoteFileName, version, fallbackRemoteFileName)
 }
 
 // DownloadBinaryWithConfig downloads a binary file from a remote URL based on the provided configuration.
@@ -56,8 +74,18 @@ func DownloadBinaryWithConfig(
 	if err := tempFile.Close(); err != nil {
 		return fmt.Errorf("error closing temp file: %v: %v", tempFile.Name(), err)
 	}
-	if err := os.Rename(tempFile.Name(), localPath); err != nil {
-		return fmt.Errorf("error renaming temp file to final destination: %v -> %v: %v", tempFile.Name(), localPath, err)
+
+	// populate the localPath with the downloaded file
+	if compression.IsArchiveFileExtension(tempFile.Name()) && config.extractIfCompressed {
+		destinationDir := path.Dir(localPath)
+		// Note: there is an assumption here that the archive contains a file that matches the localPath
+		if err := compression.ExtractArchive(tempFile.Name(), destinationDir); err != nil {
+			return fmt.Errorf("error extracting archive: %v to %v: %v", tempFile.Name(), destinationDir, err)
+		}
+	} else {
+		if err := os.Rename(tempFile.Name(), localPath); err != nil {
+			return fmt.Errorf("error renaming temp file to final destination: %v -> %v: %v", tempFile.Name(), localPath, err)
+		}
 	}
 	return err
 }
@@ -74,14 +102,14 @@ func getHttpResponse(
 	fallbackRemoteFileName string,
 ) (url string, resp *http.Response, err error) {
 	if version == "latest" {
-		url = config.LatestBaseUrlTemplate + "/" + remoteFileName
+		url = config.latestBaseUrlTemplate + "/" + remoteFileName
 		resp, err = makeHttpRequest(url, err)
 		if err != nil {
 			return "", nil, err
 		}
 
 	} else {
-		versionedBaseUrl := fmt.Sprintf(config.VersionedBaseUrlTemplate, version)
+		versionedBaseUrl := fmt.Sprintf(config.versionedBaseUrlTemplate, version)
 
 		url = versionedBaseUrl + "/" + remoteFileName
 		resp, err = makeHttpRequest(url, err)
@@ -100,4 +128,13 @@ func getHttpResponse(
 		}
 	}
 	return url, resp, nil
+}
+
+func makeHttpRequest(url string, err error) (*http.Response, error) {
+	logger.Debugf("downloading %v", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error downloading from: %v: %v", url, err)
+	}
+	return resp, nil
 }

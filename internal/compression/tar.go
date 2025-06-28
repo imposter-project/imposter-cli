@@ -11,6 +11,8 @@ import (
 
 // ExtractTarGz extracts a tar.gz archive to the specified destination directory
 func ExtractTarGz(src, dest string) error {
+	logger.Tracef("extracting tar.gz archive from %v", src)
+
 	file, err := os.Open(src)
 	if err != nil {
 		return fmt.Errorf("failed to open file: %w", err)
