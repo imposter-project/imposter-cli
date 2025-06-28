@@ -19,6 +19,7 @@ type PluginMetadata struct {
 
 const pluginBaseDir = ".imposter/plugins/"
 const defaultPluginsConfigKey = "default.plugins"
+const pluginFileNamePrefix = "imposter-plugin-"
 
 var supportedPluginExtensions = []string{".jar", ".zip"}
 
@@ -150,7 +151,7 @@ func getPluginFilePath(pluginName string, version string) (fullPluginFileName st
 		pluginExtension = "jar"
 	}
 
-	fullPluginFileName = fmt.Sprintf("imposter-plugin-%s.%s", pluginName, pluginExtension)
+	fullPluginFileName = fmt.Sprintf("%s%s.%s", pluginFileNamePrefix, pluginName, pluginExtension)
 	pluginFilePath = filepath.Join(pluginDir, fullPluginFileName)
 	return fullPluginFileName, pluginFilePath, err
 }
@@ -230,7 +231,7 @@ func List(version string) ([]PluginMetadata, error) {
 		if supportedSuffix == "" || file.IsDir() {
 			continue
 		}
-		pluginName := strings.TrimPrefix(strings.TrimSuffix(file.Name(), supportedSuffix), "imposter-plugin-")
+		pluginName := strings.TrimPrefix(strings.TrimSuffix(file.Name(), supportedSuffix), pluginFileNamePrefix)
 		available = append(available, PluginMetadata{
 			Name:    pluginName,
 			Version: version,
