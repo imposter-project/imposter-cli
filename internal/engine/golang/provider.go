@@ -2,12 +2,14 @@ package golang
 
 import (
 	"fmt"
+	"gatehill.io/imposter/internal/compression"
 	"gatehill.io/imposter/internal/library"
 	"gatehill.io/imposter/internal/logging"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"gatehill.io/imposter/internal/engine"
 )
@@ -100,14 +102,18 @@ func downloadAndExtractBinary(version string, binDir string) error {
 		arch = "x86_64"
 	}
 	goos := runtime.GOOS
+	var fileExt string
 	if goos == "darwin" {
 		goos = "Darwin"
+		fileExt = ".tar.gz"
 	} else if goos == "linux" {
 		goos = "Linux"
+		fileExt = ".tar.gz"
 	} else if goos == "windows" {
 		goos = "Windows"
+		fileExt = ".zip"
 	}
-	fileName := fmt.Sprintf("imposter-go_%s_%s.tar.gz", goos, arch)
+	fileName := fmt.Sprintf("imposter-go_%s_%s%s", goos, arch, fileExt)
 	downloadPath := filepath.Join(binDir, fileName)
 
 	// Download the binary
@@ -116,8 +122,7 @@ func downloadAndExtractBinary(version string, binDir string) error {
 	}
 
 	// Extract the binary
-	cmd := exec.Command("tar", "xzf", downloadPath, "-C", binDir)
-	if err := cmd.Run(); err != nil {
+	if err := extractArchive(downloadPath, binDir); err != nil {
 		return fmt.Errorf("failed to extract binary: %v", err)
 	}
 
@@ -151,6 +156,15 @@ func (p *Provider) GetStartCommand(args []string, env []string) *exec.Cmd {
 	cmd := exec.Command(p.binaryPath, args...)
 	cmd.Env = append(os.Environ(), env...)
 	return cmd
+}
+
+func extractArchive(src, dest string) error {
+	if strings.HasSuffix(src, ".zip") {
+		return compression.ExtractZip(src, dest)
+	} else if strings.HasSuffix(src, ".tar.gz") {
+		return compression.ExtractTarGz(src, dest)
+	}
+	return fmt.Errorf("unsupported archive format: %s", src)
 }
 
 func (p *Provider) getBinaryPath() string {
