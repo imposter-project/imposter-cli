@@ -1,7 +1,12 @@
 /imposter
-*.iml
-.idea/
 dist/
 .imposter/
+
+# IDE/Editor specific files
+*.iml
+.idea/
+
+# tools
 .tool-versions
 CLAUDE.md
+/.claude/settings.local.json
