@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.6] - 2025-06-29
+### Changed
+- chore(deps): bump github.com/docker/docker
+- chore(deps): bump github.com/shirou/gopsutil/v4 from 4.25.4 to 4.25.5
+- test: bumps imposter-go version.
+
+### Fixed
+- fix: temp pattern should handle file extensions with multiple parts.
+
 ## [1.1.5] - 2025-06-29
 ### Changed
 - build: adds since config.
