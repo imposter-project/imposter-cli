@@ -234,6 +234,114 @@ func TestReadFile(t *testing.T) {
 	}
 }
 
+func TestGenerateTempFilePattern(t *testing.T) {
+	tests := []struct {
+		name      string
+		localPath string
+		want      string
+	}{
+		{
+			name:      "simple extension",
+			localPath: "file.txt",
+			want:      "file*.txt",
+		},
+		{
+			name:      "simple extension with path",
+			localPath: "/path/to/file.txt",
+			want:      "file*.txt",
+		},
+		{
+			name:      "complex extension - tar.gz",
+			localPath: "archive.tar.gz",
+			want:      "archive*.tar.gz",
+		},
+		{
+			name:      "complex extension with path",
+			localPath: "/downloads/archive.tar.gz",
+			want:      "archive*.tar.gz",
+		},
+		{
+			name:      "multiple dots in filename",
+			localPath: "file.backup.2023.txt",
+			want:      "file*.backup.2023.txt",
+		},
+		{
+			name:      "no extension",
+			localPath: "filename",
+			want:      "filename*",
+		},
+		{
+			name:      "no extension with path",
+			localPath: "/path/to/filename",
+			want:      "filename*",
+		},
+		{
+			name:      "hidden file with extension",
+			localPath: ".hidden.txt",
+			want:      "*.hidden.txt",
+		},
+		{
+			name:      "hidden file no extension",
+			localPath: ".hidden",
+			want:      "*.hidden",
+		},
+		{
+			name:      "dot at beginning only",
+			localPath: ".gitignore",
+			want:      "*.gitignore",
+		},
+		{
+			name:      "complex path with dots",
+			localPath: "/path/to/project/v1.2.3/file.tar.gz",
+			want:      "file*.tar.gz",
+		},
+		{
+			name:      "single character filename",
+			localPath: "a.txt",
+			want:      "a*.txt",
+		},
+		{
+			name:      "single character no extension",
+			localPath: "a",
+			want:      "a*",
+		},
+		{
+			name:      "extension longer than filename",
+			localPath: "f.really.long.extension",
+			want:      "f*.really.long.extension",
+		},
+		{
+			name:      "empty string",
+			localPath: "",
+			want:      "*.",
+		},
+		{
+			name:      "just extension",
+			localPath: ".txt",
+			want:      "*.txt",
+		},
+		{
+			name:      "multiple consecutive dots",
+			localPath: "file..txt",
+			want:      "file*..txt",
+		},
+		{
+			name:      "ends with dot",
+			localPath: "file.",
+			want:      "file*.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GenerateTempFilePattern(tt.localPath)
+			if got != tt.want {
+				t.Errorf("GenerateTempFilePattern() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 // Helper function to check if a string contains another string
 func contains(s, substr string) bool {
 	return filepath.Base(s) == substr

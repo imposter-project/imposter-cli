@@ -147,6 +147,14 @@ func ReadFile(filePath string) (*[]byte, error) {
 // It prefixes the extension with a star (*) to ensure uniqueness, as per the os.CreateTemp documentation.
 func GenerateTempFilePattern(localPath string) string {
 	base := path.Base(localPath)
-	ext := path.Ext(base)
+
+	// we don't use path.Ext() here because it doesn't handle cases like .tar.gz correctly
+	dotIndex := strings.Index(base, ".")
+	if dotIndex == -1 {
+		// No extension found, just add * to the end
+		return base + "*"
+	}
+
+	ext := base[dotIndex:]
 	return base[:len(base)-len(ext)] + "*" + ext
 }
