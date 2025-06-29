@@ -6,6 +6,7 @@ import (
 	"gatehill.io/imposter/internal/engine"
 	"gatehill.io/imposter/internal/engine/procutil"
 	"gatehill.io/imposter/internal/logging"
+	"gatehill.io/imposter/internal/plugin"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
@@ -44,17 +45,7 @@ func (g *GolangMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	if len(options.DirMounts) > 0 {
 		logger.Warnf("golang engine does not support directory mounts - these will be ignored")
 	}
-
-	// Set up environment variables
-	env := append(os.Environ(), options.Environment...)
-	env = append(env,
-		fmt.Sprintf("IMPOSTER_PORT=%d", options.Port),
-		fmt.Sprintf("IMPOSTER_CONFIG_DIR=%s", g.configDir),
-	)
-	if options.LogLevel != "" {
-		env = append(env, fmt.Sprintf("IMPOSTER_LOG_LEVEL=%s", options.LogLevel))
-	}
-
+	env := g.buildEnv(options)
 	command := (*g.provider).GetStartCommand([]string{}, env)
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
@@ -72,6 +63,33 @@ func (g *GolangMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 
 	go g.notifyOnStopBlocking(wg)
 	return up
+}
+
+func (g *GolangMockEngine) buildEnv(options engine.StartOptions) []string {
+	env := engine.BuildEnv(options, engine.EnvOptions{IncludeHome: true, IncludePath: true})
+	env = append(env,
+		fmt.Sprintf("IMPOSTER_PORT=%d", options.Port),
+		fmt.Sprintf("IMPOSTER_CONFIG_DIR=%s", g.configDir),
+	)
+	if options.EnablePlugins {
+		logger.Tracef("plugins are enabled")
+		pluginDir, err := plugin.EnsurePluginDir(options.Version)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		env = append(env,
+			"IMPOSTER_PLUGIN_DIR="+pluginDir,
+			"IMPOSTER_EXTERNAL_PLUGINS=true",
+		)
+	} else {
+		logger.Tracef("plugins are disabled")
+	}
+	if options.EnableFileCache {
+		logger.Tracef("file cache not supported by golang engine")
+	}
+	logger.Tracef("engine environment: %v", env)
+	return env
+
 }
 
 func (g *GolangMockEngine) Stop(wg *sync.WaitGroup) {
