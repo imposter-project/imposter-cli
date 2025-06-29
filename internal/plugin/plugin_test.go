@@ -132,6 +132,13 @@ func Test_getPluginFilePath(t *testing.T) {
 			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-js-graal.zip"),
 			wantErr:                false,
 		},
+		{
+			name:                   "get plugin file path for golang plugin",
+			args:                   args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.0"},
+			wantFullPluginFileName: "plugin-swaggerui.zip",
+			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "1.2.0", "plugin-swaggerui.zip"),
+			wantErr:                false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

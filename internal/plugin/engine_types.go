@@ -1,44 +1,64 @@
 package plugin
 
 import (
+	"fmt"
 	"gatehill.io/imposter/internal/engine"
 	library2 "gatehill.io/imposter/internal/library"
 	"gatehill.io/imposter/internal/stringutil"
 	"strings"
 )
 
-// determineDownloadConfig returns the appropriate download configuration
-// based on the engine type. For Golang plugins, it uses the Golang plugin repository,
-// and extracts compressed plugins, while for others, it uses the
-// JVM engine repository and does not extract compressed plugins.
-func determineDownloadConfig(engineType engine.EngineType) library2.DownloadConfig {
-	if engineType == engine.EngineTypeGolang {
-		return library2.NewDownloadConfig(
+type pluginConfiguration struct {
+	downloadConfig library2.DownloadConfig
+	fileNamePrefix string
+
+	// extensions is the list of supported file extensions.
+	// note that the first extension is the default.
+	extensions []string
+}
+
+var pluginConfigs = map[string]pluginConfiguration{
+	"golang": {
+		downloadConfig: library2.NewDownloadConfig(
 			"https://github.com/imposter-project/imposter-go-plugins/releases/latest/download",
 			"https://github.com/imposter-project/imposter-go-plugins/releases/download/v%v",
 			true,
-		)
-	} else {
-		return library2.NewDownloadConfig(
+		),
+		extensions:     []string{".zip"},
+		fileNamePrefix: "plugin-",
+	},
+	"*": {
+		downloadConfig: library2.NewDownloadConfig(
 			"https://github.com/imposter-project/imposter-jvm-engine/releases/latest/download",
 			"https://github.com/imposter-project/imposter-jvm-engine/releases/download/v%v",
 			false,
-		)
+		),
+		extensions:     []string{".jar", ".zip"},
+		fileNamePrefix: "imposter-plugin-",
+	},
+}
+
+// determinePluginConfig returns the plugin configuration based on the engine type.
+func determinePluginConfig(engineType engine.EngineType) pluginConfiguration {
+	switch engineType {
+	case engine.EngineTypeGolang:
+		return pluginConfigs["golang"]
+	default:
+		return pluginConfigs["*"]
 	}
 }
 
 // isValidPluginFile checks if the given file path is a valid plugin file
 // for the specified engine type. It returns true if valid, along with the plugin name.
 func isValidPluginFile(candidateFilePath string, engineType engine.EngineType) (bool, string) {
-	pluginFileNamePrefix := determinePluginFileNamePrefix(engineType)
-	if !strings.HasPrefix(candidateFilePath, pluginFileNamePrefix) {
+	pluginConfig := determinePluginConfig(engineType)
+	if !strings.HasPrefix(candidateFilePath, pluginConfig.fileNamePrefix) {
 		return false, ""
 	}
-	pluginName := strings.TrimPrefix(candidateFilePath, pluginFileNamePrefix)
+	pluginName := strings.TrimPrefix(candidateFilePath, pluginConfig.fileNamePrefix)
 
-	if engineType != engine.EngineTypeGolang {
-		supportedPluginExtensions := []string{".jar", ".zip"}
-		supportedSuffix := stringutil.GetMatchingSuffix(pluginName, supportedPluginExtensions)
+	if len(pluginConfig.extensions) > 1 {
+		supportedSuffix := stringutil.GetMatchingSuffix(pluginName, pluginConfig.extensions)
 		if supportedSuffix == "" {
 			return false, ""
 		}
@@ -48,11 +68,43 @@ func isValidPluginFile(candidateFilePath string, engineType engine.EngineType) (
 	return true, pluginName
 }
 
-// determinePluginFileNamePrefix returns the prefix for plugin files based on the engine type.
-func determinePluginFileNamePrefix(engineType engine.EngineType) string {
-	if engineType == engine.EngineTypeGolang {
-		return "plugin-"
-	} else {
-		return "imposter-plugin-"
+// getFullPluginFileName returns the full plugin file name based on the engine type and plugin name.
+func getFullPluginFileName(engineType engine.EngineType, pluginName string) (string, error) {
+	pluginConfig := determinePluginConfig(engineType)
+	switch len(pluginConfig.extensions) {
+	case 0:
+		return "", fmt.Errorf("plugin extensions not specified for engine type: " + string(engineType))
+
+	case 1:
+		fullPluginFileName := buildDefaultPluginFileName(pluginConfig, pluginName)
+		return fullPluginFileName, nil
+
+	default:
+		// Multiple extensions are supported, so we need to check the plugin name
+		if strings.Contains(pluginName, ":") {
+			// The format is indicated by the presence of a colon in the plugin name.
+			// JVM/Docker archive format plugins use .zip extension, supported in JVM/Docker engine since v3.35.0,
+			// as well as the default .jar extension.
+			for _, ext := range pluginConfig.extensions {
+				extAsSuffix := ":" + ext[1:]
+				if strings.HasSuffix(pluginName, extAsSuffix) {
+					trimmedPluginName := strings.TrimSuffix(pluginName, extAsSuffix)
+					fullPluginFileName := fmt.Sprintf("%s%s%s", pluginConfig.fileNamePrefix, trimmedPluginName, ext)
+					return fullPluginFileName, nil
+				}
+			}
+			return "", fmt.Errorf("no matching plugin extension found for engine type: " + string(engineType) + " and plugin name: " + pluginName)
+
+		} else {
+			// use the default extension
+			fullPluginFileName := buildDefaultPluginFileName(pluginConfig, pluginName)
+			return fullPluginFileName, nil
+		}
 	}
+}
+
+func buildDefaultPluginFileName(pluginConfig pluginConfiguration, pluginName string) string {
+	ext := pluginConfig.extensions[0]
+	fullPluginFileName := fmt.Sprintf("%s%s%s", pluginConfig.fileNamePrefix, pluginName, ext)
+	return fullPluginFileName
 }
