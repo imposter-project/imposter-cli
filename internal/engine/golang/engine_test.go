@@ -48,7 +48,7 @@ func TestEngine_StartStop(t *testing.T) {
 				ConfigDir: testConfigPath,
 				Options: engine.StartOptions{
 					Port:       enginetests.GetFreePort(),
-					Version:    "0.16.0",
+					Version:    "1.2.3",
 					PullPolicy: engine.PullIfNotPresent,
 					LogLevel:   "DEBUG",
 				},
@@ -73,7 +73,7 @@ func TestEngine_Restart(t *testing.T) {
 				ConfigDir: testConfigPath,
 				Options: engine.StartOptions{
 					Port:       enginetests.GetFreePort(),
-					Version:    "0.16.0",
+					Version:    "1.2.3",
 					PullPolicy: engine.PullIfNotPresent,
 					LogLevel:   "DEBUG",
 				},
@@ -98,7 +98,7 @@ func TestEngine_List(t *testing.T) {
 				ConfigDir: testConfigPath,
 				Options: engine.StartOptions{
 					Port:       enginetests.GetFreePort(),
-					Version:    "0.16.0",
+					Version:    "1.2.3",
 					PullPolicy: engine.PullIfNotPresent,
 					LogLevel:   "DEBUG",
 				},
