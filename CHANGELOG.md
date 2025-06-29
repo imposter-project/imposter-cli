@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.5] - 2025-06-29
+### Changed
+- build: adds since config.
+- chore: ignore tool config.
+- chore: update Go version to 1.23.8.
+- refactor(golang): standardise environment creation and add plugin support.
+- refactor: aligns go binary naming to expected platform format.
+- refactor: maps plugin config to engine type.
+- refactor: moves plugin filename prefix to const.
+- refactor: plugin downloads are engine type aware.
+- refactor: support extracting both zip and tar.gz archives.
+- refactor: use a temp file when downloading binaries.
+
 ## [1.1.4] - 2025-05-15
 ### Changed
 - chore(deps): bump github.com/aws/aws-sdk-go from 1.55.6 to 1.55.7
