@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gatehill.io/imposter/internal/engine"
 	library2 "gatehill.io/imposter/internal/library"
+	"gatehill.io/imposter/internal/platform"
 	"gatehill.io/imposter/internal/stringutil"
 	"strings"
 )
@@ -11,6 +12,9 @@ import (
 type pluginConfiguration struct {
 	downloadConfig library2.DownloadConfig
 	fileNamePrefix string
+
+	// addOsAndArch indicates whether the plugin file name should include the OS and architecture.
+	addOsAndArch bool
 
 	// extensions is the list of supported file extensions.
 	// note that the first extension is the default.
@@ -26,6 +30,7 @@ var pluginConfigs = map[string]pluginConfiguration{
 		),
 		extensions:     []string{".zip"},
 		fileNamePrefix: "plugin-",
+		addOsAndArch:   true,
 	},
 	"*": {
 		downloadConfig: library2.NewDownloadConfig(
@@ -35,6 +40,7 @@ var pluginConfigs = map[string]pluginConfiguration{
 		),
 		extensions:     []string{".jar", ".zip"},
 		fileNamePrefix: "imposter-plugin-",
+		addOsAndArch:   false,
 	},
 }
 
@@ -76,7 +82,7 @@ func getFullPluginFileName(engineType engine.EngineType, pluginName string) (str
 		return "", fmt.Errorf("plugin extensions not specified for engine type: " + string(engineType))
 
 	case 1:
-		fullPluginFileName := buildDefaultPluginFileName(pluginConfig, pluginName)
+		fullPluginFileName := buildPluginFileName(pluginConfig, pluginName, pluginConfig.extensions[0])
 		return fullPluginFileName, nil
 
 	default:
@@ -89,7 +95,7 @@ func getFullPluginFileName(engineType engine.EngineType, pluginName string) (str
 				extAsSuffix := ":" + ext[1:]
 				if strings.HasSuffix(pluginName, extAsSuffix) {
 					trimmedPluginName := strings.TrimSuffix(pluginName, extAsSuffix)
-					fullPluginFileName := fmt.Sprintf("%s%s%s", pluginConfig.fileNamePrefix, trimmedPluginName, ext)
+					fullPluginFileName := buildPluginFileName(pluginConfig, trimmedPluginName, ext)
 					return fullPluginFileName, nil
 				}
 			}
@@ -97,14 +103,18 @@ func getFullPluginFileName(engineType engine.EngineType, pluginName string) (str
 
 		} else {
 			// use the default extension
-			fullPluginFileName := buildDefaultPluginFileName(pluginConfig, pluginName)
+			fullPluginFileName := buildPluginFileName(pluginConfig, pluginName, pluginConfig.extensions[0])
 			return fullPluginFileName, nil
 		}
 	}
 }
 
-func buildDefaultPluginFileName(pluginConfig pluginConfiguration, pluginName string) string {
-	ext := pluginConfig.extensions[0]
-	fullPluginFileName := fmt.Sprintf("%s%s%s", pluginConfig.fileNamePrefix, pluginName, ext)
+func buildPluginFileName(pluginConfig pluginConfiguration, pluginName string, ext string) string {
+	osAndArch := ""
+	if pluginConfig.addOsAndArch {
+		os, arch := platform.GetPlatform()
+		osAndArch = fmt.Sprintf("_%s_%s", os, arch)
+	}
+	fullPluginFileName := fmt.Sprintf("%s%s%s%s", pluginConfig.fileNamePrefix, pluginName, osAndArch, ext)
 	return fullPluginFileName
 }

@@ -1,10 +1,12 @@
 package plugin
 
 import (
+	"fmt"
 	"gatehill.io/imposter/internal/engine"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -106,6 +108,9 @@ func Test_getPluginFilePath(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	goos := runtime.GOOS
+	goarch := runtime.GOARCH
+
 	type args struct {
 		pluginName string
 		version    string
@@ -134,9 +139,9 @@ func Test_getPluginFilePath(t *testing.T) {
 		},
 		{
 			name:                   "get plugin file path for golang plugin",
-			args:                   args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.0"},
-			wantFullPluginFileName: "plugin-swaggerui.zip",
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "1.2.0", "plugin-swaggerui.zip"),
+			args:                   args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.2"},
+			wantFullPluginFileName: fmt.Sprintf("plugin-swaggerui_%s_%s.zip", goos, goarch),
+			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "1.2.2", fmt.Sprintf("plugin-swaggerui_%s_%s.zip", goos, goarch)),
 			wantErr:                false,
 		},
 	}

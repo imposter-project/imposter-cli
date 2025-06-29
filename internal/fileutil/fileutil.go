@@ -22,6 +22,7 @@ import (
 	"gatehill.io/imposter/internal/stringutil"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -128,6 +129,7 @@ func ListFiles(dir string, includeHidden bool) ([]string, error) {
 	return files, nil
 }
 
+// ReadFile reads the contents of a file and returns it as a byte slice.
 func ReadFile(filePath string) (*[]byte, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -139,4 +141,12 @@ func ReadFile(filePath string) (*[]byte, error) {
 		return nil, fmt.Errorf("failed to read file: %s: %v", filePath, err)
 	}
 	return &contents, err
+}
+
+// GenerateTempFilePattern creates a temporary file pattern based on the provided localPath.
+// It prefixes the extension with a star (*) to ensure uniqueness, as per the os.CreateTemp documentation.
+func GenerateTempFilePattern(localPath string) string {
+	base := path.Base(localPath)
+	ext := path.Ext(base)
+	return base[:len(base)-len(ext)] + "*" + ext
 }

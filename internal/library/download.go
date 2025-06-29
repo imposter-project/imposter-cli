@@ -3,6 +3,7 @@ package library
 import (
 	"fmt"
 	"gatehill.io/imposter/internal/compression"
+	"gatehill.io/imposter/internal/fileutil"
 	"io"
 	"net/http"
 	"os"
@@ -41,7 +42,8 @@ func DownloadBinaryWithConfig(
 	fallbackRemoteFileName string,
 ) error {
 	logger.Tracef("attempting to download %s version %s to %s", remoteFileName, version, localPath)
-	tempFile, err := os.CreateTemp(os.TempDir(), path.Base(localPath))
+	tempFileName := fileutil.GenerateTempFilePattern(localPath)
+	tempFile, err := os.CreateTemp(os.TempDir(), tempFileName)
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %v: %v", localPath, err)
 	}
@@ -76,7 +78,7 @@ func DownloadBinaryWithConfig(
 	}
 
 	// populate the localPath with the downloaded file
-	if compression.IsArchiveFileExtension(tempFile.Name()) && config.extractIfCompressed {
+	if compression.IsArchiveFileExtension(remoteFileName) && config.extractIfCompressed {
 		destinationDir := path.Dir(localPath)
 		// Note: there is an assumption here that the archive contains a file that matches the localPath
 		if err := compression.ExtractArchive(tempFile.Name(), destinationDir); err != nil {
