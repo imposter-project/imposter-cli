@@ -31,6 +31,6 @@ var pluginCmd = &cobra.Command{
 }
 
 func init() {
-	pluginCmd.PersistentFlags().StringVarP(&pluginFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,jvm)")
+	pluginCmd.PersistentFlags().StringVarP(&pluginFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm)")
 	rootCmd.AddCommand(pluginCmd)
 }

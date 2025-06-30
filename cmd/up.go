@@ -116,7 +116,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 }
 
 func init() {
-	upCmd.Flags().StringVarP(&upFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,jvm - default \"docker\")")
+	upCmd.Flags().StringVarP(&upFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
 	upCmd.Flags().StringVarP(&upFlags.engineVersion, "version", "v", "", "Imposter engine version (default \"latest\")")
 	upCmd.Flags().IntVarP(&upFlags.port, "port", "p", 8080, "Port on which to listen")
 	upCmd.Flags().BoolVar(&upFlags.forcePull, "pull", false, "Force engine pull")

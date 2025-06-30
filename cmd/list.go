@@ -44,7 +44,7 @@ and reports their health.`,
 }
 
 func init() {
-	listCmd.Flags().StringVarP(&listFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,jvm - default \"docker\")")
+	listCmd.Flags().StringVarP(&listFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
 	listCmd.Flags().BoolVarP(&listFlags.healthExitCode, "exit-code-health", "x", false, "Set exit code based on mock health")
 	listCmd.Flags().BoolVarP(&listFlags.quiet, "quiet", "q", false, "Quieten output; only print ID")
 	registerEngineTypeCompletions(listCmd)
