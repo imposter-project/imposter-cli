@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"gatehill.io/imposter/internal/platform"
+	"runtime"
 	"testing"
 )
 
@@ -107,6 +107,5 @@ func Test_buildPluginFileName(t *testing.T) {
 
 // Helper function to get current OS and architecture for testing
 func getCurrentOSAndArch() string {
-	os, arch := platform.GetPlatform()
-	return os + "_" + arch
+	return runtime.GOOS + "_" + runtime.GOARCH
 }

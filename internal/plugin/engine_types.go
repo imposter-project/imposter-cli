@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"gatehill.io/imposter/internal/engine"
 	library2 "gatehill.io/imposter/internal/library"
-	"gatehill.io/imposter/internal/platform"
 	"gatehill.io/imposter/internal/stringutil"
+	"runtime"
 	"strings"
 )
 
@@ -112,8 +112,7 @@ func getFullPluginFileName(engineType engine.EngineType, pluginName string) (str
 func buildPluginFileName(pluginConfig pluginConfiguration, pluginName string, ext string) string {
 	osAndArch := ""
 	if pluginConfig.addOsAndArch {
-		os, arch := platform.GetPlatform()
-		osAndArch = fmt.Sprintf("_%s_%s", os, arch)
+		osAndArch = fmt.Sprintf("_%s_%s", runtime.GOOS, runtime.GOARCH)
 	}
 	fullPluginFileName := fmt.Sprintf("%s%s%s%s", pluginConfig.fileNamePrefix, pluginName, osAndArch, ext)
 	return fullPluginFileName

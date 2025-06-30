@@ -6,10 +6,10 @@ import (
 	"gatehill.io/imposter/internal/engine"
 	"gatehill.io/imposter/internal/library"
 	"gatehill.io/imposter/internal/logging"
-	"gatehill.io/imposter/internal/platform"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 )
 
 var providerLogger = logging.GetLogger()
@@ -96,7 +96,7 @@ func downloadAndExtractBinary(version string, binDir string) error {
 	}
 
 	// Get platform-specific filename
-	goos, arch := platform.GetPlatform()
+	goos := runtime.GOOS
 	var fileExt string
 	switch goos {
 	case "darwin", "linux":
@@ -104,7 +104,7 @@ func downloadAndExtractBinary(version string, binDir string) error {
 	case "windows":
 		fileExt = ".zip"
 	}
-	fileName := fmt.Sprintf("imposter-go_%s_%s%s", goos, arch, fileExt)
+	fileName := fmt.Sprintf("imposter-go_%s_%s%s", goos, runtime.GOARCH, fileExt)
 	downloadPath := filepath.Join(binDir, fileName)
 
 	// Download the binary
