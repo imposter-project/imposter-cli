@@ -31,6 +31,7 @@ const (
 )
 
 var versionFlags = struct {
+	cliOnly    bool
 	engineType string
 	format     string
 }{}
@@ -48,36 +49,41 @@ var versionCmd = &cobra.Command{
 		} else {
 			format = outputFormatPlain
 		}
-		println(describeVersions(engineType, format))
+		println(describeVersions(engineType, versionFlags.cliOnly, format))
 	},
 }
 
 func init() {
+	versionCmd.Flags().BoolVar(&versionFlags.cliOnly, "cli", false, "Just print the CLI version")
 	versionCmd.Flags().StringVarP(&versionFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
 	versionCmd.Flags().StringVarP(&versionFlags.format, "output-format", "o", "", "Output format (valid: plain,json - default \"plain\")")
 	registerEngineTypeCompletions(versionCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
-func describeVersions(engineType engine.EngineType, format outputFormat) string {
-	output := formatProperty(format, "imposter-cli", config.Config.Version, false)
+func describeVersions(engineType engine.EngineType, cliOnly bool, format outputFormat) string {
+	props := make(map[string]string)
+	props["imposter-cli"] = config.Config.Version
 
-	library := engine.GetLibrary(engineType)
-	engines, err := library.List()
-	if err != nil {
-		logger.Fatal(err)
-	}
-	if len(engines) == 0 {
-		output += formatProperty(format, "imposter-engine", "none", true)
-	} else {
-		engineConfigVersion := engine.GetConfiguredVersionOrResolve("", true, false)
-		if engineConfigVersion == "latest" {
-			engineConfigVersion = engine.GetHighestVersion(engines)
+	if !cliOnly {
+		library := engine.GetLibrary(engineType)
+		engines, err := library.List()
+		if err != nil {
+			logger.Fatal(err)
 		}
-		output += formatProperty(format, "imposter-engine", engineConfigVersion, false)
-		output += formatProperty(format, "engine-output", getInstalledEngineVersion(engineType, engineConfigVersion), true)
+		if len(engines) == 0 {
+			props["imposter-engine"] = "none"
+		} else {
+			engineConfigVersion := engine.GetConfiguredVersionOrResolve("", true, false)
+			if engineConfigVersion == "latest" {
+				engineConfigVersion = engine.GetHighestVersion(engines)
+			}
+			props["imposter-engine"] = engineConfigVersion
+			props["engine-output"] = getInstalledEngineVersion(engineType, engineConfigVersion)
+		}
 	}
 
+	output := formatOutput(props, format)
 	switch format {
 	case outputFormatPlain:
 		return output
@@ -86,6 +92,17 @@ func describeVersions(engineType engine.EngineType, format outputFormat) string 
 	default:
 		panic(fmt.Errorf("unsupported output format: %s", format))
 	}
+}
+
+func formatOutput(props map[string]string, format outputFormat) string {
+	var output string
+	var index int
+	for key, value := range props {
+		index++
+		lastProp := index == len(props)
+		output += formatProperty(format, key, value, lastProp)
+	}
+	return output
 }
 
 func formatProperty(format outputFormat, key string, value string, lastProp bool) string {
