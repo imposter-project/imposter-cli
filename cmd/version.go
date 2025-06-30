@@ -21,6 +21,7 @@ import (
 	"gatehill.io/imposter/internal/config"
 	"gatehill.io/imposter/internal/engine"
 	"github.com/spf13/cobra"
+	"sort"
 )
 
 type outputFormat string
@@ -31,9 +32,9 @@ const (
 )
 
 var versionFlags = struct {
-	cliOnly    bool
 	engineType string
 	format     string
+	full       bool
 }{}
 
 // versionCmd represents the up command
@@ -49,23 +50,23 @@ var versionCmd = &cobra.Command{
 		} else {
 			format = outputFormatPlain
 		}
-		println(describeVersions(engineType, versionFlags.cliOnly, format))
+		println(describeVersions(engineType, versionFlags.full, format))
 	},
 }
 
 func init() {
-	versionCmd.Flags().BoolVar(&versionFlags.cliOnly, "cli", false, "Just print the CLI version")
 	versionCmd.Flags().StringVarP(&versionFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
 	versionCmd.Flags().StringVarP(&versionFlags.format, "output-format", "o", "", "Output format (valid: plain,json - default \"plain\")")
+	versionCmd.Flags().BoolVar(&versionFlags.full, "full", false, "Also print the engine version (if available)")
 	registerEngineTypeCompletions(versionCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
-func describeVersions(engineType engine.EngineType, cliOnly bool, format outputFormat) string {
+func describeVersions(engineType engine.EngineType, full bool, format outputFormat) string {
 	props := make(map[string]string)
 	props["imposter-cli"] = config.Config.Version
 
-	if !cliOnly {
+	if full {
 		library := engine.GetLibrary(engineType)
 		engines, err := library.List()
 		if err != nil {
@@ -96,10 +97,16 @@ func describeVersions(engineType engine.EngineType, cliOnly bool, format outputF
 
 func formatOutput(props map[string]string, format outputFormat) string {
 	var output string
-	var index int
-	for key, value := range props {
-		index++
-		lastProp := index == len(props)
+
+	keys := make([]string, 0, len(props))
+	for key := range props {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for index, key := range keys {
+		value := props[key]
+		lastProp := index == len(keys)-1
 		output += formatProperty(format, key, value, lastProp)
 	}
 	return output

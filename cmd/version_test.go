@@ -29,7 +29,7 @@ func Test_describeVersions(t *testing.T) {
 		engineType engine.EngineType
 		version    string
 		format     outputFormat
-		cliOnly    bool
+		full       bool
 	}
 	tests := []struct {
 		name string
@@ -40,7 +40,7 @@ func Test_describeVersions(t *testing.T) {
 			args: args{
 				engineType: engine.EngineTypeDockerCore,
 				version:    "4.2.2",
-				cliOnly:    false,
+				full:       true,
 				format:     outputFormatPlain,
 			},
 		},
@@ -49,7 +49,7 @@ func Test_describeVersions(t *testing.T) {
 			args: args{
 				engineType: engine.EngineTypeJvmSingleJar,
 				version:    "4.2.2",
-				cliOnly:    false,
+				full:       true,
 				format:     outputFormatPlain,
 			},
 		},
@@ -58,7 +58,7 @@ func Test_describeVersions(t *testing.T) {
 			args: args{
 				engineType: engine.EngineTypeDockerCore,
 				version:    "latest",
-				cliOnly:    false,
+				full:       true,
 				format:     outputFormatPlain,
 			},
 		},
@@ -67,7 +67,7 @@ func Test_describeVersions(t *testing.T) {
 			args: args{
 				engineType: engine.EngineTypeDockerCore,
 				version:    "4.2.2",
-				cliOnly:    false,
+				full:       true,
 				format:     outputFormatJson,
 			},
 		},
@@ -76,7 +76,7 @@ func Test_describeVersions(t *testing.T) {
 			args: args{
 				engineType: engine.EngineTypeDockerCore,
 				version:    "4.2.2",
-				cliOnly:    true,
+				full:       false,
 				format:     outputFormatJson,
 			},
 		},
@@ -102,7 +102,21 @@ func Test_describeVersions(t *testing.T) {
 			}
 
 			var want string
-			if tt.args.cliOnly {
+			if tt.args.full {
+				if tt.args.format == outputFormatPlain {
+					want = fmt.Sprintf(`engine-output %[1]s
+imposter-cli dev
+imposter-engine %[1]s
+`, expectedVersion)
+
+				} else {
+					want = fmt.Sprintf(`{
+  "engine-output": "%[1]s",
+  "imposter-cli": "dev",
+  "imposter-engine": "%[1]s"
+}`, expectedVersion)
+				}
+			} else {
 				if tt.args.format == outputFormatPlain {
 					want = `imposter-cli dev
 `
@@ -112,23 +126,9 @@ func Test_describeVersions(t *testing.T) {
   "imposter-cli": "dev"
 }`
 				}
-			} else {
-				if tt.args.format == outputFormatPlain {
-					want = fmt.Sprintf(`imposter-cli dev
-imposter-engine %[1]s
-engine-output %[1]s
-`, expectedVersion)
-
-				} else {
-					want = fmt.Sprintf(`{
-  "imposter-cli": "dev",
-  "imposter-engine": "%[1]s",
-  "engine-output": "%[1]s"
-}`, expectedVersion)
-				}
 			}
 
-			got := describeVersions(tt.args.engineType, tt.args.cliOnly, tt.args.format)
+			got := describeVersions(tt.args.engineType, tt.args.full, tt.args.format)
 			require.Equal(t, want, got, "version should match")
 		})
 	}

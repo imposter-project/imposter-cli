@@ -57,7 +57,7 @@ Learn more at www.imposter.sh`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootFlags.printVersion {
 			engineType := engine.GetConfiguredType("")
-			println(describeVersions(engineType, true, outputFormatJson))
+			println(describeVersions(engineType, false, outputFormatJson))
 		} else {
 			// show usage
 			cobra.CheckErr(cmd.Help())
