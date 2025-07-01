@@ -23,7 +23,22 @@ func addDefaultPlugins(plugins []string) error {
 		// none added
 		return nil
 	}
-	return writeDefaultPlugins(combined)
+
+	// Determine which plugins were actually added
+	var added []string
+	for _, plugin := range plugins {
+		if !stringutil.Contains(existing, plugin) {
+			added = append(added, plugin)
+		}
+	}
+
+	err = writeDefaultPlugins(combined)
+	if err != nil {
+		return err
+	}
+
+	logger.Infof("added %d plugin(s) to default list: %v", len(added), added)
+	return nil
 }
 
 func ListDefaultPlugins() ([]string, error) {

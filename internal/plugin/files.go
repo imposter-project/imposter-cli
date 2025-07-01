@@ -54,20 +54,18 @@ func isValidPluginFile(candidateFilePath string, engineType engine.EngineType) (
 
 	for _, ext := range pluginConfig.extensions {
 		fileBasePattern := pluginConfig.localFileTemplate
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{.PluginName}}", "([a-zA-Z0-9_-]+)")
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{.Ext}}", ext)
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{.OS}}", runtime.GOOS)
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{.Arch}}", runtime.GOARCH)
+		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .PluginName }}", "([a-zA-Z0-9_-]+)")
+		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .Ext }}", regexp.QuoteMeta(ext))
+		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .OS }}", runtime.GOOS)
+		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .Arch }}", runtime.GOARCH)
+		fileBasePattern = "^" + fileBasePattern + "$"
 
-		if matched, _ := regexp.Compile(fileBasePattern); matched != nil {
+		matched, err := regexp.Compile(fileBasePattern)
+		if err == nil {
 			matchedFile := matched.FindStringSubmatch(candidateFilePath)
 			if len(matchedFile) > 1 {
 				return true, matchedFile[1]
-			} else {
-				return false, ""
 			}
-		} else {
-			return false, ""
 		}
 	}
 	return false, ""
