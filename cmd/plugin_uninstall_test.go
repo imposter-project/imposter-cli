@@ -87,7 +87,7 @@ func Test_uninstallPlugins(t *testing.T) {
 
 			// Create fake plugin files to simulate installed plugins
 			for _, pluginName := range tt.args.setupPlugins {
-				_, pluginFilePath, err := plugin.GetPluginFilePath(pluginName, tt.args.engineType, tt.args.version)
+				_, pluginFilePath, err := plugin.GetPluginLocalPath(pluginName, tt.args.engineType, tt.args.version)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -112,7 +112,7 @@ func Test_uninstallPlugins(t *testing.T) {
 
 			// Verify plugins are removed from disk
 			for _, pluginName := range tt.args.plugins {
-				_, pluginFilePath, err := plugin.GetPluginFilePath(pluginName, tt.args.engineType, tt.args.version)
+				_, pluginFilePath, err := plugin.GetPluginLocalPath(pluginName, tt.args.engineType, tt.args.version)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -146,7 +146,72 @@ func Test_uninstallNonExistentPlugin(t *testing.T) {
 	config.DirPath = configDir
 
 	// Test uninstalling a plugin that doesn't exist
-	err = plugin.UninstallPlugin("nonexistent-plugin", engine.EngineTypeDockerCore, "4.2.2")
-	require.Error(t, err, "should return error for non-existent plugin")
-	require.Contains(t, err.Error(), "is not installed", "error should indicate plugin is not installed")
+	wasInstalled, err := plugin.UninstallPlugin("nonexistent-plugin", engine.EngineTypeDockerCore, "4.2.2")
+	require.NoError(t, err, "should not return error for non-existent plugin")
+	require.False(t, wasInstalled, "should return false for non-existent plugin")
+}
+
+func Test_uninstallNonInstalledPluginFromDefaults(t *testing.T) {
+	// Setup temporary config directory
+	configDir, err := os.MkdirTemp(os.TempDir(), "imposter-cli-uninstall-defaults")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(configDir)
+	config.DirPath = configDir
+
+	// Set up a plugin in defaults but not installed locally
+	viper.Set("default.plugins", []string{"swaggerui"})
+	t.Cleanup(func() {
+		viper.Set("default.plugins", nil)
+	})
+
+	// Test uninstalling a plugin that's in defaults but not installed
+	uninstallPlugins([]string{"swaggerui"}, engine.EngineTypeGolang, "1.2.4", true)
+
+	// Verify plugin was removed from defaults
+	defaultPlugins, err := plugin.ListDefaultPlugins()
+	if err != nil {
+		t.Fatal(err)
+	}
+	require.NotContains(t, defaultPlugins, "swaggerui", "plugin should be removed from defaults")
+}
+
+func Test_uninstallMultiplePluginsFromDefaults(t *testing.T) {
+	// Setup temporary config directory
+	configDir, err := os.MkdirTemp(os.TempDir(), "imposter-cli-uninstall-multi-defaults")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(configDir)
+	config.DirPath = configDir
+
+	// Create a config file with multiple default plugins
+	configFilePath := filepath.Join(configDir, "config.yaml")
+	configContent := `default:
+  plugins:
+    - swaggerui
+    - store-redis
+    - js-graal
+`
+	err = os.WriteFile(configFilePath, []byte(configContent), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Test uninstalling some plugins that are in defaults but not installed
+	uninstallPlugins([]string{"swaggerui", "store-redis"}, engine.EngineTypeGolang, "1.2.4", true)
+
+	// Verify specified plugins were removed from defaults
+	defaultPlugins, err := plugin.ListDefaultPlugins()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check that the removed plugins are no longer in defaults
+	require.NotContains(t, defaultPlugins, "swaggerui", "swaggerui should be removed from defaults")
+	require.NotContains(t, defaultPlugins, "store-redis", "store-redis should be removed from defaults")
+
+	// Check that js-graal remains (the logic should preserve plugins not requested for removal)
+	require.Equal(t, []string{"js-graal"}, defaultPlugins, "js-graal should remain in defaults")
 }

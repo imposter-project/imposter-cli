@@ -42,7 +42,7 @@ func DownloadBinaryWithConfig(
 	fallbackRemoteFileName string,
 ) error {
 	logger.Tracef("attempting to download %s version %s to %s", remoteFileName, version, localPath)
-	tempFileName := fileutil.GenerateTempFilePattern(localPath)
+	tempFileName := fileutil.GenerateTempFilePattern(remoteFileName)
 	tempFile, err := os.CreateTemp(os.TempDir(), tempFileName)
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %v: %v", localPath, err)

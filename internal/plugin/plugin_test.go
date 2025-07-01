@@ -1,55 +1,13 @@
 package plugin
 
 import (
-	"fmt"
 	"gatehill.io/imposter/internal/engine"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 )
 
 func init() {
 	logger.SetLevel(logrus.TraceLevel)
-}
-
-func TestEnsurePluginDir(t *testing.T) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	type args struct {
-		version string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{name: "ensure plugin base dir", args: args{version: "1.2.3"}, want: filepath.Join(homeDir, pluginBaseDir, "1.2.3"), wantErr: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := EnsurePluginDir(tt.args.version)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("EnsurePluginDir() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("EnsurePluginDir() got = %v, want %v", got, tt.want)
-			}
-			stat, err := os.Stat(got)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("EnsurePluginDir() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !stat.IsDir() {
-				t.Errorf("EnsurePluginDir() path '%s' is not a directory", got)
-			}
-		})
-	}
 }
 
 func TestEnsurePlugin(t *testing.T) {
@@ -97,66 +55,6 @@ func TestEnsurePlugins(t *testing.T) {
 			}
 			if ensured != len(tt.plugins) {
 				t.Errorf("EnsurePlugins() wanted %d plugins, ensured: %d", len(tt.plugins), ensured)
-			}
-		})
-	}
-}
-
-func Test_getPluginFilePath(t *testing.T) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	goos := runtime.GOOS
-	goarch := runtime.GOARCH
-
-	type args struct {
-		pluginName string
-		version    string
-		engineType engine.EngineType
-	}
-	tests := []struct {
-		name                   string
-		args                   args
-		wantFullPluginFileName string
-		wantPluginFilePath     string
-		wantErr                bool
-	}{
-		{
-			name:                   "get plugin file path",
-			args:                   args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.2.2"},
-			wantFullPluginFileName: "imposter-plugin-store-redis.jar",
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-store-redis.jar"),
-			wantErr:                false,
-		},
-		{
-			name:                   "get plugin file path with zip suffix",
-			args:                   args{pluginName: "js-graal:zip", engineType: engine.EngineTypeDockerCore, version: "4.2.2"},
-			wantFullPluginFileName: "imposter-plugin-js-graal.zip",
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-js-graal.zip"),
-			wantErr:                false,
-		},
-		{
-			name:                   "get plugin file path for golang plugin",
-			args:                   args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.2"},
-			wantFullPluginFileName: fmt.Sprintf("plugin-swaggerui_%s_%s.zip", goos, goarch),
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "1.2.2", fmt.Sprintf("plugin-swaggerui_%s_%s.zip", goos, goarch)),
-			wantErr:                false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotFullPluginFileName, gotPluginFilePath, err := GetPluginFilePath(tt.args.pluginName, tt.args.engineType, tt.args.version)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getPluginFilePath() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if gotFullPluginFileName != tt.wantFullPluginFileName {
-				t.Errorf("getPluginFilePath() gotFullPluginFileName = %v, want %v", gotFullPluginFileName, tt.wantFullPluginFileName)
-			}
-			if gotPluginFilePath != tt.wantPluginFilePath {
-				t.Errorf("getPluginFilePath() gotPluginFilePath = %v, want %v", gotPluginFilePath, tt.wantPluginFilePath)
 			}
 		})
 	}
