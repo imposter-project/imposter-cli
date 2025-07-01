@@ -106,6 +106,7 @@ Available Commands:
   list              List running mocks
   plugin install    Install plugin
   plugin list       List installed plugins
+  plugin uninstall  Uninstall plugins
   proxy             Proxy an endpoint and record HTTP exchanges
   version           Print CLI version
   remote config     Configure remote
@@ -367,6 +368,43 @@ Aliases:
 Flags:
   -v, --version string   Only show plugins for a specific engine version (default show all versions)
   -h, --help             help for list
+```
+
+### Uninstall plugins
+
+Example:
+
+    imposter plugin uninstall store-redis
+
+Usage:
+
+```
+Uninstalls plugins for a specific engine version.
+
+If version is not specified, it defaults to 'latest'.
+
+Example 1: Uninstall named plugin
+
+        imposter plugin uninstall store-redis
+
+Example 2: Uninstall multiple plugins
+
+        imposter plugin uninstall store-redis js-graal
+
+Example 3: Uninstall plugin and remove from defaults
+
+        imposter plugin uninstall store-redis --remove-default
+
+Usage:
+  imposter plugin uninstall [PLUGIN_NAME_1] [PLUGIN_NAME_N...] [flags]
+
+Aliases:
+  uninstall, rm, remove
+
+Flags:
+  -h, --help             help for uninstall
+  -d, --remove-default   Whether to remove the plugin from defaults
+  -v, --version string   Imposter engine version (default "latest")
 ```
 
 ### Help

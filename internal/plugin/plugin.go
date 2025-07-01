@@ -71,7 +71,7 @@ func EnsureConfiguredPlugins(engineType engine.EngineType, version string) (int,
 }
 
 func EnsurePlugin(pluginName string, engineType engine.EngineType, version string) error {
-	_, pluginFilePath, err := getPluginFilePath(pluginName, engineType, version)
+	_, pluginFilePath, err := GetPluginFilePath(pluginName, engineType, version)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func getBasePluginDir() (string, error) {
 }
 
 func downloadPlugin(engineType engine.EngineType, pluginName string, version string) error {
-	fullPluginFileName, pluginFilePath, err := getPluginFilePath(pluginName, engineType, version)
+	fullPluginFileName, pluginFilePath, err := GetPluginFilePath(pluginName, engineType, version)
 	if err != nil {
 		return err
 	}
@@ -138,9 +138,9 @@ func downloadPlugin(engineType engine.EngineType, pluginName string, version str
 	return nil
 }
 
-// getPluginFilePath returns the full plugin file name and the
+// GetPluginFilePath returns the full plugin file name and the
 // plugin file path for the specified plugin name, engine type, and version.
-func getPluginFilePath(
+func GetPluginFilePath(
 	pluginName string,
 	engineType engine.EngineType,
 	version string,
@@ -217,4 +217,79 @@ func parseConfigFile() (*viper.Viper, error) {
 	// sink if does not exist
 	_ = v.ReadInConfig()
 	return v, nil
+}
+
+// UninstallPlugins removes the specified plugins from disk and optionally
+// from the default plugins configuration.
+func UninstallPlugins(plugins []string, engineType engine.EngineType, version string, removeDefault bool) (int, error) {
+	logger.Tracef("uninstalling %d plugins: %v", len(plugins), plugins)
+	if len(plugins) == 0 {
+		return 0, nil
+	}
+
+	var removed int
+	for _, plugin := range plugins {
+		err := UninstallPlugin(plugin, engineType, version)
+		if err != nil {
+			return removed, fmt.Errorf("error uninstalling plugin %s: %s", plugin, err)
+		}
+		logger.Debugf("plugin %s version %s is uninstalled", plugin, version)
+		removed++
+	}
+
+	if removeDefault {
+		err := removeDefaultPlugins(plugins)
+		if err != nil {
+			logger.Warnf("error removing plugins from default list: %s", err)
+		}
+	}
+
+	return removed, nil
+}
+
+// UninstallPlugin removes a single plugin from disk.
+func UninstallPlugin(pluginName string, engineType engine.EngineType, version string) error {
+	_, pluginFilePath, err := GetPluginFilePath(pluginName, engineType, version)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(pluginFilePath); err != nil {
+		if os.IsNotExist(err) {
+			logger.Debugf("plugin %s version %s is not installed at: %s", pluginName, version, pluginFilePath)
+			return fmt.Errorf("plugin %s version %s is not installed", pluginName, version)
+		}
+		return fmt.Errorf("unable to stat plugin file: %s: %s", pluginFilePath, err)
+	}
+
+	err = os.Remove(pluginFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to remove plugin file %s: %s", pluginFilePath, err)
+	}
+
+	logger.Infof("removed plugin %s version %s from: %s", pluginName, version, pluginFilePath)
+	return nil
+}
+
+// removeDefaultPlugins removes the specified plugins from the default
+// plugins configuration and writes the updated configuration file.
+func removeDefaultPlugins(plugins []string) error {
+	existing, err := ListDefaultPlugins()
+	if err != nil {
+		return fmt.Errorf("failed to load default plugins: %s", err)
+	}
+
+	var updated []string
+	for _, plugin := range existing {
+		if !stringutil.Contains(plugins, plugin) {
+			updated = append(updated, plugin)
+		}
+	}
+
+	if len(existing) == len(updated) {
+		// none removed
+		return nil
+	}
+
+	return writeDefaultPlugins(updated)
 }
