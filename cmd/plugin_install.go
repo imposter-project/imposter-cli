@@ -46,7 +46,7 @@ Example 2: Install all plugins in config file
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		engineType := engine.GetConfiguredType(pluginFlags.engineType)
-		version := engine.GetConfiguredVersion(pluginInstallFlags.engineVersion, true)
+		version := engine.GetConfiguredVersion(engineType, pluginInstallFlags.engineVersion, true)
 		installPlugins(args, engineType, version, pluginInstallFlags.saveDefault)
 	},
 }

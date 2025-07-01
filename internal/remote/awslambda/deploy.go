@@ -33,7 +33,7 @@ func (m LambdaRemote) Deploy() error {
 		logger.Fatal(err)
 	}
 
-	engineVersion := engine.GetConfiguredVersion(m.Config[configKeyEngineVersion], true)
+	engineVersion := engine.GetConfiguredVersion(engine.EngineTypeAwsLambda, m.Config[configKeyEngineVersion], true)
 	zipContents, err := awslambda.CreateDeploymentPackage(engineVersion, m.Dir)
 	if err != nil {
 		logger.Fatal(err)

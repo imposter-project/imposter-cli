@@ -121,18 +121,18 @@ func GetConfiguredTypeWithDefault(override string, defaultType EngineType) Engin
 	))
 }
 
-func GetConfiguredVersion(override string, allowCached bool) string {
-	return GetConfiguredVersionOrResolve(override, allowCached, true)
+func GetConfiguredVersion(engineType EngineType, override string, allowCached bool) string {
+	return GetConfiguredVersionOrResolve(engineType, override, allowCached, true)
 }
 
-func GetConfiguredVersionOrResolve(override string, allowCached bool, resolveIfLatest bool) string {
+func GetConfiguredVersionOrResolve(engineType EngineType, override string, allowCached bool, resolveIfLatest bool) string {
 	version := stringutil.GetFirstNonEmpty(
 		override,
 		viper.GetString("version"),
 		"latest",
 	)
 	if version == "latest" && resolveIfLatest {
-		latest, err := ResolveLatestToVersion(allowCached)
+		latest, err := ResolveLatestToVersion(engineType, allowCached)
 		if err != nil {
 			panic(err)
 		}

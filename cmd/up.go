@@ -87,7 +87,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 		var version string
 		if !lib.IsSealedDistro() {
 			// only resolve version if not a sealed distro, to avoid prefs write
-			version = engine.GetConfiguredVersion(upFlags.engineVersion, pullPolicy != engine.PullAlways)
+			version = engine.GetConfiguredVersion(engineType, upFlags.engineVersion, pullPolicy != engine.PullAlways)
 
 			// only ensure (and potentially fetch) default plugins if not a sealed distro
 			if upFlags.ensurePlugins && lib.ShouldEnsurePlugins() {

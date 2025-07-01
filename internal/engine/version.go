@@ -11,21 +11,21 @@ import (
 	"time"
 )
 
-const latestReleaseApi = "https://api.github.com/repos/imposter-project/imposter-jvm-engine/releases/latest"
+const latestReleaseApi = "https://api.github.com/repos/imposter-project/%s/releases/latest"
 const checkThresholdSeconds = 86_400
 
-func ResolveLatestToVersion(allowCached bool) (string, error) {
+func ResolveLatestToVersion(engineType EngineType, allowCached bool) (string, error) {
 	logger.Tracef("resolving latest version (cache allowed: %v)", allowCached)
 
 	now := time.Now().Unix()
 	var latest string
 
 	if allowCached {
-		latest = loadCached(now)
+		latest = loadCached(engineType, now)
 	}
 
 	if latest == "" {
-		lookup, err := lookupLatest(now, allowCached)
+		lookup, err := lookupLatest(engineType, now, allowCached)
 		if err != nil {
 			return "", err
 		}
@@ -53,28 +53,29 @@ func GetHighestVersion(engines []EngineMetadata) string {
 	return ""
 }
 
-func loadCached(now int64) string {
+func loadCached(engineType EngineType, now int64) string {
 	var latest string
 
 	p := getVersionPrefs()
-	lastCheck, _ := p.ReadPropertyInt("last_version_check")
+	lastCheck, _ := p.ReadPropertyInt(string(engineType) + ".last_version_check")
 	if now-int64(lastCheck) < checkThresholdSeconds {
-		latest, _ = p.ReadPropertyString("latest")
+		latest, _ = p.ReadPropertyString(string(engineType) + ".latest")
 	}
 
 	logger.Tracef("latest version cached value: %s", latest)
 	return latest
 }
 
-func lookupLatest(now int64, allowFallbackToCached bool) (string, error) {
-	latest, err := fetchLatestFromApi()
+func lookupLatest(engineType EngineType, now int64, allowFallbackToCached bool) (string, error) {
+	apiUrl := fmt.Sprintf(latestReleaseApi, getRepoNameForEngineType(engineType))
+	latest, err := fetchLatestFromApi(apiUrl)
 	if err != nil {
 		if !allowFallbackToCached {
 			return "", fmt.Errorf("failed to fetch latest version from API: %s", err)
 		}
 
 		logger.Warnf("failed to fetch latest version from API (%s) - checking cache", err)
-		latest = loadCached(now)
+		latest = loadCached(engineType, now)
 		if latest == "" {
 			return "", fmt.Errorf("failed to resolve latest version (%s) and no cached version found", err)
 		} else {
@@ -84,11 +85,11 @@ func lookupLatest(now int64, allowFallbackToCached bool) (string, error) {
 	}
 
 	p := getVersionPrefs()
-	err = p.WriteProperty("latest", latest)
+	err = p.WriteProperty(string(engineType)+".latest", latest)
 	if err != nil {
 		logger.Warnf("failed to record latest version: %s", err)
 	}
-	err = p.WriteProperty("last_version_check", now)
+	err = p.WriteProperty(string(engineType)+".last_version_check", now)
 	if err != nil {
 		logger.Warnf("failed to record last version check time: %s", err)
 	}
@@ -99,23 +100,23 @@ func getVersionPrefs() prefs.Prefs {
 	return prefs.Load("prefs.json")
 }
 
-func fetchLatestFromApi() (string, error) {
-	logger.Tracef("fetching latest version from: %s", latestReleaseApi)
-	resp, err := http.Get(latestReleaseApi)
+func fetchLatestFromApi(apiUrl string) (string, error) {
+	logger.Tracef("fetching latest version from: %s", apiUrl)
+	resp, err := http.Get(apiUrl)
 	if err != nil {
-		return "", fmt.Errorf("failed to determine latest version from %s: %s", latestReleaseApi, err)
+		return "", fmt.Errorf("failed to determine latest version from %s: %s", apiUrl, err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return "", fmt.Errorf("failed to determine latest version from %s - status code: %d", latestReleaseApi, resp.StatusCode)
+		return "", fmt.Errorf("failed to determine latest version from %s - status code: %d", apiUrl, resp.StatusCode)
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to determine latest version from %s - cannot read response body: %s", latestReleaseApi, err)
+		return "", fmt.Errorf("failed to determine latest version from %s - cannot read response body: %s", apiUrl, err)
 	}
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		return "", fmt.Errorf("failed to determine latest version from %s - cannot unmarshall response body: %s", latestReleaseApi, err)
+		return "", fmt.Errorf("failed to determine latest version from %s - cannot unmarshall response body: %s", apiUrl, err)
 	}
 	tagName := data["tag_name"].(string)
 	return strings.TrimPrefix(tagName, "v"), nil

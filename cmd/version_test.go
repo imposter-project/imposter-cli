@@ -87,7 +87,7 @@ func Test_describeVersions(t *testing.T) {
 
 			var expectedVersion string
 			if tt.args.version == "latest" {
-				latestVersion, err := engine.ResolveLatestToVersion(true)
+				latestVersion, err := engine.ResolveLatestToVersion(tt.args.engineType, true)
 				if err != nil {
 					t.Fatal(err)
 				}

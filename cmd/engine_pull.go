@@ -41,8 +41,8 @@ If version is not specified, it defaults to 'latest'.`,
 		} else {
 			pullPolicy = engine.PullIfNotPresent
 		}
-		version := engine.GetConfiguredVersion(enginePullFlags.engineVersion, pullPolicy != engine.PullAlways)
 		engineType := engine.GetConfiguredType(enginePullFlags.engineType)
+		version := engine.GetConfiguredVersion(engineType, enginePullFlags.engineVersion, pullPolicy != engine.PullAlways)
 		pull(version, engineType, pullPolicy)
 	},
 }

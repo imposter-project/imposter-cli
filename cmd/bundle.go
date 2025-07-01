@@ -65,7 +65,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 			logger.Fatal("cannot bundle a sealed distribution")
 		}
 
-		version := engine.GetConfiguredVersion(bundleFlags.engineVersion, true)
+		version := engine.GetConfiguredVersion(engineType, bundleFlags.engineVersion, true)
 
 		bundle(&lib, version, configDir, getBundleDest(engineType))
 	},

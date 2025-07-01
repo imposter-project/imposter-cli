@@ -75,7 +75,7 @@ func describeVersions(engineType engine.EngineType, full bool, format outputForm
 		if len(engines) == 0 {
 			props["imposter-engine"] = "none"
 		} else {
-			engineConfigVersion := engine.GetConfiguredVersionOrResolve("", true, false)
+			engineConfigVersion := engine.GetConfiguredVersionOrResolve(engineType, "", true, false)
 			if engineConfigVersion == "latest" {
 				engineConfigVersion = engine.GetHighestVersion(engines)
 			}

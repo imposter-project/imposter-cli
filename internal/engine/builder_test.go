@@ -10,6 +10,7 @@ func TestGetConfiguredVersion(t *testing.T) {
 	type args struct {
 		override    string
 		allowCached bool
+		engineType  EngineType
 	}
 	tests := []struct {
 		name             string
@@ -17,8 +18,8 @@ func TestGetConfiguredVersion(t *testing.T) {
 		configureVersion string
 		want             string
 	}{
-		{name: "return overridden version", args: args{override: "2.0.0", allowCached: false}, want: "2.0.0"},
-		{name: "return configured version", args: args{override: "", allowCached: false}, configureVersion: "1.2.3", want: "1.2.3"},
+		{name: "return overridden version", args: args{engineType: EngineTypeDockerCore, override: "2.0.0", allowCached: false}, want: "2.0.0"},
+		{name: "return configured version", args: args{engineType: EngineTypeDockerCore, override: "", allowCached: false}, configureVersion: "1.2.3", want: "1.2.3"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -28,7 +29,7 @@ func TestGetConfiguredVersion(t *testing.T) {
 			t.Cleanup(func() {
 				viper.Set("version", nil)
 			})
-			if got := GetConfiguredVersion(tt.args.override, tt.args.allowCached); got != tt.want {
+			if got := GetConfiguredVersion(tt.args.engineType, tt.args.override, tt.args.allowCached); got != tt.want {
 				t.Errorf("GetConfiguredVersion() = %v, want %v", got, tt.want)
 			}
 		})
