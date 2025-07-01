@@ -1,9 +1,11 @@
 package plugin
 
 import (
+	"fmt"
 	"gatehill.io/imposter/internal/config"
 	"gatehill.io/imposter/internal/engine"
 	"os"
+	"runtime"
 	"testing"
 )
 
@@ -26,7 +28,7 @@ func TestGetPluginRemoteFileName(t *testing.T) {
 			name:       "golang plugin remote filename",
 			engineType: engine.EngineTypeGolang,
 			pluginName: "swaggerui",
-			want:       "plugin-swaggerui_darwin_arm64.zip",
+			want:       fmt.Sprintf("plugin-swaggerui_%s_%s.zip", runtime.GOOS, runtime.GOARCH),
 			wantErr:    false,
 		},
 		{
