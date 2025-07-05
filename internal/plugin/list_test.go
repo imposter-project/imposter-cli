@@ -5,6 +5,7 @@ import (
 	"gatehill.io/imposter/internal/engine"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -62,10 +63,15 @@ func TestList(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name:          "golang plugin",
-			engineType:    engine.EngineTypeGolang,
-			version:       version,
-			setupFiles:    []string{"plugin-swaggerui"},
+			name:       "golang plugin",
+			engineType: engine.EngineTypeGolang,
+			version:    version,
+			setupFiles: func() []string {
+				if runtime.GOOS == "windows" {
+					return []string{"plugin-swaggerui.exe"}
+				}
+				return []string{"plugin-swaggerui"}
+			}(),
 			expectedCount: 1,
 			expectError:   false,
 		},

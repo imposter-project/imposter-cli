@@ -53,11 +53,23 @@ func isValidPluginFile(candidateFilePath string, engineType engine.EngineType) (
 	pluginConfig := determinePluginConfig(engineType)
 
 	for _, ext := range pluginConfig.extensions {
-		fileBasePattern := pluginConfig.localFileTemplate
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .PluginName }}", "([a-zA-Z0-9_-]+)")
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .Ext }}", regexp.QuoteMeta(ext))
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .OS }}", runtime.GOOS)
-		fileBasePattern = strings.ReplaceAll(fileBasePattern, "{{ .Arch }}", runtime.GOARCH)
+		tmpl, err := template.New("pluginPattern").Parse(pluginConfig.localFileTemplate)
+		if err != nil {
+			continue
+		}
+		tmplData := pluginFileTemplate{
+			PluginName: "PLUGINNAME_PLACEHOLDER",
+			Ext:        ext,
+			OS:         runtime.GOOS,
+			Arch:       runtime.GOARCH,
+		}
+		var patternBuilder strings.Builder
+		if err = tmpl.Execute(&patternBuilder, tmplData); err != nil {
+			continue
+		}
+
+		fileBasePattern := regexp.QuoteMeta(patternBuilder.String())
+		fileBasePattern = strings.ReplaceAll(fileBasePattern, "PLUGINNAME_PLACEHOLDER", "([a-zA-Z0-9_-]+)")
 		fileBasePattern = "^" + fileBasePattern + "$"
 
 		matched, err := regexp.Compile(fileBasePattern)

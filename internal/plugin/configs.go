@@ -26,9 +26,10 @@ var pluginConfigs = map[string]pluginConfiguration{
 			"https://github.com/imposter-project/imposter-go-plugins/releases/download/v%v",
 			true,
 		),
-		extensions:         []string{".zip"},
-		localFileTemplate:  "plugin-{{ .PluginName }}",
-		remoteFileTemplate: "plugin-{{ .PluginName }}_{{ .OS }}_{{ .Arch }}{{ .Ext }}",
+		extensions: []string{".zip"},
+		// note we use .exe not .Ext because the template represents the binary inside the archive
+		localFileTemplate:  `plugin-{{ .PluginName }}{{if eq .OS "windows"}}.exe{{end}}`,
+		remoteFileTemplate: `plugin-{{ .PluginName }}_{{ .OS }}_{{ .Arch }}{{ .Ext }}`,
 	},
 	"*": {
 		downloadConfig: library2.NewDownloadConfig(
@@ -37,8 +38,8 @@ var pluginConfigs = map[string]pluginConfiguration{
 			false,
 		),
 		extensions:         []string{".jar", ".zip"},
-		localFileTemplate:  "imposter-plugin-{{ .PluginName }}{{ .Ext }}",
-		remoteFileTemplate: "imposter-plugin-{{ .PluginName }}{{ .Ext }}",
+		localFileTemplate:  `imposter-plugin-{{ .PluginName }}{{ .Ext }}`,
+		remoteFileTemplate: `imposter-plugin-{{ .PluginName }}{{ .Ext }}`,
 	},
 }
 

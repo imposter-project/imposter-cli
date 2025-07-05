@@ -135,11 +135,22 @@ func Test_GetPluginLocalPath(t *testing.T) {
 			wantErr:                false,
 		},
 		{
-			name:                   "get plugin local path for golang plugin",
-			args:                   args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.2"},
-			wantFullPluginFileName: "plugin-swaggerui",
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "1.2.2", "plugin-swaggerui"),
-			wantErr:                false,
+			name: "get plugin local path for golang plugin",
+			args: args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.2"},
+			wantFullPluginFileName: func() string {
+				if runtime.GOOS == "windows" {
+					return "plugin-swaggerui.exe"
+				}
+				return "plugin-swaggerui"
+			}(),
+			wantPluginFilePath: func() string {
+				fileName := "plugin-swaggerui"
+				if runtime.GOOS == "windows" {
+					fileName = "plugin-swaggerui.exe"
+				}
+				return filepath.Join(homeDir, pluginBaseDir, "1.2.2", fileName)
+			}(),
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -173,8 +184,13 @@ func Test_getPluginFileName(t *testing.T) {
 			engineType: engine.EngineTypeGolang,
 			pluginName: "swaggerui",
 			remote:     false,
-			want:       "plugin-swaggerui",
-			wantErr:    false,
+			want: func() string {
+				if runtime.GOOS == "windows" {
+					return "plugin-swaggerui.exe"
+				}
+				return "plugin-swaggerui"
+			}(),
+			wantErr: false,
 		},
 		{
 			name:       "golang plugin remote name",
@@ -245,6 +261,25 @@ func Test_isValidPluginFile(t *testing.T) {
 			engineType:     engine.EngineTypeDockerCore,
 			wantValid:      false,
 			wantPluginName: "",
+		},
+		{
+			name: "valid golang plugin file",
+			candidateFile: func() string {
+				if runtime.GOOS == "windows" {
+					return "plugin-swaggerui.exe"
+				}
+				return "plugin-swaggerui"
+			}(),
+			engineType:     engine.EngineTypeGolang,
+			wantValid:      true,
+			wantPluginName: "swaggerui",
+		},
+		{
+			name:           "valid jvm plugin file",
+			candidateFile:  "imposter-plugin-store-redis.jar",
+			engineType:     engine.EngineTypeDockerCore,
+			wantValid:      true,
+			wantPluginName: "store-redis",
 		},
 	}
 
