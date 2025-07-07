@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/olekukonko/tablewriter v1.0.8
 	github.com/radovskyb/watcher v1.0.7
-	github.com/shirou/gopsutil/v4 v4.25.5
+	github.com/shirou/gopsutil/v4 v4.25.6
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
