@@ -71,9 +71,7 @@ func listWorkspaces(dir string) {
 
 func renderWorkspaces(rows [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Workspace", "Status"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
-	table.AppendBulk(rows)
+	table.Header([]string{"Workspace", "Status"})
+	table.Bulk(rows)
 	table.Render()
 }
