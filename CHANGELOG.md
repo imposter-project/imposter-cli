@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.2] - 2025-07-07
+### Changed
+- chore(deps): bump github.com/olekukonko/tablewriter from 0.0.5 to 1.0.8
+- chore(deps): bump github.com/shirou/gopsutil/v4 from 4.25.5 to 4.25.6
+- chore(deps): bump sigs.k8s.io/yaml from 1.4.0 to 1.5.0
+- refactor: make table renderer compatible with latest dep version.
+
+### Fixed
+- fix: windows golang plugin file template should include extension.
+
 ## [1.3.1] - 2025-07-01
 ### Changed
 - test: fix platform dependent test case.
