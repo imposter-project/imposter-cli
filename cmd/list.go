@@ -89,9 +89,7 @@ func listMocks(engineType engine.EngineType, quiet bool) {
 
 func renderMocks(rows [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Name", "Port", "Health"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
-	table.AppendBulk(rows)
+	table.Header([]string{"ID", "Name", "Port", "Health"})
+	table.Bulk(rows)
 	table.Render()
 }

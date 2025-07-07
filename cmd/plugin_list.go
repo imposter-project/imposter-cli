@@ -74,10 +74,8 @@ func listPlugins(engineType engine.EngineType, versions []string) {
 
 func renderPlugins(rows [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Type", "Version"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
-	table.AppendBulk(rows)
+	table.Header([]string{"Type", "Version"})
+	table.Bulk(rows)
 	table.Render()
 }
 
