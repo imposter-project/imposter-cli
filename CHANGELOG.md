@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.3] - 2025-08-22
+### Changed
+- chore(deps): bump actions/checkout from 4 to 5
+- chore(deps): bump actions/setup-java from 4 to 5
+- chore(deps): bump github.com/docker/docker
+- chore(deps): bump github.com/olekukonko/tablewriter from 1.0.8 to 1.0.9
+- chore(deps): bump sigs.k8s.io/yaml from 1.5.0 to 1.6.0
+- refactor(golang): support automatic plugin install.
+
 ## [1.3.2] - 2025-07-07
 ### Changed
 - chore(deps): bump github.com/olekukonko/tablewriter from 0.0.5 to 1.0.8
