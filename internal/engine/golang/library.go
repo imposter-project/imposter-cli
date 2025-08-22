@@ -60,7 +60,7 @@ func (l *Library) IsSealedDistro() bool {
 }
 
 func (l *Library) ShouldEnsurePlugins() bool {
-	return false
+	return true
 }
 
 func (l *Library) ensureBinCache() (string, error) {
