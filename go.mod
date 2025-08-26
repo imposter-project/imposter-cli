@@ -4,7 +4,7 @@ go 1.23.8
 
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/aws/aws-sdk-go v1.55.7
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/coreos/go-semver v0.3.1
 	github.com/docker/docker v28.3.3+incompatible
 	github.com/docker/go-connections v0.5.0
