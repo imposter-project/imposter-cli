@@ -18,6 +18,7 @@ package proxy
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/stringutil"
@@ -66,21 +67,23 @@ var skipRecordHeaders = []string{
 
 var logger = logging.GetLogger()
 
-var transport *http.Transport
-
-func init() {
-	transport = &http.Transport{
+func createTransport(insecure bool) *http.Transport {
+	transport := &http.Transport{
 		DisableCompression: true,
 		MaxIdleConns:       viper.GetInt("proxy.maxIdleConns"),
 		IdleConnTimeout:    viper.GetDuration("proxy.idleConnTimeout"),
 	}
-	logger.Tracef("initialised proxy transport: %+v", transport)
+	if insecure {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	return transport
 }
 
 func Handle(
 	upstream string,
 	w http.ResponseWriter,
 	req *http.Request,
+	insecure bool,
 	listener func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header),
 ) {
 	startTime := time.Now()
@@ -95,7 +98,7 @@ func Handle(
 		return
 	}
 
-	statusCode, responseBody, respHeaders, err := forward(upstream, req.Method, path, queryString, clientReqHeaders, requestBody)
+	statusCode, responseBody, respHeaders, err := forward(upstream, req.Method, path, queryString, clientReqHeaders, requestBody, insecure)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadGateway)
@@ -131,6 +134,7 @@ func forward(
 	queryString string,
 	clientRequestHeaders *http.Header,
 	requestBody *[]byte,
+	insecure bool,
 ) (statusCode int, responseBody *[]byte, upstreamRespHeaders *http.Header, err error) {
 	logger.Debugf("invoking upstream %s with %s %s [body: %v bytes]", upstream, httpMethod, path, len(*requestBody))
 
@@ -147,7 +151,7 @@ func forward(
 	upstreamReqHeaders := req.Header
 	copyHeaders(clientRequestHeaders, &upstreamReqHeaders)
 
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: createTransport(insecure)}
 	resp, err := client.Do(req)
 	if err != nil {
 		return 0, nil, nil, err
