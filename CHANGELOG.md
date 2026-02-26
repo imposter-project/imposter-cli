@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.5] - 2026-02-26
+### Changed
+- chore(deps): bump actions/checkout from 5 to 6
+- chore(deps): bump actions/setup-go from 5 to 6
+- chore(deps): bump github.com/aws/aws-sdk-go from 1.55.7 to 1.55.8
+- chore(deps): bump github.com/docker/docker
+- chore(deps): bump github.com/docker/go-connections from 0.5.0 to 0.6.0
+
 ## [1.3.4] - 2026-02-26
 ### Changed
 - refactor: align mocks cloud naming
