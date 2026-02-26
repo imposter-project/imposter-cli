@@ -1,23 +1,24 @@
-package cloudmocks
+package mockscloud
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
+
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/prefs"
 	remote2 "gatehill.io/imposter/internal/remote"
 	"gatehill.io/imposter/internal/workspace"
-	"net/url"
-	"strings"
 )
 
-const remoteType = "cloudmocks"
+const remoteType = "mockscloud"
 const defaultUrl = "https://api.mocks.cloud"
 
 const configKeyMockId = "mockId"
 const configKeyToken = "token"
 const configKeyUrl = "url"
 
-type CloudMocksRemote struct {
+type MocksCloudRemote struct {
 	remote2.RemoteMetadata
 }
 
@@ -35,17 +36,17 @@ func Register() {
 	})
 }
 
-func Load(dir string, w *workspace.Workspace) (CloudMocksRemote, error) {
+func Load(dir string, w *workspace.Workspace) (MocksCloudRemote, error) {
 	c, err := remote2.LoadConfig(dir, w, func() *map[string]string {
 		return &map[string]string{
 			configKeyUrl: defaultUrl,
 		}
 	})
 	if err != nil {
-		return CloudMocksRemote{}, err
+		return MocksCloudRemote{}, err
 	}
 
-	r := CloudMocksRemote{
+	r := MocksCloudRemote{
 		remote2.RemoteMetadata{
 			Workspace: w,
 			Dir:       dir,
@@ -55,15 +56,15 @@ func Load(dir string, w *workspace.Workspace) (CloudMocksRemote, error) {
 	return r, nil
 }
 
-func (CloudMocksRemote) GetType() string {
+func (MocksCloudRemote) GetType() string {
 	return remoteType
 }
 
-func (CloudMocksRemote) GetConfigKeys() []string {
+func (MocksCloudRemote) GetConfigKeys() []string {
 	return configKeys
 }
 
-func (m CloudMocksRemote) SetConfigValue(key string, value string) error {
+func (m MocksCloudRemote) SetConfigValue(key string, value string) error {
 	if err := m.CheckConfigKey(m.GetConfigKeys(), key); err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func (m CloudMocksRemote) SetConfigValue(key string, value string) error {
 	return m.SaveConfig()
 }
 
-func (m CloudMocksRemote) GetConfig() (*map[string]string, error) {
+func (m MocksCloudRemote) GetConfig() (*map[string]string, error) {
 	cfg := *remote2.CloneMap(&m.Config)
 	token, err := m.getObfuscatedToken()
 	if err != nil {
@@ -99,11 +100,11 @@ func (m CloudMocksRemote) GetConfig() (*map[string]string, error) {
 	return &cfg, nil
 }
 
-func (m CloudMocksRemote) setToken(token string) error {
+func (m MocksCloudRemote) setToken(token string) error {
 	return getCredsPrefs().WriteProperty(m.Config[configKeyUrl], token)
 }
 
-func (m CloudMocksRemote) getCleartextToken() (string, error) {
+func (m MocksCloudRemote) getCleartextToken() (string, error) {
 	cleartext, err := getCredsPrefs().ReadPropertyString(m.Config[configKeyUrl])
 	if err != nil {
 		return "", err
@@ -111,7 +112,7 @@ func (m CloudMocksRemote) getCleartextToken() (string, error) {
 	return cleartext, nil
 }
 
-func (m CloudMocksRemote) getObfuscatedToken() (string, error) {
+func (m MocksCloudRemote) getObfuscatedToken() (string, error) {
 	cleartext, err := m.getCleartextToken()
 	if err != nil {
 		return "", err
@@ -122,7 +123,7 @@ func (m CloudMocksRemote) getObfuscatedToken() (string, error) {
 	return obfuscated, nil
 }
 
-func (m CloudMocksRemote) GetStatus() (*remote2.Status, error) {
+func (m MocksCloudRemote) GetStatus() (*remote2.Status, error) {
 	s, err := m.getStatus()
 	if err != nil {
 		return nil, err

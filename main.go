@@ -17,12 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"os"
+
 	"gatehill.io/imposter/internal/config"
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/remote/awslambda"
-	"gatehill.io/imposter/internal/remote/cloudmocks"
+	"gatehill.io/imposter/internal/remote/mockscloud"
 	"gatehill.io/imposter/internal/stringutil"
-	"os"
 
 	"gatehill.io/imposter/cmd"
 	awslambdaengine "gatehill.io/imposter/internal/engine/awslambda"
@@ -47,7 +48,7 @@ func main() {
 
 	// remotes
 	awslambda.Register()
-	cloudmocks.Register()
+	mockscloud.Register()
 
 	cmd.Execute()
 }

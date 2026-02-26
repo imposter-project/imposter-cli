@@ -1,4 +1,4 @@
-package cloudmocks
+package mockscloud
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ type getEndpointResponse struct {
 	SpecUrl string `json:"specUrl"`
 }
 
-func (m CloudMocksRemote) Deploy() error {
+func (m MocksCloudRemote) Deploy() error {
 	if m.Config[configKeyUrl] == "" {
 		return fmt.Errorf("URL cannot be null")
 	} else if token, _ := m.getObfuscatedToken(); token == "" {
@@ -58,7 +58,7 @@ func (m CloudMocksRemote) Deploy() error {
 	return nil
 }
 
-func (m CloudMocksRemote) Undeploy() error {
+func (m MocksCloudRemote) Undeploy() error {
 	err := m.setMockState("DRAFT")
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (m CloudMocksRemote) Undeploy() error {
 	return nil
 }
 
-func (m CloudMocksRemote) GetEndpoint() (*remote.EndpointDetails, error) {
+func (m MocksCloudRemote) GetEndpoint() (*remote.EndpointDetails, error) {
 	endpoint, err := m.getEndpoint()
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (m CloudMocksRemote) GetEndpoint() (*remote.EndpointDetails, error) {
 	return details, nil
 }
 
-func (m CloudMocksRemote) ensureMockExists() error {
+func (m MocksCloudRemote) ensureMockExists() error {
 	if m.Config[configKeyMockId] == "" {
 		logger.Debugf("creating new mock")
 
@@ -102,7 +102,7 @@ func (m CloudMocksRemote) ensureMockExists() error {
 	return nil
 }
 
-func (m CloudMocksRemote) setMockState(state string) error {
+func (m MocksCloudRemote) setMockState(state string) error {
 	logger.Debugf("setting mock state to: %s", state)
 	var resp interface{}
 	err := m.request("PATCH", fmt.Sprintf("/api/mocks/%s/state/%s", m.Config[configKeyMockId], state), &resp)
@@ -113,7 +113,7 @@ func (m CloudMocksRemote) setMockState(state string) error {
 	return nil
 }
 
-func (m CloudMocksRemote) getStatus() (*getStatusResponse, error) {
+func (m MocksCloudRemote) getStatus() (*getStatusResponse, error) {
 	var resp getStatusResponse
 	err := m.request("GET", fmt.Sprintf("/api/mocks/%s/status", m.Config[configKeyMockId]), &resp)
 	if err != nil {
@@ -122,7 +122,7 @@ func (m CloudMocksRemote) getStatus() (*getStatusResponse, error) {
 	return &resp, nil
 }
 
-func (m CloudMocksRemote) getEndpoint() (*getEndpointResponse, error) {
+func (m MocksCloudRemote) getEndpoint() (*getEndpointResponse, error) {
 	var resp getEndpointResponse
 	err := m.request("GET", fmt.Sprintf("/api/mocks/%s/endpoint", m.Config[configKeyMockId]), &resp)
 	if err != nil {
@@ -131,7 +131,7 @@ func (m CloudMocksRemote) getEndpoint() (*getEndpointResponse, error) {
 	return &resp, nil
 }
 
-func (m CloudMocksRemote) waitForStatus(s string, shutDownC chan bool) bool {
+func (m MocksCloudRemote) waitForStatus(s string, shutDownC chan bool) bool {
 	logger.Infof("waiting for mock status to be: %s...", s)
 
 	finishedC := make(chan bool)
@@ -173,7 +173,7 @@ func (m CloudMocksRemote) waitForStatus(s string, shutDownC chan bool) bool {
 	}
 }
 
-func (m CloudMocksRemote) request(method string, path string, response interface{}) error {
+func (m MocksCloudRemote) request(method string, path string, response interface{}) error {
 	url := m.Config[configKeyUrl] + path
 	client := http.Client{}
 	req, err := http.NewRequest(method, url, nil)
@@ -207,7 +207,7 @@ func (m CloudMocksRemote) request(method string, path string, response interface
 	return nil
 }
 
-func (m CloudMocksRemote) upload(path string, src string) error {
+func (m MocksCloudRemote) upload(path string, src string) error {
 	file, err := os.Open(src)
 	if err != nil {
 		return err

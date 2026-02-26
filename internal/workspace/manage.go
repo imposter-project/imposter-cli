@@ -127,7 +127,7 @@ func createWorkspace(dir string, name string, m *Metadata) (*Workspace, error) {
 }
 
 func setDefaults(m *Metadata, w *Workspace) {
-	w.RemoteType = "cloudmocks"
+	w.RemoteType = "mockscloud"
 	if len(m.Workspaces) == 0 {
 		m.Active = w.Name
 	}

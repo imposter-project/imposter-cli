@@ -1,4 +1,4 @@
-package cloudmocks
+package mockscloud
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (m CloudMocksRemote) syncFiles(dir string) error {
+func (m MocksCloudRemote) syncFiles(dir string) error {
 	logger.Debugf("synchronising files from: %s", dir)
 
 	r, err := m.listRemote()
@@ -33,7 +33,7 @@ func (m CloudMocksRemote) syncFiles(dir string) error {
 	return nil
 }
 
-func (m CloudMocksRemote) listRemote() ([]string, error) {
+func (m MocksCloudRemote) listRemote() ([]string, error) {
 	var resp []string
 	err := m.request("GET", fmt.Sprintf("/api/mocks/%s/files", m.Config[configKeyMockId]), &resp)
 	if err != nil {
@@ -43,7 +43,7 @@ func (m CloudMocksRemote) listRemote() ([]string, error) {
 }
 
 // calculateDelta determines the remote files that are not present in dir
-func (m CloudMocksRemote) calculateDelta(dir string, remote []string, local []string) []string {
+func (m MocksCloudRemote) calculateDelta(dir string, remote []string, local []string) []string {
 	var delta []string
 	for _, r := range remote {
 		if !arrayContains(local, dir+"/", r) {
@@ -66,7 +66,7 @@ func arrayContains(search []string, trimPrefix string, term string) bool {
 	return found
 }
 
-func (m CloudMocksRemote) uploadFiles(files []string) error {
+func (m MocksCloudRemote) uploadFiles(files []string) error {
 	for _, f := range files {
 		logger.Infof("uploading: %s", f)
 		err := m.upload(fmt.Sprintf("/api/mocks/%s/spec", m.Config[configKeyMockId]), f)
@@ -77,7 +77,7 @@ func (m CloudMocksRemote) uploadFiles(files []string) error {
 	return nil
 }
 
-func (m CloudMocksRemote) deleteRemote(files []string) error {
+func (m MocksCloudRemote) deleteRemote(files []string) error {
 	for _, f := range files {
 		logger.Infof("deleting remote file: %s", f)
 		var resp interface{}
