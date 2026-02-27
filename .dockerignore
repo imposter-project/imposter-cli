@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+*.md
+
+# CI/CD
+.github/
+.goreleaser.yml
+
+# Build artifacts
+imposter
+*.exe
+
+# Development files
+Makefile
+since.yaml
+
+# Installation scripts
+install/
+
+# Test files
+*_test.go
+testdata/
+
+# License
+LICENSE

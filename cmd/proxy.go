@@ -33,6 +33,8 @@ var proxyFlags = struct {
 	ignoreDuplicateRequests   bool
 	recordOnlyResponseHeaders []string
 	flatResponseFileStructure bool
+	soap11Mode                bool
+	insecure                  bool
 }{}
 
 // proxyCmd represents the up command
@@ -59,6 +61,8 @@ var proxyCmd = &cobra.Command{
 			IgnoreDuplicateRequests:   proxyFlags.ignoreDuplicateRequests,
 			RecordOnlyResponseHeaders: proxyFlags.recordOnlyResponseHeaders,
 			FlatResponseFileStructure: proxyFlags.flatResponseFileStructure,
+			Soap11Mode:                proxyFlags.soap11Mode,
+			Insecure:                  proxyFlags.insecure,
 		}
 		proxyUpstream(upstream, proxyFlags.port, outputDir, proxyFlags.rewrite, options)
 	},
@@ -73,6 +77,8 @@ func init() {
 	proxyCmd.Flags().BoolVarP(&proxyFlags.ignoreDuplicateRequests, "ignore-duplicate-requests", "i", true, "Ignore duplicate requests with same method and URI")
 	proxyCmd.Flags().StringSliceVarP(&proxyFlags.recordOnlyResponseHeaders, "response-headers", "H", nil, "Record only these response headers")
 	proxyCmd.Flags().BoolVar(&proxyFlags.flatResponseFileStructure, "flat", false, "Flatten the response file structure")
+	proxyCmd.Flags().BoolVar(&proxyFlags.soap11Mode, "soap1.1", false, "Enable SOAP 1.1 aware mode for capturing requests/responses with SOAPAction")
+	proxyCmd.Flags().BoolVar(&proxyFlags.insecure, "insecure", false, "Skip TLS certificate verification for HTTPS upstream servers")
 	rootCmd.AddCommand(proxyCmd)
 }
 
@@ -88,7 +94,7 @@ func proxyUpstream(upstream string, port int, dir string, rewrite bool, options 
 		_, _ = fmt.Fprintf(writer, "ok\n")
 	})
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		proxy2.Handle(upstream, writer, request, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
+		proxy2.Handle(upstream, writer, request, options.Insecure, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
 			if rewrite {
 				respBody = proxy2.Rewrite(respHeaders, respBody, upstream, port)
 			}

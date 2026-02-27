@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"testing"
 	"time"
 )
@@ -61,6 +62,16 @@ func Test_proxyUpstream(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "proxy SOAP 1.1 service with SOAPAction",
+			args: args{
+				rewrite: false,
+				options: proxy.RecorderOptions{
+					FlatResponseFileStructure: false,
+					Soap11Mode:                true,
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		server, upstream, upstreamPort, err := startUpstream()
@@ -85,14 +96,29 @@ func Test_proxyUpstream(t *testing.T) {
 				t.Fatalf("proxy did not come up on port %d", port)
 			}
 
-			if err := sendRequestToProxy(port); err != nil {
-				t.Fatal(err)
+			// Send appropriate request based on test mode
+			if tt.args.options.Soap11Mode {
+				if err := sendSoapRequestToProxy(port); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				if err := sendRequestToProxy(port); err != nil {
+					t.Fatal(err)
+				}
 			}
 
 			upstreamHostAndPort := fmt.Sprintf("localhost-%d", upstreamPort)
 			cfgFileName := upstreamHostAndPort + "-config.yaml"
 			var indexFileName string
-			if tt.args.options.FlatResponseFileStructure {
+			
+			if tt.args.options.Soap11Mode {
+				// SOAP mode: expect SOAPAction in filename
+				if tt.args.options.FlatResponseFileStructure {
+					indexFileName = upstreamHostAndPort + "-POST-index_http___example_com_service_GetUser.txt"
+				} else {
+					indexFileName = "POST-index_http___example_com_service_GetUser.txt"
+				}
+			} else if tt.args.options.FlatResponseFileStructure {
 				indexFileName = upstreamHostAndPort + "-GET-index.txt"
 			} else {
 				indexFileName = "GET-index.txt"
@@ -152,6 +178,44 @@ func sendRequestToProxy(port int) error {
 	_ = resp.Body.Close()
 	if resp.StatusCode == 200 {
 		logger.Tracef("proxy up at %s", url)
+		return nil
+	}
+	return nil
+}
+
+func sendSoapRequestToProxy(port int) error {
+	client := http.Client{
+		Timeout: 2 * time.Second,
+	}
+	url := fmt.Sprintf("http://localhost:%d", port)
+	
+	soapBody := `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetUser xmlns="http://example.com/service">
+      <userId>123</userId>
+    </GetUser>
+  </soap:Body>
+</soap:Envelope>`
+	
+	req, err := http.NewRequest("POST", url, strings.NewReader(soapBody))
+	if err != nil {
+		return fmt.Errorf("failed to create SOAP request: %s", err)
+	}
+	
+	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
+	req.Header.Set("SOAPAction", "http://example.com/service/GetUser")
+	
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("SOAP request failed for proxy at %s: %s", url, err)
+	}
+	if _, err := io.ReadAll(resp.Body); err != nil {
+		return fmt.Errorf("body read failed for proxy at %s: %s", url, err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode == 200 {
+		logger.Tracef("SOAP proxy up at %s", url)
 		return nil
 	}
 	return nil
