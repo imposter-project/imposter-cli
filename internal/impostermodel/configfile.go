@@ -20,6 +20,7 @@ import (
 	"gatehill.io/imposter/internal/fileutil"
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/openapi"
+	"gatehill.io/imposter/internal/wsdl"
 	"os"
 	"path"
 	"path/filepath"
@@ -31,28 +32,46 @@ type ConfigGenerationOptions struct {
 	ScriptEngine   ScriptEngine
 	ScriptFileName string
 	SpecFilePath   string
+	WSDLFilePath   string
 }
 
 var logger = logging.GetLogger()
 
 func Create(configDir string, generateResources bool, forceOverwrite bool, scriptEngine ScriptEngine, requireOpenApi bool) {
 	openApiSpecs := openapi.DiscoverOpenApiSpecs(configDir)
-	logger.Infof("found %d OpenAPI spec(s)", len(openApiSpecs))
+	wsdlFiles := wsdl.DiscoverWSDLFiles(configDir)
+	logger.Infof("found %d OpenAPI spec(s) and %d WSDL file(s)", len(openApiSpecs), len(wsdlFiles))
+
+	specsFound := false
 
 	if len(openApiSpecs) > 0 {
+		specsFound = true
 		logger.Tracef("using openapi plugin")
 		for _, openApiSpec := range openApiSpecs {
 			scriptFileName := getScriptFileName(openApiSpec, scriptEngine, forceOverwrite)
 			writeOpenapiMockConfig(openApiSpec, generateResources, forceOverwrite, scriptEngine, scriptFileName)
 		}
-	} else if !requireOpenApi {
-		logger.Infof("falling back to rest plugin")
-		syntheticMockPath := path.Join(configDir, "mock.txt")
-		_, responseFilePath := generateRestMockFiles(configDir)
-		scriptFileName := getScriptFileName(syntheticMockPath, scriptEngine, forceOverwrite)
-		writeRestMockConfig(syntheticMockPath, responseFilePath, generateResources, forceOverwrite, scriptEngine, scriptFileName)
-	} else {
-		logger.Fatalf("no OpenAPI specs found in: %s", configDir)
+	}
+
+	if len(wsdlFiles) > 0 {
+		specsFound = true
+		logger.Tracef("using soap plugin")
+		for _, wsdlFile := range wsdlFiles {
+			scriptFileName := getScriptFileName(wsdlFile, scriptEngine, forceOverwrite)
+			writeWsdlMockConfig(wsdlFile, generateResources, forceOverwrite, scriptEngine, scriptFileName)
+		}
+	}
+
+	if !specsFound {
+		if !requireOpenApi {
+			logger.Infof("falling back to rest plugin")
+			syntheticMockPath := path.Join(configDir, "mock.txt")
+			_, responseFilePath := generateRestMockFiles(configDir)
+			scriptFileName := getScriptFileName(syntheticMockPath, scriptEngine, forceOverwrite)
+			writeRestMockConfig(syntheticMockPath, responseFilePath, generateResources, forceOverwrite, scriptEngine, scriptFileName)
+		} else {
+			logger.Fatalf("no OpenAPI or WSDL specs found in: %s", configDir)
+		}
 	}
 }
 
@@ -62,6 +81,9 @@ func GenerateConfig(options ConfigGenerationOptions, resources []Resource) []byt
 	}
 	if options.SpecFilePath != "" {
 		pluginConfig.SpecFile = filepath.Base(options.SpecFilePath)
+	}
+	if options.WSDLFilePath != "" {
+		pluginConfig.WSDLFile = filepath.Base(options.WSDLFilePath)
 	}
 	if len(resources) > 0 {
 		pluginConfig.Resources = resources

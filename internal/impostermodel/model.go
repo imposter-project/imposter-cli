@@ -31,8 +31,9 @@ type RequestBody struct {
 }
 
 type Resource struct {
-	Path           string             `json:"path"`
+	Path           string             `json:"path,omitempty"`
 	Method         string             `json:"method"`
+	Operation      string             `json:"operation,omitempty"`
 	QueryParams    *map[string]string `json:"queryParams,omitempty"`
 	RequestBody    *RequestBody       `json:"requestBody,omitempty"`
 	RequestHeaders *map[string]string `json:"requestHeaders,omitempty"`
@@ -42,6 +43,7 @@ type Resource struct {
 type PluginConfig struct {
 	Plugin    string          `json:"plugin"`
 	SpecFile  string          `json:"specFile,omitempty"`
+	WSDLFile  string          `json:"wsdlFile,omitempty"`
 	Response  *ResponseConfig `json:"response,omitempty"`
 	Resources []Resource      `json:"resources,omitempty"`
 }
