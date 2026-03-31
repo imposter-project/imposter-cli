@@ -35,8 +35,9 @@ var scaffoldCmd = &cobra.Command{
 	Aliases: []string{"init"},
 	Short:   "Create Imposter configuration",
 	Long: `Creates Imposter configuration files. If one or more OpenAPI/Swagger
-specification files are present, they are used as the basis for the generated
-resources. If no specification files are present, a simple REST mock is created.
+specification files or WSDL files are present, they are used as the basis for
+the generated resources. If no specification files are present, a simple REST
+mock is created.
 
 If DIR is not specified, the current working directory is used.`,
 	Args: cobra.RangeArgs(0, 1),

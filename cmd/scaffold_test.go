@@ -41,6 +41,7 @@ func Test_createMockConfig(t *testing.T) {
 		forceOverwrite    bool
 		scriptEngine      impostermodel2.ScriptEngine
 		copySpecs         bool
+		copyWsdl          bool
 		anchorFileName    string
 		checkResponseFile bool
 	}
@@ -114,6 +115,39 @@ func Test_createMockConfig(t *testing.T) {
 				checkResponseFile: true,
 			},
 		},
+		{
+			name: "generate wsdl mock with resources no script",
+			args: args{
+				generateResources: true,
+				forceOverwrite:    true,
+				scriptEngine:      impostermodel2.ScriptEngineNone,
+				anchorFileName:    "pet_service",
+				copyWsdl:          true,
+				checkResponseFile: false,
+			},
+		},
+		{
+			name: "generate wsdl mock with resources with script",
+			args: args{
+				generateResources: true,
+				forceOverwrite:    true,
+				scriptEngine:      impostermodel2.ScriptEngineJavaScript,
+				anchorFileName:    "pet_service",
+				copyWsdl:          true,
+				checkResponseFile: false,
+			},
+		},
+		{
+			name: "generate wsdl mock no resources no script",
+			args: args{
+				generateResources: false,
+				forceOverwrite:    true,
+				scriptEngine:      impostermodel2.ScriptEngineNone,
+				anchorFileName:    "pet_service",
+				copyWsdl:          true,
+				checkResponseFile: false,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -123,6 +157,12 @@ func Test_createMockConfig(t *testing.T) {
 			}
 			if tt.args.copySpecs {
 				prepTestData(t, configDir, testConfigPath)
+			}
+			if tt.args.copyWsdl {
+				err = fileutil.CopyFile(filepath.Join(testConfigPath, "pet_service.wsdl"), filepath.Join(configDir, "pet_service.wsdl"))
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 			impostermodel2.Create(configDir, tt.args.generateResources, tt.args.forceOverwrite, tt.args.scriptEngine, false)
 
