@@ -55,7 +55,7 @@ If DIR is not specified, the current working directory is used.`,
 
 func init() {
 	scaffoldCmd.Flags().BoolVarP(&scaffoldFlags.forceOverwrite, "force-overwrite", "f", false, "Force overwrite of destination file(s) if already exist")
-	scaffoldCmd.Flags().BoolVar(&scaffoldFlags.generateResources, "generate-resources", true, "Generate Imposter resources from OpenAPI paths")
+	scaffoldCmd.Flags().BoolVar(&scaffoldFlags.generateResources, "generate-resources", true, "Generate Imposter resources from OpenAPI paths or WSDL operations")
 	scaffoldCmd.Flags().StringVarP(&scaffoldFlags.scriptEngine, "script-engine", "s", "none", "Generate placeholder Imposter script (none|groovy|js)")
 	rootCmd.AddCommand(scaffoldCmd)
 }
