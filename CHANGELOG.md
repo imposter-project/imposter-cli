@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.4.0] - 2026-04-01
+### Added
+- feat: add WSDL support to scaffold command
+- feat: update documentation to mention WSDL scaffolding
+
+### Changed
+- build: disable cgo in release script
+- build: disable unneeded cgo
+- chore: bumps engine test version to 4.9.1
+- chore: update go-wsdl-parser to published v0.1.0
+
 ## [1.3.5] - 2026-02-26
 ### Changed
 - chore(deps): bump actions/checkout from 5 to 6
