@@ -53,7 +53,7 @@ func Test_uninstallPlugins(t *testing.T) {
 				plugins:      []string{"store-redis"},
 				setupPlugins: []string{"store-redis"},
 				engineType:   engine.EngineTypeDockerCore,
-				version:      "4.2.2",
+				version:      "4.9.1",
 			},
 		},
 		{
@@ -62,7 +62,7 @@ func Test_uninstallPlugins(t *testing.T) {
 				plugins:      []string{"store-redis", "js-graal"},
 				setupPlugins: []string{"store-redis", "js-graal"},
 				engineType:   engine.EngineTypeDockerCore,
-				version:      "4.2.2",
+				version:      "4.9.1",
 			},
 		},
 		{
@@ -71,7 +71,7 @@ func Test_uninstallPlugins(t *testing.T) {
 				plugins:       []string{"store-redis"},
 				setupPlugins:  []string{"store-redis"},
 				engineType:    engine.EngineTypeDockerCore,
-				version:       "4.2.2",
+				version:       "4.9.1",
 				removeDefault: true,
 			},
 		},
@@ -146,7 +146,7 @@ func Test_uninstallNonExistentPlugin(t *testing.T) {
 	config.DirPath = configDir
 
 	// Test uninstalling a plugin that doesn't exist
-	wasInstalled, err := plugin.UninstallPlugin("nonexistent-plugin", engine.EngineTypeDockerCore, "4.2.2")
+	wasInstalled, err := plugin.UninstallPlugin("nonexistent-plugin", engine.EngineTypeDockerCore, "4.9.1")
 	require.NoError(t, err, "should not return error for non-existent plugin")
 	require.False(t, wasInstalled, "should return false for non-existent plugin")
 }

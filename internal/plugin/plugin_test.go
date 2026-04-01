@@ -21,7 +21,7 @@ func TestEnsurePlugin(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{name: "fetch plugin", args: args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.2.2"}, wantErr: false},
+		{name: "fetch plugin", args: args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.9.1"}, wantErr: false},
 		{name: "fetch nonexistent plugin version", args: args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "0.0.0"}, wantErr: true},
 	}
 	for _, tt := range tests {
@@ -44,8 +44,8 @@ func TestEnsurePlugins(t *testing.T) {
 		plugins []string
 		wantErr bool
 	}{
-		{name: "no op if no plugins configured", args: args{engineType: engine.EngineTypeDockerCore, version: "4.2.2"}, plugins: nil, wantErr: false},
-		{name: "fetch configured plugins", args: args{engineType: engine.EngineTypeDockerCore, version: "4.2.2"}, plugins: []string{"store-redis"}, wantErr: false},
+		{name: "no op if no plugins configured", args: args{engineType: engine.EngineTypeDockerCore, version: "4.9.1"}, plugins: nil, wantErr: false},
+		{name: "fetch configured plugins", args: args{engineType: engine.EngineTypeDockerCore, version: "4.9.1"}, plugins: []string{"store-redis"}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

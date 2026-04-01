@@ -122,16 +122,16 @@ func Test_GetPluginLocalPath(t *testing.T) {
 	}{
 		{
 			name:                   "get plugin local path for jvm plugin",
-			args:                   args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.2.2"},
+			args:                   args{pluginName: "store-redis", engineType: engine.EngineTypeDockerCore, version: "4.9.1"},
 			wantFullPluginFileName: "imposter-plugin-store-redis.jar",
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-store-redis.jar"),
+			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.9.1", "imposter-plugin-store-redis.jar"),
 			wantErr:                false,
 		},
 		{
 			name:                   "get plugin local path with zip suffix",
-			args:                   args{pluginName: "js-graal:zip", engineType: engine.EngineTypeDockerCore, version: "4.2.2"},
+			args:                   args{pluginName: "js-graal:zip", engineType: engine.EngineTypeDockerCore, version: "4.9.1"},
 			wantFullPluginFileName: "imposter-plugin-js-graal.zip",
-			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.2.2", "imposter-plugin-js-graal.zip"),
+			wantPluginFilePath:     filepath.Join(homeDir, pluginBaseDir, "4.9.1", "imposter-plugin-js-graal.zip"),
 			wantErr:                false,
 		},
 		{

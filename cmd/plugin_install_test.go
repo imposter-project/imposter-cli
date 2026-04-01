@@ -46,10 +46,10 @@ func Test_installPlugins(t *testing.T) {
 		name string
 		args args
 	}{
-		{name: "install no plugins", args: args{argPlugins: nil, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.2.2"}},
-		{name: "install plugins from args", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.2.2"}},
-		{name: "install plugins from config", args: args{argPlugins: nil, configPlugins: []string{"store-redis"}, engineType: engine.EngineTypeDockerCore, version: "4.2.2"}},
-		{name: "install and save plugins as default", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.2.2", saveDefault: true}},
+		{name: "install no plugins", args: args{argPlugins: nil, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.9.1"}},
+		{name: "install plugins from args", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.9.1"}},
+		{name: "install plugins from config", args: args{argPlugins: nil, configPlugins: []string{"store-redis"}, engineType: engine.EngineTypeDockerCore, version: "4.9.1"}},
+		{name: "install and save plugins as default", args: args{argPlugins: []string{"store-redis"}, configPlugins: nil, engineType: engine.EngineTypeDockerCore, version: "4.9.1", saveDefault: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

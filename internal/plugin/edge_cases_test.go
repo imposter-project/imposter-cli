@@ -137,7 +137,7 @@ func TestEnsurePluginsWithSaveDefault(t *testing.T) {
 	// Test with empty plugins list to avoid network calls
 	plugins := []string{}
 	engineType := engine.EngineTypeDockerCore
-	version := "4.2.2"
+	version := "4.9.1"
 
 	// Test with saveDefault = true
 	count, err := EnsurePlugins(plugins, engineType, version, true)

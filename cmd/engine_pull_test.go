@@ -37,22 +37,22 @@ func Test_pull(t *testing.T) {
 			pullPolicy: engine.PullAlways,
 		}},
 		{name: "pull specific docker version always", args: args{
-			version:    "4.2.2",
+			version:    "4.9.1",
 			engineType: engine.EngineTypeDockerCore,
 			pullPolicy: engine.PullAlways,
 		}},
 		{name: "pull specific docker version if not present", args: args{
-			version:    "4.2.2",
+			version:    "4.9.1",
 			engineType: engine.EngineTypeDockerCore,
 			pullPolicy: engine.PullIfNotPresent,
 		}},
 		{name: "pull docker all distro if not present", args: args{
-			version:    "4.2.2",
+			version:    "4.9.1",
 			engineType: engine.EngineTypeDockerAll,
 			pullPolicy: engine.PullIfNotPresent,
 		}},
 		{name: "pull docker all distro if not present", args: args{
-			version:    "4.2.2",
+			version:    "4.9.1",
 			engineType: engine.EngineTypeDockerDistroless,
 			pullPolicy: engine.PullIfNotPresent,
 		}},
@@ -62,12 +62,12 @@ func Test_pull(t *testing.T) {
 			pullPolicy: engine.PullAlways,
 		}},
 		{name: "pull specific jvm version always", args: args{
-			version:    "4.2.2",
+			version:    "4.9.1",
 			engineType: engine.EngineTypeJvmSingleJar,
 			pullPolicy: engine.PullAlways,
 		}},
 		{name: "pull specific jvm version if not present", args: args{
-			version:    "4.2.2",
+			version:    "4.9.1",
 			engineType: engine.EngineTypeJvmSingleJar,
 			pullPolicy: engine.PullIfNotPresent,
 		}},

@@ -18,7 +18,7 @@ func TestUninstallPlugin(t *testing.T) {
 	defer os.RemoveAll(configDir)
 	config.DirPath = configDir
 
-	version := "4.2.2"
+	version := "4.9.1"
 
 	tests := []struct {
 		name          string
@@ -122,7 +122,7 @@ func TestUninstallPlugins(t *testing.T) {
 	defer os.RemoveAll(configDir)
 	config.DirPath = configDir
 
-	version := "4.2.2"
+	version := "4.9.1"
 
 	tests := []struct {
 		name            string

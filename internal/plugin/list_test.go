@@ -18,7 +18,7 @@ func TestList(t *testing.T) {
 	defer os.RemoveAll(configDir)
 	config.DirPath = configDir
 
-	version := "4.2.2"
+	version := "4.9.1"
 
 	// Set up isolated config directory
 	oldDirPath := config.DirPath
@@ -166,14 +166,14 @@ func TestListVersionDirs(t *testing.T) {
 		},
 		{
 			name:             "single version directory",
-			setupVersions:    []string{"4.2.2"},
-			expectedVersions: []string{"4.2.2"},
+			setupVersions:    []string{"4.9.1"},
+			expectedVersions: []string{"4.9.1"},
 			expectError:      false,
 		},
 		{
 			name:             "multiple version directories",
-			setupVersions:    []string{"4.2.2", "4.2.1", "latest"},
-			expectedVersions: []string{"4.2.1", "4.2.2", "latest"}, // Should be sorted
+			setupVersions:    []string{"4.9.1", "4.2.1", "latest"},
+			expectedVersions: []string{"4.2.1", "4.9.1", "latest"}, // Should be sorted
 			expectError:      false,
 		},
 	}
