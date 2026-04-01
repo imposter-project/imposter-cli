@@ -28,7 +28,7 @@ Flags:
   -p, --port int                  Port on which to listen (default 8080)
       --pull                      Force engine pull
   -r, --recursive-config-scan     Scan for config files in subdirectories (default false)
-  -s, --scaffold                  Scaffold Imposter configuration for all OpenAPI files
+  -s, --scaffold                  Scaffold Imposter configuration for all OpenAPI and WSDL files
   -v, --version string            Imposter engine version (default "latest")
 ```
 

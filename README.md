@@ -98,7 +98,7 @@ Usage:
 
 Available Commands:
   up                Start live mocks of APIs
-  scaffold          Create Imposter configuration from OpenAPI specs
+  scaffold          Create Imposter configuration from OpenAPI specs and WSDL files
   engine pull       Pull the engine into the cache
   engine list       List the engines in the cache
   doctor            Check prerequisites for running Imposter
@@ -150,7 +150,7 @@ Flags:
   -p, --port int                  Port on which to listen (default 8080)
       --pull                      Force engine pull
   -r, --recursive-config-scan     Scan for config files in subdirectories (default false)
-  -s, --scaffold                  Scaffold Imposter configuration for all OpenAPI files
+  -s, --scaffold                  Scaffold Imposter configuration for all OpenAPI and WSDL files
   -v, --version string            Imposter engine version (default "latest")
 ```
 

@@ -121,7 +121,7 @@ func init() {
 	upCmd.Flags().IntVarP(&upFlags.port, "port", "p", 8080, "Port on which to listen")
 	upCmd.Flags().BoolVar(&upFlags.forcePull, "pull", false, "Force engine pull")
 	upCmd.Flags().BoolVar(&upFlags.restartOnChange, "auto-restart", true, "Automatically restart when config dir contents change")
-	upCmd.Flags().BoolVarP(&upFlags.scaffoldMissing, "scaffold", "s", false, "Scaffold Imposter configuration for all OpenAPI files")
+	upCmd.Flags().BoolVarP(&upFlags.scaffoldMissing, "scaffold", "s", false, "Scaffold Imposter configuration for all OpenAPI and WSDL files")
 	upCmd.Flags().StringVar(&upFlags.deduplicate, "deduplicate", "", "Override deduplication ID for replacement of containers")
 	upCmd.Flags().BoolVar(&upFlags.enablePlugins, "enable-plugins", true, "Enable plugins")
 	upCmd.Flags().BoolVar(&upFlags.ensurePlugins, "install-default-plugins", true, "Install missing default plugins")
