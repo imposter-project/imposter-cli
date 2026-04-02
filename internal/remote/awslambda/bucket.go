@@ -1,11 +1,12 @@
 package awslambda
 
 import (
+	"context"
 	"fmt"
 	"gatehill.io/imposter/internal/stringutil"
-	"github.com/aws/aws-sdk-go/aws"
-	awssession "github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/google/uuid"
 	"os"
 	"strings"
@@ -57,7 +58,7 @@ func (m LambdaRemote) getBucketName() (bucketName string, err error) {
 }
 
 func (m LambdaRemote) uploadToBucket(localPath string, bucketName string, objectKey string) error {
-	region, _, svc, err := m.initS3Client()
+	region, svc, err := m.initS3Client()
 	if err != nil {
 		return fmt.Errorf("failed to initialise S3 client: %v", err)
 	}
@@ -70,10 +71,10 @@ func (m LambdaRemote) uploadToBucket(localPath string, bucketName string, object
 	return nil
 }
 
-func ensureBucket(svc *s3.S3, bucketName string, region string) error {
+func ensureBucket(svc *s3.Client, bucketName string, region string) error {
 	logger.Tracef("checking for bucket %v in region %v", bucketName, region)
 
-	if _, err := svc.HeadBucket(&s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
+	if _, err := svc.HeadBucket(context.TODO(), &s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
 		if err = createBucket(svc, bucketName, region); err != nil {
 			return err
 		}
@@ -82,15 +83,20 @@ func ensureBucket(svc *s3.S3, bucketName string, region string) error {
 	return nil
 }
 
-func createBucket(svc *s3.S3, bucketName string, region string) error {
+func createBucket(svc *s3.Client, bucketName string, region string) error {
 	logger.Tracef("creating bucket %v in region %v", bucketName, region)
 
-	_, err := svc.CreateBucket(&s3.CreateBucketInput{
+	input := &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
-		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
-			LocationConstraint: aws.String(region),
-		},
-	})
+	}
+	// us-east-1 must not specify LocationConstraint
+	if region != "us-east-1" {
+		input.CreateBucketConfiguration = &s3types.CreateBucketConfiguration{
+			LocationConstraint: s3types.BucketLocationConstraint(region),
+		}
+	}
+
+	_, err := svc.CreateBucket(context.TODO(), input)
 	if err != nil {
 		return fmt.Errorf("failed to create bucket %v in region %v: %v", bucketName, region, err)
 	}
@@ -98,7 +104,7 @@ func createBucket(svc *s3.S3, bucketName string, region string) error {
 	return nil
 }
 
-func upload(svc *s3.S3, bucketName string, localPath string, objectKey string) error {
+func upload(svc *s3.Client, bucketName string, localPath string, objectKey string) error {
 	logger.Tracef("uploading file %v to bucket %v", localPath, bucketName)
 
 	file, err := os.Open(localPath)
@@ -107,8 +113,8 @@ func upload(svc *s3.S3, bucketName string, localPath string, objectKey string) e
 	}
 	defer file.Close()
 
-	_, err = svc.PutObject(&s3.PutObjectInput{
-		Body:   aws.ReadSeekCloser(file),
+	_, err = svc.PutObject(context.TODO(), &s3.PutObjectInput{
+		Body:   file,
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})
@@ -119,11 +125,14 @@ func upload(svc *s3.S3, bucketName string, localPath string, objectKey string) e
 	return nil
 }
 
-func (m LambdaRemote) initS3Client() (region string, sess *awssession.Session, svc *s3.S3, err error) {
+func (m LambdaRemote) initS3Client() (region string, svc *s3.Client, err error) {
 	if m.Config[configKeyRegion] == "" {
-		return "", nil, nil, fmt.Errorf("region cannot be null")
+		return "", nil, fmt.Errorf("region cannot be null")
 	}
-	region, sess = m.startAwsSession()
-	svc = s3.New(sess)
-	return region, sess, svc, nil
+	region, cfg, err := m.loadAwsConfig()
+	if err != nil {
+		return "", nil, err
+	}
+	svc = s3.NewFromConfig(cfg)
+	return region, svc, nil
 }

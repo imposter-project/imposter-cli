@@ -1,14 +1,15 @@
 package awslambda
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"gatehill.io/imposter/internal/logging"
 	remote2 "gatehill.io/imposter/internal/remote"
 	"gatehill.io/imposter/internal/workspace"
 	"github.com/araddon/dateparse"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	lambdatypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"strconv"
 )
 
@@ -99,20 +100,6 @@ func (m LambdaRemote) SetConfigValue(key string, value string) error {
 		return err
 	}
 
-	if key == configKeyRegion {
-		regionFound := false
-		for _, p := range endpoints.DefaultPartitions() {
-			for r := range p.Regions() {
-				if value == r {
-					regionFound = true
-					break
-				}
-			}
-		}
-		if !regionFound {
-			return fmt.Errorf("invalid region: %s", value)
-		}
-	}
 	m.Config[key] = value
 	return m.SaveConfig()
 }
@@ -134,10 +121,15 @@ func (m LambdaRemote) GetStatus() (*remote2.Status, error) {
 }
 
 func (m LambdaRemote) getFunctionStatus() (status string, lastModified int64, err error) {
-	_, sess := m.startAwsSession()
-	svc := lambda.New(sess)
+	_, cfg, err := m.loadAwsConfig()
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to load AWS config: %v", err)
+	}
+	svc := lambda.NewFromConfig(cfg)
 	functionName := m.getFunctionName()
-	result, err := checkFunctionExists(svc, functionName)
+	result, err := svc.GetFunction(context.TODO(), &lambda.GetFunctionInput{
+		FunctionName: &functionName,
+	})
 	if err == nil {
 		if result.Configuration.LastModified != nil {
 			logger.Tracef("function configuration: %+v", result.Configuration)
@@ -145,24 +137,23 @@ func (m LambdaRemote) getFunctionStatus() (status string, lastModified int64, er
 				lastModified = parsed.UnixMilli()
 			}
 		}
-		return *result.Configuration.State, lastModified, nil
+		return string(result.Configuration.State), lastModified, nil
 	} else {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == lambda.ErrCodeResourceNotFoundException {
-				return "not deployed", 0, nil
-			}
+		var notFoundErr *lambdatypes.ResourceNotFoundException
+		if errors.As(err, &notFoundErr) {
+			return "not deployed", 0, nil
 		}
 	}
 	return "", 0, err
 }
 
-func (m LambdaRemote) getMemorySize() int64 {
+func (m LambdaRemote) getMemorySize() int32 {
 	if configuredMem := m.Config[configKeyMemory]; configuredMem != "" {
 		mem, err := strconv.Atoi(configuredMem)
 		if err != nil {
 			panic(fmt.Errorf("failed to get memory configuration value: %v", err))
 		}
-		return int64(mem)
+		return int32(mem)
 	}
 	return defaultMemory
 }
