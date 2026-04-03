@@ -1,7 +1,6 @@
 package awslambda
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"gatehill.io/imposter/internal/engine"
@@ -111,7 +110,7 @@ func ensureSnapStart(svc *lambda.Client, funcArn string, snapStart bool) error {
 		desiredConfig = lambdatypes.SnapStartApplyOnNone
 	}
 
-	configuration, err := svc.GetFunctionConfiguration(context.TODO(), &lambda.GetFunctionConfigurationInput{FunctionName: aws.String(funcArn)})
+	configuration, err := svc.GetFunctionConfiguration(ctx, &lambda.GetFunctionConfigurationInput{FunctionName: aws.String(funcArn)})
 	if err != nil {
 		return fmt.Errorf("failed to check snapstart configuration for %v: %v", funcArn, err)
 	}
@@ -121,7 +120,7 @@ func ensureSnapStart(svc *lambda.Client, funcArn string, snapStart bool) error {
 	}
 
 	logger.Tracef("configuring snapstart for %v", funcArn)
-	_, err = svc.UpdateFunctionConfiguration(context.TODO(), &lambda.UpdateFunctionConfigurationInput{
+	_, err = svc.UpdateFunctionConfiguration(ctx, &lambda.UpdateFunctionConfigurationInput{
 		FunctionName: aws.String(funcArn),
 		SnapStart: &lambdatypes.SnapStart{
 			ApplyOn: desiredConfig,
@@ -141,7 +140,7 @@ func publishFunctionVersion(svc *lambda.Client, funcArn string) (versionId strin
 	}
 
 	logger.Tracef("publishing version for %v", funcArn)
-	version, err := svc.PublishVersion(context.TODO(), &lambda.PublishVersionInput{
+	version, err := svc.PublishVersion(ctx, &lambda.PublishVersionInput{
 		FunctionName: aws.String(funcArn),
 	})
 	if err != nil {
@@ -167,7 +166,7 @@ func awaitReady(svc *lambda.Client, funcArn string, checkVersion string) error {
 		if checkVersion != "" {
 			input.Qualifier = aws.String(checkVersion)
 		}
-		configuration, err := svc.GetFunctionConfiguration(context.TODO(), input)
+		configuration, err := svc.GetFunctionConfiguration(ctx, input)
 		if err != nil {
 			return err
 		}
@@ -190,7 +189,7 @@ func awaitReady(svc *lambda.Client, funcArn string, checkVersion string) error {
 }
 
 func createOrUpdateAlias(svc *lambda.Client, funcArn string, versionId string, aliasName string) (aliasArn string, err error) {
-	_, err = svc.GetAlias(context.TODO(), &lambda.GetAliasInput{
+	_, err = svc.GetAlias(ctx, &lambda.GetAliasInput{
 		FunctionName: aws.String(funcArn),
 		Name:         aws.String(aliasName),
 	})
@@ -207,7 +206,7 @@ func createOrUpdateAlias(svc *lambda.Client, funcArn string, versionId string, a
 	}
 
 	logger.Debugf("updating alias %v for function %v", aliasName, funcArn)
-	updateResult, err := svc.UpdateAlias(context.TODO(), &lambda.UpdateAliasInput{
+	updateResult, err := svc.UpdateAlias(ctx, &lambda.UpdateAliasInput{
 		FunctionName:    aws.String(funcArn),
 		FunctionVersion: aws.String(versionId),
 		Name:            aws.String(aliasName),
@@ -222,7 +221,7 @@ func createOrUpdateAlias(svc *lambda.Client, funcArn string, versionId string, a
 
 func createAlias(svc *lambda.Client, funcArn string, versionId string, aliasName string) (aliasArn string, err error) {
 	logger.Tracef("creating alias for function %v to version %v", funcArn, versionId)
-	alias, err := svc.CreateAlias(context.TODO(), &lambda.CreateAliasInput{
+	alias, err := svc.CreateAlias(ctx, &lambda.CreateAliasInput{
 		FunctionName:    aws.String(funcArn),
 		FunctionVersion: aws.String(versionId),
 		Name:            aws.String(aliasName),
@@ -328,7 +327,7 @@ func (m LambdaRemote) getFunctionName() string {
 
 func (m LambdaRemote) loadAwsConfig() (string, aws.Config, error) {
 	region := m.getAwsRegion()
-	cfg, err := awsconfig.LoadDefaultConfig(context.TODO(),
+	cfg, err := awsconfig.LoadDefaultConfig(ctx,
 		awsconfig.WithRegion(region),
 	)
 	if err != nil {
@@ -384,7 +383,7 @@ func ensureFunctionExists(
 }
 
 func checkFunctionExists(svc *lambda.Client, functionName string) (*lambda.GetFunctionOutput, error) {
-	result, err := svc.GetFunction(context.TODO(), &lambda.GetFunctionInput{
+	result, err := svc.GetFunction(ctx, &lambda.GetFunctionInput{
 		FunctionName: aws.String(functionName),
 	})
 	return result, err
@@ -436,7 +435,7 @@ func createFunction(
 		input.Code.ZipFile = *location.zipContents
 	}
 
-	result, err := svc.CreateFunction(context.TODO(), input)
+	result, err := svc.CreateFunction(ctx, input)
 	if err != nil {
 		return "", fmt.Errorf("failed to create function %s in region %s: %v", funcName, region, err)
 	}
@@ -455,7 +454,7 @@ func updateFunctionCode(svc *lambda.Client, funcArn string, location codeLocatio
 	} else {
 		input.ZipFile = *location.zipContents
 	}
-	_, err := svc.UpdateFunctionCode(context.TODO(), input)
+	_, err := svc.UpdateFunctionCode(ctx, input)
 	if err != nil {
 		return err
 	}
@@ -475,7 +474,7 @@ func (m LambdaRemote) checkFunctionUrlConfig(
 		input.Qualifier = aws.String(m.getFunctionAlias())
 	}
 	logger.Tracef("checking function URL config for %v", input)
-	getUrlResult, err := svc.GetFunctionUrlConfig(context.TODO(), input)
+	getUrlResult, err := svc.GetFunctionUrlConfig(ctx, input)
 	return getUrlResult, err
 }
 
@@ -505,7 +504,7 @@ func buildEnv() *lambdatypes.Environment {
 
 func (m LambdaRemote) deleteFunction(funcArn string, svc *lambda.Client) error {
 	logger.Tracef("deleting function: %s", funcArn)
-	_, err := svc.DeleteFunction(context.TODO(), &lambda.DeleteFunctionInput{
+	_, err := svc.DeleteFunction(ctx, &lambda.DeleteFunctionInput{
 		FunctionName: aws.String(funcArn),
 	})
 	if err != nil {

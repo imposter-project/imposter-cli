@@ -1,7 +1,6 @@
 package awslambda
 
 import (
-	"context"
 	"fmt"
 	"gatehill.io/imposter/internal/stringutil"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -74,7 +73,7 @@ func (m LambdaRemote) uploadToBucket(localPath string, bucketName string, object
 func ensureBucket(svc *s3.Client, bucketName string, region string) error {
 	logger.Tracef("checking for bucket %v in region %v", bucketName, region)
 
-	if _, err := svc.HeadBucket(context.TODO(), &s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
+	if _, err := svc.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
 		if err = createBucket(svc, bucketName, region); err != nil {
 			return err
 		}
@@ -96,7 +95,7 @@ func createBucket(svc *s3.Client, bucketName string, region string) error {
 		}
 	}
 
-	_, err := svc.CreateBucket(context.TODO(), input)
+	_, err := svc.CreateBucket(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to create bucket %v in region %v: %v", bucketName, region, err)
 	}
@@ -113,7 +112,7 @@ func upload(svc *s3.Client, bucketName string, localPath string, objectKey strin
 	}
 	defer file.Close()
 
-	_, err = svc.PutObject(context.TODO(), &s3.PutObjectInput{
+	_, err = svc.PutObject(ctx, &s3.PutObjectInput{
 		Body:   file,
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),

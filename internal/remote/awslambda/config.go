@@ -8,6 +8,8 @@ import (
 	remote2 "gatehill.io/imposter/internal/remote"
 	"gatehill.io/imposter/internal/workspace"
 	"github.com/araddon/dateparse"
+	"os"
+	"os/signal"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdatypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"strconv"
@@ -56,6 +58,10 @@ var configKeys = []string{
 }
 
 var logger = logging.GetLogger()
+
+// ctx is a package-level context that is cancelled on SIGINT/SIGTERM,
+// allowing in-flight AWS operations to be interrupted with ctrl+c.
+var ctx, _ = signal.NotifyContext(context.Background(), os.Interrupt)
 
 type LambdaRemote struct {
 	remote2.RemoteMetadata
@@ -127,7 +133,7 @@ func (m LambdaRemote) getFunctionStatus() (status string, lastModified int64, er
 	}
 	svc := lambda.NewFromConfig(cfg)
 	functionName := m.getFunctionName()
-	result, err := svc.GetFunction(context.TODO(), &lambda.GetFunctionInput{
+	result, err := svc.GetFunction(ctx, &lambda.GetFunctionInput{
 		FunctionName: &functionName,
 	})
 	if err == nil {

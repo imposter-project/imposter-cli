@@ -1,7 +1,6 @@
 package awslambda
 
 import (
-	"context"
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -12,7 +11,7 @@ const defaultIamRoleName = "ImposterLambdaExecutionRole"
 
 func ensureIamRole(cfg aws.Config, roleName string) (string, error) {
 	svc := iam.NewFromConfig(cfg)
-	getRoleResult, err := svc.GetRole(context.TODO(), &iam.GetRoleInput{
+	getRoleResult, err := svc.GetRole(ctx, &iam.GetRoleInput{
 		RoleName: &roleName,
 	})
 	if err != nil {
@@ -45,7 +44,7 @@ func createRole(svc *iam.Client, roleName string) (string, error) {
     }
   ]
 }`
-	createRoleOutput, err := svc.CreateRole(context.TODO(), &iam.CreateRoleInput{
+	createRoleOutput, err := svc.CreateRole(ctx, &iam.CreateRoleInput{
 		Description:              &description,
 		RoleName:                 &roleName,
 		AssumeRolePolicyDocument: &assumeRolePolicy,
@@ -56,13 +55,13 @@ func createRole(svc *iam.Client, roleName string) (string, error) {
 	roleArn := *createRoleOutput.Role.Arn
 
 	arn := "arn:aws:iam::aws:policy/AWSLambdaExecute"
-	getPolicyResult, err := svc.GetPolicy(context.TODO(), &iam.GetPolicyInput{
+	getPolicyResult, err := svc.GetPolicy(ctx, &iam.GetPolicyInput{
 		PolicyArn: &arn,
 	})
 	if err != nil {
 		return "", err
 	}
-	_, err = svc.AttachRolePolicy(context.TODO(), &iam.AttachRolePolicyInput{
+	_, err = svc.AttachRolePolicy(ctx, &iam.AttachRolePolicyInput{
 		PolicyArn: getPolicyResult.Policy.Arn,
 		RoleName:  &roleName,
 	})

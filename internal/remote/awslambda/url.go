@@ -1,7 +1,6 @@
 package awslambda
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -16,7 +15,7 @@ func configureUrlAccess(svc *lambda.Client, funcArn string, anonAccess bool) err
 			return err
 		}
 	} else {
-		_, err := svc.RemovePermission(context.TODO(), &lambda.RemovePermissionInput{
+		_, err := svc.RemovePermission(ctx, &lambda.RemovePermissionInput{
 			FunctionName: aws.String(funcArn),
 			StatementId:  aws.String(statementId),
 		})
@@ -34,7 +33,7 @@ func configureUrlAccess(svc *lambda.Client, funcArn string, anonAccess bool) err
 }
 
 func createAnonUrlAccessPolicy(svc *lambda.Client, funcArn string, statementId string) error {
-	_, err := svc.AddPermission(context.TODO(), &lambda.AddPermissionInput{
+	_, err := svc.AddPermission(ctx, &lambda.AddPermissionInput{
 		StatementId:         aws.String(statementId),
 		Action:              aws.String("lambda:InvokeFunctionUrl"),
 		FunctionName:        aws.String(funcArn),
@@ -61,7 +60,7 @@ func (m LambdaRemote) ensureUrlConfigured(svc *lambda.Client, funcArn string) (s
 	if err != nil {
 		var notFoundErr *lambdatypes.ResourceNotFoundException
 		if errors.As(err, &notFoundErr) {
-			urlConfigOutput, err := svc.CreateFunctionUrlConfig(context.TODO(), &lambda.CreateFunctionUrlConfigInput{
+			urlConfigOutput, err := svc.CreateFunctionUrlConfig(ctx, &lambda.CreateFunctionUrlConfigInput{
 				AuthType:     lambdatypes.FunctionUrlAuthTypeNone,
 				FunctionName: aws.String(funcArn),
 			})
