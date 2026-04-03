@@ -1,39 +1,36 @@
 package awslambda
 
 import (
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"errors"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 )
 
 const defaultIamRoleName = "ImposterLambdaExecutionRole"
 
-func ensureIamRole(session *session.Session, roleName string) (string, error) {
-	svc := iam.New(session)
-	getRoleResult, err := svc.GetRole(&iam.GetRoleInput{
+func ensureIamRole(cfg aws.Config, roleName string) (string, error) {
+	svc := iam.NewFromConfig(cfg)
+	getRoleResult, err := svc.GetRole(ctx, &iam.GetRoleInput{
 		RoleName: &roleName,
 	})
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == iam.ErrCodeNoSuchEntityException {
-				roleArn, err := createRole(svc, roleName)
-				if err != nil {
-					return "", err
-				}
-				return roleArn, nil
-
-			} else {
-				logger.Fatalf("failed to get IAM role: %s: %v", roleName, err)
+		var notFoundErr *iamtypes.NoSuchEntityException
+		if errors.As(err, &notFoundErr) {
+			roleArn, err := createRole(svc, roleName)
+			if err != nil {
+				return "", err
 			}
+			return roleArn, nil
 		} else {
-			logger.Fatal(err)
+			logger.Fatalf("failed to get IAM role: %s: %v", roleName, err)
 		}
 	}
 	logger.Debugf("using role: %s", *getRoleResult.Role.Arn)
 	return *getRoleResult.Role.Arn, nil
 }
 
-func createRole(svc *iam.IAM, roleName string) (string, error) {
+func createRole(svc *iam.Client, roleName string) (string, error) {
 	description := "Default IAM role for Imposter Lambda"
 	assumeRolePolicy := `{
   "Version": "2012-10-17",
@@ -47,7 +44,7 @@ func createRole(svc *iam.IAM, roleName string) (string, error) {
     }
   ]
 }`
-	createRoleOutput, err := svc.CreateRole(&iam.CreateRoleInput{
+	createRoleOutput, err := svc.CreateRole(ctx, &iam.CreateRoleInput{
 		Description:              &description,
 		RoleName:                 &roleName,
 		AssumeRolePolicyDocument: &assumeRolePolicy,
@@ -58,13 +55,13 @@ func createRole(svc *iam.IAM, roleName string) (string, error) {
 	roleArn := *createRoleOutput.Role.Arn
 
 	arn := "arn:aws:iam::aws:policy/AWSLambdaExecute"
-	getPolicyResult, err := svc.GetPolicy(&iam.GetPolicyInput{
+	getPolicyResult, err := svc.GetPolicy(ctx, &iam.GetPolicyInput{
 		PolicyArn: &arn,
 	})
 	if err != nil {
 		return "", err
 	}
-	_, err = svc.AttachRolePolicy(&iam.AttachRolePolicyInput{
+	_, err = svc.AttachRolePolicy(ctx, &iam.AttachRolePolicyInput{
 		PolicyArn: getPolicyResult.Policy.Arn,
 		RoleName:  &roleName,
 	})

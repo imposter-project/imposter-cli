@@ -11,7 +11,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.23.8'
+          go-version: '1.24'
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
@@ -39,7 +39,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.23.8'
+          go-version: '1.24'
 
       - name: Dry run
         uses: goreleaser/goreleaser-action@v6
