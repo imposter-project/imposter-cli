@@ -26,3 +26,8 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      spf13:
+        patterns:
+          - "github.com/spf13/cobra"
+          - "github.com/spf13/viper"
