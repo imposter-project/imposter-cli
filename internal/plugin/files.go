@@ -88,7 +88,7 @@ func getPluginFileName(engineType engine.EngineType, pluginName string, remote b
 	pluginConfig := determinePluginConfig(engineType)
 	switch len(pluginConfig.extensions) {
 	case 0:
-		return "", fmt.Errorf("plugin extensions not specified for engine type: " + string(engineType))
+		return "", fmt.Errorf("plugin extensions not specified for engine type: %s", string(engineType))
 
 	case 1:
 		fileName := buildPluginFileName(pluginConfig, pluginName, pluginConfig.extensions[0], remote)
@@ -108,7 +108,7 @@ func getPluginFileName(engineType engine.EngineType, pluginName string, remote b
 					return fileName, nil
 				}
 			}
-			return "", fmt.Errorf("no matching plugin extension found for engine type: " + string(engineType) + " and plugin name: " + pluginName)
+			return "", fmt.Errorf("no matching plugin extension found for engine type: %s and plugin name: %s", string(engineType), pluginName)
 
 		} else {
 			// use the default extension
