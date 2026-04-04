@@ -89,6 +89,21 @@ func CopyDirShallow(src string, dest string) error {
 	return nil
 }
 
+// MoveFile moves a file from src to dest, falling back to copy+delete
+// if os.Rename fails (e.g. across filesystem boundaries).
+func MoveFile(src, dest string) error {
+	if err := os.Rename(src, dest); err != nil {
+		// os.Rename fails across filesystem boundaries; fall back to copy+delete
+		if err := CopyFile(src, dest); err != nil {
+			return fmt.Errorf("error copying file: %v -> %v: %v", src, dest, err)
+		}
+		if err := os.Remove(src); err != nil {
+			logger.Warnf("failed to remove source file after copy: %s: %v", src, err)
+		}
+	}
+	return nil
+}
+
 func CopyFile(src string, dest string) error {
 	srcFile, err := os.Open(src)
 	if err != nil {

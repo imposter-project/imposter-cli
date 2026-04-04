@@ -85,8 +85,8 @@ func DownloadBinaryWithConfig(
 			return fmt.Errorf("error extracting archive: %v to %v: %v", tempFile.Name(), destinationDir, err)
 		}
 	} else {
-		if err := os.Rename(tempFile.Name(), localPath); err != nil {
-			return fmt.Errorf("error renaming temp file to final destination: %v -> %v: %v", tempFile.Name(), localPath, err)
+		if err := fileutil.MoveFile(tempFile.Name(), localPath); err != nil {
+			return fmt.Errorf("error moving temp file to final destination: %v -> %v: %v", tempFile.Name(), localPath, err)
 		}
 	}
 	return err
