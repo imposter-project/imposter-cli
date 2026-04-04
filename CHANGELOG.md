@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.4.1] - 2026-04-04
+### Changed
+- chore(deps): bump github.com/sirupsen/logrus from 1.9.3 to 1.9.4
+- chore(deps): bump golang.org/x/crypto from 0.40.0 to 0.45.0 (#97)
+- chore(deps): bump goreleaser/goreleaser-action from 6 to 7
+- chore: group dependabot updates for viper and cobra
+- chore: update Go version to 1.25.0 for CI compatibility
+- refactor: migrate AWS SDK from v1 to v2 (#95)
+
 ## [1.4.0] - 2026-04-01
 ### Added
 - feat: add WSDL support to scaffold command
