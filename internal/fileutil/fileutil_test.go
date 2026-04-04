@@ -342,6 +342,130 @@ func TestGenerateTempFilePattern(t *testing.T) {
 	}
 }
 
+func TestMoveFile_SameFilesystem(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "fileutil_move_test_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	src := filepath.Join(tempDir, "src.txt")
+	dest := filepath.Join(tempDir, "dest.txt")
+	content := []byte("hello world")
+
+	if err := os.WriteFile(src, content, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := MoveFile(src, dest); err != nil {
+		t.Fatalf("MoveFile() error = %v", err)
+	}
+
+	// dest should have the content
+	got, err := os.ReadFile(dest)
+	if err != nil {
+		t.Fatalf("failed to read dest: %v", err)
+	}
+	if string(got) != string(content) {
+		t.Errorf("dest content = %q, want %q", got, content)
+	}
+
+	// src should no longer exist
+	if _, err := os.Stat(src); !os.IsNotExist(err) {
+		t.Errorf("source file should not exist after move")
+	}
+}
+
+func TestMoveFile_DestDirCreated(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "fileutil_move_test_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	src := filepath.Join(tempDir, "src.txt")
+	dest := filepath.Join(tempDir, "subdir", "dest.txt")
+	content := []byte("nested move")
+
+	if err := os.WriteFile(src, content, 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := MoveFile(src, dest); err != nil {
+		t.Fatalf("MoveFile() error = %v", err)
+	}
+
+	got, err := os.ReadFile(dest)
+	if err != nil {
+		t.Fatalf("failed to read dest: %v", err)
+	}
+	if string(got) != string(content) {
+		t.Errorf("dest content = %q, want %q", got, content)
+	}
+}
+
+func TestMoveFile_NonExistentSource(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "fileutil_move_test_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	err = MoveFile(filepath.Join(tempDir, "nonexistent"), filepath.Join(tempDir, "dest"))
+	if err == nil {
+		t.Error("MoveFile() should error on nonexistent source")
+	}
+}
+
+func TestCopyFile_Contents(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "fileutil_copy_test_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	src := filepath.Join(tempDir, "src.txt")
+	dest := filepath.Join(tempDir, "dest.txt")
+	content := []byte("copy me")
+
+	if err := os.WriteFile(src, content, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := CopyFile(src, dest); err != nil {
+		t.Fatalf("CopyFile() error = %v", err)
+	}
+
+	got, err := os.ReadFile(dest)
+	if err != nil {
+		t.Fatalf("failed to read dest: %v", err)
+	}
+	if string(got) != string(content) {
+		t.Errorf("dest content = %q, want %q", got, content)
+	}
+
+	// source should still exist
+	if _, err := os.Stat(src); err != nil {
+		t.Errorf("source file should still exist after copy")
+	}
+}
+
+func TestCopyFile_NonExistentSource(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "fileutil_copy_test_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	err = CopyFile(filepath.Join(tempDir, "nonexistent"), filepath.Join(tempDir, "dest"))
+	if err == nil {
+		t.Error("CopyFile() should error on nonexistent source")
+	}
+}
+
 // Helper function to check if a string contains another string
 func contains(s, substr string) bool {
 	return filepath.Base(s) == substr
