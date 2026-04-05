@@ -264,16 +264,3 @@ func updateConfigFile(exchange HttpExchange, options impostermodel2.ConfigGenera
 	return nil
 }
 
-// generateSoapFilename generates a filename that incorporates the SOAPAction value
-func generateSoapFilename(basePath string, soapAction string, fileType string) string {
-	sanitizedPath := strings.ReplaceAll(basePath, "/", "_")
-	sanitizedPath = strings.ReplaceAll(sanitizedPath, "\\", "_")
-
-	if soapAction != "" {
-		sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
-		sanitizedAction = strings.ReplaceAll(sanitizedAction, "\\", "_")
-		sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
-		return fmt.Sprintf("%s_%s.%s", sanitizedPath, sanitizedAction, fileType)
-	}
-	return fmt.Sprintf("%s.%s", sanitizedPath, fileType)
-}
