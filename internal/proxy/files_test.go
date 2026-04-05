@@ -153,3 +153,98 @@ func Test_generateRespFileName(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractSoapAction(t *testing.T) {
+	tests := []struct {
+		name     string
+		headers  map[string]string
+		expected string
+	}{
+		{
+			name:     "no soap headers",
+			headers:  map[string]string{},
+			expected: "",
+		},
+		{
+			name: "SOAP 1.1 quoted SOAPAction header",
+			headers: map[string]string{
+				"SOAPAction":   `"http://example.com/GetUser"`,
+				"Content-Type": "text/xml; charset=utf-8",
+			},
+			expected: "http://example.com/GetUser",
+		},
+		{
+			name: "SOAP 1.1 unquoted SOAPAction header",
+			headers: map[string]string{
+				"SOAPAction":   "http://example.com/GetUser",
+				"Content-Type": "text/xml; charset=utf-8",
+			},
+			expected: "http://example.com/GetUser",
+		},
+		{
+			name: "SOAP 1.2 action parameter, quoted",
+			headers: map[string]string{
+				"Content-Type": `application/soap+xml;charset=UTF-8;action="http://example.com/GetUser"`,
+			},
+			expected: "http://example.com/GetUser",
+		},
+		{
+			// RFC 3902 requires the SOAP 1.2 action parameter to be a
+			// quoted string. An unquoted URL contains characters that
+			// are not valid MIME token chars, so mime.ParseMediaType
+			// correctly rejects the whole header.
+			name: "SOAP 1.2 action parameter, unquoted, is rejected",
+			headers: map[string]string{
+				"Content-Type": "application/soap+xml;charset=UTF-8;action=http://example.com/GetUser",
+			},
+			expected: "",
+		},
+		{
+			name: "SOAP 1.1 header takes precedence over Content-Type action",
+			headers: map[string]string{
+				"SOAPAction":   `"http://example.com/GetUser"`,
+				"Content-Type": `application/soap+xml;action="http://example.com/Ignored"`,
+			},
+			expected: "http://example.com/GetUser",
+		},
+		{
+			name: "reaction parameter is not mistaken for action",
+			headers: map[string]string{
+				// `reaction=foo` must NOT be matched as an action.
+				"Content-Type": "application/soap+xml; reaction=foo",
+			},
+			expected: "",
+		},
+		{
+			name: "empty SOAPAction header falls back to Content-Type",
+			headers: map[string]string{
+				"SOAPAction":   `""`,
+				"Content-Type": `application/soap+xml;action="http://example.com/Fallback"`,
+			},
+			expected: "http://example.com/Fallback",
+		},
+		{
+			name: "unparseable Content-Type returns empty",
+			headers: map[string]string{
+				"Content-Type": "not a valid media type",
+			},
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest("POST", "http://example.com/service", nil)
+			if err != nil {
+				t.Fatalf("failed to create request: %v", err)
+			}
+			for k, v := range tt.headers {
+				req.Header.Set(k, v)
+			}
+			got := extractSoapAction(req)
+			if got != tt.expected {
+				t.Errorf("extractSoapAction() = %q, want %q", got, tt.expected)
+			}
+		})
+	}
+}
