@@ -265,4 +265,3 @@ func updateConfigFile(exchange HttpExchange, options impostermodel2.ConfigGenera
 	logger.Debugf("wrote config file %s for %s %v", configFile, req.Method, req.URL)
 	return nil
 }
-
