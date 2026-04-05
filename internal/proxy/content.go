@@ -12,6 +12,7 @@ var textMediaTypes = []string{
 	"application/javascript",
 	"application/json",
 	"application/xml",
+	"application/soap\\+xml",
 	"application/x-www-form-urlencoded",
 }
 

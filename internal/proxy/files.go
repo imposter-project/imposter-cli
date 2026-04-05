@@ -27,6 +27,48 @@ import (
 	"strings"
 )
 
+// extractSoapAction extracts the SOAPAction header from the request or
+// Content-Type action parameter (for SOAP 1.2).
+func extractSoapAction(req *http.Request) string {
+	// First try the SOAPAction header (SOAP 1.1)
+	soapAction := req.Header.Get("SOAPAction")
+	logger.Debugf("SOAPAction header raw value: '%s'", soapAction)
+
+	if soapAction == "" {
+		// Try Content-Type action parameter (SOAP 1.2)
+		contentType := req.Header.Get("Content-Type")
+		logger.Debugf("Content-Type header: '%s'", contentType)
+
+		if strings.Contains(contentType, "action=") {
+			parts := strings.Split(contentType, "action=")
+			if len(parts) > 1 {
+				actionPart := strings.TrimSpace(parts[1])
+				if strings.HasPrefix(actionPart, "\"") {
+					if endQuote := strings.Index(actionPart[1:], "\""); endQuote != -1 {
+						soapAction = actionPart[1 : endQuote+1]
+					}
+				} else {
+					if semicolon := strings.Index(actionPart, ";"); semicolon != -1 {
+						soapAction = actionPart[:semicolon]
+					} else {
+						soapAction = actionPart
+					}
+				}
+				logger.Debugf("Extracted action from Content-Type: '%s'", soapAction)
+			}
+		}
+	}
+
+	if soapAction == "" {
+		logger.Debugf("No SOAPAction header or Content-Type action found in request")
+		return ""
+	}
+
+	soapAction = strings.Trim(soapAction, "\"")
+	logger.Debugf("SOAPAction after processing: '%s'", soapAction)
+	return soapAction
+}
+
 // generateRespFileName returns a unique filename for the given response
 func generateRespFileName(
 	upstreamHost string,
@@ -55,6 +97,19 @@ func generateRespFileName(
 		}
 		parentDir = dir
 		respFileName = upstreamHost + "-" + req.Method + "-" + flatParent + baseFileName
+		if options.Soap11Mode {
+			logger.Debugf("SOAP 1.1 mode enabled - checking for SOAPAction header")
+			if soapAction := extractSoapAction(req); soapAction != "" {
+				logger.Debugf("Found SOAPAction: '%s', generating SOAP-aware filename", soapAction)
+				sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
+				sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
+				sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
+				respFileName = respFileName + "_" + sanitizedAction
+				logger.Debugf("Generated SOAP filename: '%s'", respFileName)
+			} else {
+				logger.Debugf("No SOAPAction found, using standard filename")
+			}
+		}
 
 	} else {
 		parentDir = path.Join(dir, sanitisedParent)
@@ -62,6 +117,14 @@ func generateRespFileName(
 			return "", err
 		}
 		respFileName = req.Method + "-" + baseFileName
+		if options.Soap11Mode {
+			if soapAction := extractSoapAction(req); soapAction != "" {
+				sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
+				sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
+				sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
+				respFileName = respFileName + "_" + sanitizedAction
+			}
+		}
 	}
 
 	var suffix string
