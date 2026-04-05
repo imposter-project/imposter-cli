@@ -54,6 +54,12 @@ func extractSoapAction(req *http.Request) string {
 	return ""
 }
 
+// sanitiseSoapAction replaces characters that are unsafe in filenames.
+func sanitiseSoapAction(action string) string {
+	r := strings.NewReplacer("/", "_", ":", "_", ".", "_")
+	return r.Replace(action)
+}
+
 // generateRespFileName returns a unique filename for the given response
 func generateRespFileName(
 	upstreamHost string,
@@ -82,12 +88,6 @@ func generateRespFileName(
 		}
 		parentDir = dir
 		respFileName = upstreamHost + "-" + req.Method + "-" + flatParent + baseFileName
-		if soapAction := extractSoapAction(req); soapAction != "" {
-			sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
-			sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
-			sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
-			respFileName = respFileName + "_" + sanitizedAction
-		}
 
 	} else {
 		parentDir = path.Join(dir, sanitisedParent)
@@ -95,12 +95,9 @@ func generateRespFileName(
 			return "", err
 		}
 		respFileName = req.Method + "-" + baseFileName
-		if soapAction := extractSoapAction(req); soapAction != "" {
-			sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
-			sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
-			sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
-			respFileName = respFileName + "_" + sanitizedAction
-		}
+	}
+	if soapAction := extractSoapAction(req); soapAction != "" {
+		respFileName = respFileName + "_" + sanitiseSoapAction(soapAction)
 	}
 
 	var suffix string
