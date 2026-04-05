@@ -34,7 +34,6 @@ var proxyFlags = struct {
 	recordOnlyResponseHeaders []string
 	flatResponseFileStructure bool
 	insecure                  bool
-	soap11Mode                bool
 }{}
 
 // proxyCmd represents the up command
@@ -61,7 +60,6 @@ var proxyCmd = &cobra.Command{
 			IgnoreDuplicateRequests:   proxyFlags.ignoreDuplicateRequests,
 			RecordOnlyResponseHeaders: proxyFlags.recordOnlyResponseHeaders,
 			FlatResponseFileStructure: proxyFlags.flatResponseFileStructure,
-			Soap11Mode:                proxyFlags.soap11Mode,
 		}
 		proxyUpstream(upstream, proxyFlags.port, outputDir, proxyFlags.rewrite, proxyFlags.insecure, options)
 	},
@@ -77,7 +75,6 @@ func init() {
 	proxyCmd.Flags().StringSliceVarP(&proxyFlags.recordOnlyResponseHeaders, "response-headers", "H", nil, "Record only these response headers")
 	proxyCmd.Flags().BoolVar(&proxyFlags.flatResponseFileStructure, "flat", false, "Flatten the response file structure")
 	proxyCmd.Flags().BoolVar(&proxyFlags.insecure, "insecure", false, "Skip TLS certificate verification when forwarding to the upstream")
-	proxyCmd.Flags().BoolVar(&proxyFlags.soap11Mode, "soap1.1", false, "Enable SOAP 1.1/1.2 aware mode for capturing requests/responses with SOAPAction")
 	rootCmd.AddCommand(proxyCmd)
 }
 
