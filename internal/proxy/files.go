@@ -82,18 +82,11 @@ func generateRespFileName(
 		}
 		parentDir = dir
 		respFileName = upstreamHost + "-" + req.Method + "-" + flatParent + baseFileName
-		if options.Soap11Mode {
-			logger.Debugf("SOAP 1.1 mode enabled - checking for SOAPAction header")
-			if soapAction := extractSoapAction(req); soapAction != "" {
-				logger.Debugf("Found SOAPAction: '%s', generating SOAP-aware filename", soapAction)
-				sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
-				sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
-				sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
-				respFileName = respFileName + "_" + sanitizedAction
-				logger.Debugf("Generated SOAP filename: '%s'", respFileName)
-			} else {
-				logger.Debugf("No SOAPAction found, using standard filename")
-			}
+		if soapAction := extractSoapAction(req); soapAction != "" {
+			sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
+			sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
+			sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
+			respFileName = respFileName + "_" + sanitizedAction
 		}
 
 	} else {
@@ -102,13 +95,11 @@ func generateRespFileName(
 			return "", err
 		}
 		respFileName = req.Method + "-" + baseFileName
-		if options.Soap11Mode {
-			if soapAction := extractSoapAction(req); soapAction != "" {
-				sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
-				sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
-				sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
-				respFileName = respFileName + "_" + sanitizedAction
-			}
+		if soapAction := extractSoapAction(req); soapAction != "" {
+			sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
+			sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
+			sanitizedAction = strings.ReplaceAll(sanitizedAction, ".", "_")
+			respFileName = respFileName + "_" + sanitizedAction
 		}
 	}
 

@@ -36,7 +36,6 @@ type RecorderOptions struct {
 	IgnoreDuplicateRequests   bool
 	RecordOnlyResponseHeaders []string
 	FlatResponseFileStructure bool
-	Soap11Mode                bool
 }
 
 func StartRecorder(upstream string, dir string, options RecorderOptions) (chan HttpExchange, error) {
@@ -61,13 +60,9 @@ func StartRecorder(upstream string, dir string, options RecorderOptions) (chan H
 			exchange := <-recordC
 
 			var responseFilePrefix string
-			var requestHash string
-			if options.Soap11Mode {
-				// In SOAP mode, use SOAPAction + path for uniqueness
-				soapAction := extractSoapAction(exchange.Request)
-				requestHash = getRequestHash(exchange.Request) + "_" + soapAction
-			} else {
-				requestHash = getRequestHash(exchange.Request)
+			requestHash := getRequestHash(exchange.Request)
+			if soapAction := extractSoapAction(exchange.Request); soapAction != "" {
+				requestHash = requestHash + "_" + soapAction
 			}
 			if stringutil.Contains(requestHashes, requestHash) {
 				if options.IgnoreDuplicateRequests {
@@ -212,21 +207,14 @@ func buildResource(
 			}
 		}
 		resource.RequestHeaders = &headers
-	} else if options.Soap11Mode {
-		// In SOAP mode, capture the header that contains the action for matching
-		if soapAction := extractSoapAction(&req); soapAction != "" {
-			headers := make(map[string]string)
-			if req.Header.Get("SOAPAction") != "" {
-				// SOAP 1.1 style - use SOAPAction header
-				headers["SOAPAction"] = soapAction
-			} else {
-				// SOAP 1.2 style - use Content-Type header verbatim
-				if contentType := req.Header.Get("Content-Type"); contentType != "" {
-					headers["Content-Type"] = contentType
-				}
-			}
-			resource.RequestHeaders = &headers
+	} else if soapAction := extractSoapAction(&req); soapAction != "" {
+		headers := make(map[string]string)
+		if req.Header.Get("SOAPAction") != "" {
+			headers["SOAPAction"] = soapAction
+		} else if contentType := req.Header.Get("Content-Type"); contentType != "" {
+			headers["Content-Type"] = contentType
 		}
+		resource.RequestHeaders = &headers
 	}
 	if options.CaptureRequestBody && exchange.RequestBody != nil {
 		contentType := req.Header.Get("Content-Type")

@@ -38,6 +38,7 @@ func init() {
 func Test_proxyUpstream(t *testing.T) {
 	type args struct {
 		rewrite bool
+		soap    bool
 		options proxy.RecorderOptions
 	}
 	tests := []struct {
@@ -66,9 +67,9 @@ func Test_proxyUpstream(t *testing.T) {
 			name: "proxy SOAP 1.1 service with SOAPAction",
 			args: args{
 				rewrite: false,
+				soap:    true,
 				options: proxy.RecorderOptions{
 					FlatResponseFileStructure: false,
-					Soap11Mode:                true,
 				},
 			},
 		},
@@ -96,7 +97,7 @@ func Test_proxyUpstream(t *testing.T) {
 				t.Fatalf("proxy did not come up on port %d", port)
 			}
 
-			if tt.args.options.Soap11Mode {
+			if tt.args.soap {
 				if err := sendSoapRequestToProxy(port); err != nil {
 					t.Fatal(err)
 				}
@@ -109,7 +110,7 @@ func Test_proxyUpstream(t *testing.T) {
 			upstreamHostAndPort := fmt.Sprintf("localhost-%d", upstreamPort)
 			cfgFileName := upstreamHostAndPort + "-config.yaml"
 			var indexFileName string
-			if tt.args.options.Soap11Mode {
+			if tt.args.soap {
 				if tt.args.options.FlatResponseFileStructure {
 					indexFileName = upstreamHostAndPort + "-POST-index_http___example_com_service_GetUser.txt"
 				} else {
