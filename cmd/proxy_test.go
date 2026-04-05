@@ -79,7 +79,7 @@ func Test_proxyUpstream(t *testing.T) {
 			}
 
 			go func() {
-				proxyUpstream(upstream, port, outputDir, tt.args.rewrite, tt.args.options)
+				proxyUpstream(upstream, port, outputDir, tt.args.rewrite, false, tt.args.options)
 			}()
 			if up := engine.WaitUntilUp(port, nil); !up {
 				t.Fatalf("proxy did not come up on port %d", port)
