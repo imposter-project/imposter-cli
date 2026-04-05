@@ -61,9 +61,6 @@ func StartRecorder(upstream string, dir string, options RecorderOptions) (chan H
 
 			var responseFilePrefix string
 			requestHash := getRequestHash(exchange.Request)
-			if soapAction := extractSoapAction(exchange.Request); soapAction != "" {
-				requestHash = requestHash + "_" + soapAction
-			}
 			if stringutil.Contains(requestHashes, requestHash) {
 				if options.IgnoreDuplicateRequests {
 					logger.Debugf("skipping recording of duplicate request %s %v", exchange.Request.Method, exchange.Request.URL)
@@ -247,10 +244,15 @@ func buildResource(
 	return resource, nil
 }
 
-// getRequestHash generates a hash for a request based on the HTTP method and the URL. It does
-// not take into consideration request headers.
+// getRequestHash generates a hash for a request based on the HTTP method,
+// URL, and SOAP action (if present). This ensures that SOAP operations
+// sharing the same endpoint URL are treated as distinct requests.
 func getRequestHash(req *http.Request) string {
-	return stringutil.Sha1hashString(req.Method + req.URL.String())
+	key := req.Method + req.URL.String()
+	if soapAction := extractSoapAction(req); soapAction != "" {
+		key += soapAction
+	}
+	return stringutil.Sha1hashString(key)
 }
 
 func updateConfigFile(exchange HttpExchange, options impostermodel2.ConfigGenerationOptions, resources []impostermodel2.Resource, configFile string) error {
