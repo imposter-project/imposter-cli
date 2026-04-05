@@ -27,46 +27,31 @@ import (
 	"strings"
 )
 
-// extractSoapAction extracts the SOAPAction header from the request or
-// Content-Type action parameter (for SOAP 1.2).
+// extractSoapAction returns the SOAP action for the request, looking first
+// at the SOAPAction header (SOAP 1.1) and falling back to the `action`
+// parameter on the Content-Type header (SOAP 1.2). The value is unquoted.
+// An empty string is returned when no action is present.
 func extractSoapAction(req *http.Request) string {
-	// First try the SOAPAction header (SOAP 1.1)
-	soapAction := req.Header.Get("SOAPAction")
-	logger.Debugf("SOAPAction header raw value: '%s'", soapAction)
-
-	if soapAction == "" {
-		// Try Content-Type action parameter (SOAP 1.2)
-		contentType := req.Header.Get("Content-Type")
-		logger.Debugf("Content-Type header: '%s'", contentType)
-
-		if strings.Contains(contentType, "action=") {
-			parts := strings.Split(contentType, "action=")
-			if len(parts) > 1 {
-				actionPart := strings.TrimSpace(parts[1])
-				if strings.HasPrefix(actionPart, "\"") {
-					if endQuote := strings.Index(actionPart[1:], "\""); endQuote != -1 {
-						soapAction = actionPart[1 : endQuote+1]
-					}
-				} else {
-					if semicolon := strings.Index(actionPart, ";"); semicolon != -1 {
-						soapAction = actionPart[:semicolon]
-					} else {
-						soapAction = actionPart
-					}
-				}
-				logger.Debugf("Extracted action from Content-Type: '%s'", soapAction)
-			}
-		}
+	// SOAP 1.1: SOAPAction header
+	if soapAction := strings.Trim(req.Header.Get("SOAPAction"), "\""); soapAction != "" {
+		logger.Debugf("extracted SOAPAction from header: %q", soapAction)
+		return soapAction
 	}
-
-	if soapAction == "" {
-		logger.Debugf("No SOAPAction header or Content-Type action found in request")
+	// SOAP 1.2: action parameter on the Content-Type header
+	contentType := req.Header.Get("Content-Type")
+	if contentType == "" {
 		return ""
 	}
-
-	soapAction = strings.Trim(soapAction, "\"")
-	logger.Debugf("SOAPAction after processing: '%s'", soapAction)
-	return soapAction
+	_, params, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		logger.Debugf("failed to parse Content-Type %q: %v", contentType, err)
+		return ""
+	}
+	if action := params["action"]; action != "" {
+		logger.Debugf("extracted SOAPAction from Content-Type: %q", action)
+		return action
+	}
+	return ""
 }
 
 // generateRespFileName returns a unique filename for the given response
