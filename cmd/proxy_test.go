@@ -211,9 +211,9 @@ func sendSoapRequestToProxy(port int) error {
 		return fmt.Errorf("body read failed for proxy at %s: %s", url, err)
 	}
 	_ = resp.Body.Close()
-	if resp.StatusCode == 200 {
-		logger.Tracef("SOAP proxy up at %s", url)
-		return nil
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("SOAP proxy at %s returned status %d, want 200", url, resp.StatusCode)
 	}
+	logger.Tracef("SOAP proxy up at %s", url)
 	return nil
 }
