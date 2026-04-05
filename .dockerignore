@@ -1,0 +1,14 @@
+.git
+.gitignore
+.github/
+.goreleaser.yml
+docs/
+*.md
+Makefile
+since.yaml
+install/
+*_test.go
+testdata/
+LICENSE
+imposter
+*.exe
