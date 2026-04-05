@@ -204,6 +204,14 @@ func buildResource(
 			}
 		}
 		resource.RequestHeaders = &headers
+	} else if soapAction := extractSoapAction(&req); soapAction != "" {
+		headers := make(map[string]string)
+		if req.Header.Get("SOAPAction") != "" {
+			headers["SOAPAction"] = soapAction
+		} else if contentType := req.Header.Get("Content-Type"); contentType != "" {
+			headers["Content-Type"] = contentType
+		}
+		resource.RequestHeaders = &headers
 	}
 	if options.CaptureRequestBody && exchange.RequestBody != nil {
 		contentType := req.Header.Get("Content-Type")
@@ -236,10 +244,15 @@ func buildResource(
 	return resource, nil
 }
 
-// getRequestHash generates a hash for a request based on the HTTP method and the URL. It does
-// not take into consideration request headers.
+// getRequestHash generates a hash for a request based on the HTTP method,
+// URL, and SOAP action (if present). This ensures that SOAP operations
+// sharing the same endpoint URL are treated as distinct requests.
 func getRequestHash(req *http.Request) string {
-	return stringutil.Sha1hashString(req.Method + req.URL.String())
+	key := req.Method + req.URL.String()
+	if soapAction := extractSoapAction(req); soapAction != "" {
+		key += soapAction
+	}
+	return stringutil.Sha1hashString(key)
 }
 
 func updateConfigFile(exchange HttpExchange, options impostermodel2.ConfigGenerationOptions, resources []impostermodel2.Resource, configFile string) error {

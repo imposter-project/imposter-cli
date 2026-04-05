@@ -27,6 +27,39 @@ import (
 	"strings"
 )
 
+// extractSoapAction returns the SOAP action for the request, looking first
+// at the SOAPAction header (SOAP 1.1) and falling back to the `action`
+// parameter on the Content-Type header (SOAP 1.2). The value is unquoted.
+// An empty string is returned when no action is present.
+func extractSoapAction(req *http.Request) string {
+	// SOAP 1.1: SOAPAction header
+	if soapAction := strings.Trim(req.Header.Get("SOAPAction"), "\""); soapAction != "" {
+		logger.Debugf("extracted SOAPAction from header: %q", soapAction)
+		return soapAction
+	}
+	// SOAP 1.2: action parameter on the Content-Type header
+	contentType := req.Header.Get("Content-Type")
+	if contentType == "" {
+		return ""
+	}
+	_, params, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		logger.Debugf("failed to parse Content-Type %q: %v", contentType, err)
+		return ""
+	}
+	if action := params["action"]; action != "" {
+		logger.Debugf("extracted SOAPAction from Content-Type: %q", action)
+		return action
+	}
+	return ""
+}
+
+// sanitiseSoapAction replaces characters that are unsafe in filenames.
+func sanitiseSoapAction(action string) string {
+	r := strings.NewReplacer("/", "_", ":", "_", ".", "_")
+	return r.Replace(action)
+}
+
 // generateRespFileName returns a unique filename for the given response
 func generateRespFileName(
 	upstreamHost string,
@@ -62,6 +95,9 @@ func generateRespFileName(
 			return "", err
 		}
 		respFileName = req.Method + "-" + baseFileName
+	}
+	if soapAction := extractSoapAction(req); soapAction != "" {
+		respFileName = respFileName + "_" + sanitiseSoapAction(soapAction)
 	}
 
 	var suffix string
