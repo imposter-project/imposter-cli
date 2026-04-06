@@ -184,6 +184,11 @@ Example:
 
     imposter proxy https://example.com
 
+To proxy an HTTPS upstream that uses a self-signed or otherwise untrusted
+certificate, add `--insecure` to skip TLS verification:
+
+    imposter proxy --insecure https://self-signed.example.com
+
 Usage:
 
 ```
@@ -198,6 +203,7 @@ Flags:
       --flat                        Flatten the response file structure
   -h, --help                        help for proxy
   -i, --ignore-duplicate-requests   Ignore duplicate requests with same method and URI (default true)
+      --insecure                    Skip TLS certificate verification when forwarding to the upstream
   -o, --output-dir string           Directory in which HTTP exchanges are recorded (default: current working directory)
   -p, --port int                    Port on which to listen (default 8080)
   -H, --response-headers strings    Record only these response headers

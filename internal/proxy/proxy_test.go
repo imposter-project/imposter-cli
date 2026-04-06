@@ -172,7 +172,7 @@ func TestHandle(t *testing.T) {
 			}
 
 			// Call the Handle function with our test server as upstream
-			Handle(server.URL, rr, req, listenerFn)
+			Handle(server.URL, rr, req, false, listenerFn)
 
 			// Verify status code
 			if capturedStatusCode != tc.statusCode {
@@ -213,6 +213,67 @@ func TestHandle(t *testing.T) {
 				actualValue := rr.Header().Get(headerName)
 				if actualValue != expectedValue {
 					t.Errorf("Expected response header %s=%s, got %s", headerName, expectedValue, actualValue)
+				}
+			}
+		})
+	}
+}
+
+// TestHandleInsecureTLS verifies that the insecure flag controls whether
+// requests to an upstream with a self-signed TLS certificate succeed.
+func TestHandleInsecureTLS(t *testing.T) {
+	// Upstream with a self-signed certificate (httptest.NewTLSServer).
+	upstream := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("secure hello"))
+	}))
+	defer upstream.Close()
+
+	cases := []struct {
+		name           string
+		insecure       bool
+		expectUpstream bool
+	}{
+		{name: "verified TLS rejects self-signed", insecure: false, expectUpstream: false},
+		{name: "insecure TLS accepts self-signed", insecure: true, expectUpstream: true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest("GET", "/", http.NoBody)
+			if err != nil {
+				t.Fatalf("failed to create request: %v", err)
+			}
+			req.RemoteAddr = "127.0.0.1:12345"
+
+			rr := httptest.NewRecorder()
+			var listenerCalled bool
+			listener := func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
+				listenerCalled = true
+				return respBody, respHeaders
+			}
+
+			Handle(upstream.URL, rr, req, tc.insecure, listener)
+
+			if tc.expectUpstream {
+				if !listenerCalled {
+					t.Fatalf("expected listener to be called when insecure=true")
+				}
+				if rr.Code != http.StatusOK {
+					t.Errorf("expected status 200, got %d", rr.Code)
+				}
+				if rr.Body.String() != "secure hello" {
+					t.Errorf("expected body %q, got %q", "secure hello", rr.Body.String())
+				}
+			} else {
+				// TLS verification should fail: Handle returns 502 BadGateway
+				// and the listener is never invoked.
+				if listenerCalled {
+					t.Errorf("expected listener NOT to be called when insecure=false against self-signed cert")
+				}
+				if rr.Code != http.StatusBadGateway {
+					t.Errorf("expected status 502, got %d", rr.Code)
 				}
 			}
 		})
@@ -268,7 +329,7 @@ func TestHandleEndToEnd(t *testing.T) {
 		w.Write([]byte(`{"status":"OK"}`))
 	})
 	proxyMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		Handle(upstreamURL, w, r, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
+		Handle(upstreamURL, w, r, false, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
 			// Pass through unchanged
 			return respBody, respHeaders
 		})

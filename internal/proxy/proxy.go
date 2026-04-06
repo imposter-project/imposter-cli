@@ -18,6 +18,7 @@ package proxy
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/stringutil"
@@ -25,6 +26,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -66,21 +68,43 @@ var skipRecordHeaders = []string{
 
 var logger = logging.GetLogger()
 
-var transport *http.Transport
+// defaultTransport returns the shared transport used for verified TLS
+// (or plain HTTP) upstream requests.
+var defaultTransport = sync.OnceValue(func() *http.Transport {
+	return newTransport(false)
+})
 
-func init() {
-	transport = &http.Transport{
+// insecureTransport returns the shared transport used for requests where
+// TLS certificate verification has been explicitly disabled.
+var insecureTransport = sync.OnceValue(func() *http.Transport {
+	return newTransport(true)
+})
+
+func newTransport(insecure bool) *http.Transport {
+	t := &http.Transport{
 		DisableCompression: true,
 		MaxIdleConns:       viper.GetInt("proxy.maxIdleConns"),
 		IdleConnTimeout:    viper.GetDuration("proxy.idleConnTimeout"),
 	}
-	logger.Tracef("initialised proxy transport: %+v", transport)
+	if insecure {
+		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	logger.Tracef("initialised proxy transport (insecure=%v): %+v", insecure, t)
+	return t
+}
+
+func getTransport(insecure bool) *http.Transport {
+	if insecure {
+		return insecureTransport()
+	}
+	return defaultTransport()
 }
 
 func Handle(
 	upstream string,
 	w http.ResponseWriter,
 	req *http.Request,
+	insecure bool,
 	listener func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header),
 ) {
 	startTime := time.Now()
@@ -95,7 +119,7 @@ func Handle(
 		return
 	}
 
-	statusCode, responseBody, respHeaders, err := forward(upstream, req.Method, path, queryString, clientReqHeaders, requestBody)
+	statusCode, responseBody, respHeaders, err := forward(upstream, req.Method, path, queryString, clientReqHeaders, requestBody, insecure)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadGateway)
@@ -131,6 +155,7 @@ func forward(
 	queryString string,
 	clientRequestHeaders *http.Header,
 	requestBody *[]byte,
+	insecure bool,
 ) (statusCode int, responseBody *[]byte, upstreamRespHeaders *http.Header, err error) {
 	logger.Debugf("invoking upstream %s with %s %s [body: %v bytes]", upstream, httpMethod, path, len(*requestBody))
 
@@ -147,7 +172,7 @@ func forward(
 	upstreamReqHeaders := req.Header
 	copyHeaders(clientRequestHeaders, &upstreamReqHeaders)
 
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: getTransport(insecure)}
 	resp, err := client.Do(req)
 	if err != nil {
 		return 0, nil, nil, err
