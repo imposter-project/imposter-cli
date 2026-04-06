@@ -273,7 +273,8 @@ Usage:
   imposter down [flags]
 
 Flags:
-  -t, --engine-type string   Imposter engine type (valid: docker,jvm - default "docker")
+  -a, --all                  Stop mocks for all engine types
+  -t, --engine-type string   Imposter engine type (valid: docker,golang,jvm - default "docker")
   -h, --help                 help for down
 ```
 
@@ -296,7 +297,8 @@ Aliases:
   list, ls
 
 Flags:
-  -t, --engine-type string   Imposter engine type (valid: docker,jvm - default "docker")
+  -a, --all                  List mocks for all engine types
+  -t, --engine-type string   Imposter engine type (valid: docker,golang,jvm - default "docker")
   -x, --exit-code-health     Set exit code based on mock health
   -h, --help                 help for list
   -q, --quiet                Quieten output; only print ID
