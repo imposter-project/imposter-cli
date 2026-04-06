@@ -27,6 +27,7 @@ import (
 
 var listFlags = struct {
 	engineType     string
+	all            bool
 	healthExitCode bool
 	quiet          bool
 }{}
@@ -39,47 +40,56 @@ var listCmd = &cobra.Command{
 	Long: `Lists running Imposter mocks for the current engine type
 and reports their health.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		listMocks(engine.GetConfiguredType(listFlags.engineType), listFlags.quiet)
+		if listFlags.all {
+			listAllMocks(listFlags.quiet)
+		} else {
+			listMocks(engine.GetConfiguredType(listFlags.engineType), listFlags.quiet, false)
+		}
 	},
 }
 
 func init() {
 	listCmd.Flags().StringVarP(&listFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
+	listCmd.Flags().BoolVarP(&listFlags.all, "all", "a", false, "List mocks for all engine types")
 	listCmd.Flags().BoolVarP(&listFlags.healthExitCode, "exit-code-health", "x", false, "Set exit code based on mock health")
 	listCmd.Flags().BoolVarP(&listFlags.quiet, "quiet", "q", false, "Quieten output; only print ID")
+	listCmd.MarkFlagsMutuallyExclusive("engine-type", "all")
 	registerEngineTypeCompletions(listCmd)
 	rootCmd.AddCommand(listCmd)
 }
 
-func listMocks(engineType engine.EngineType, quiet bool) {
-	configDir := filepath.Join(os.TempDir(), "imposter-list")
-	mockEngine := engine.BuildEngine(engineType, configDir, engine.StartOptions{})
+func listAllMocks(quiet bool) {
+	var allRows [][]string
+	var totalMocks int
+	var anyFailed bool
 
-	mocks, err := mockEngine.ListAllManaged()
-	if err != nil {
-		logger.Fatalf("failed to list mocks: %s", err)
-	}
-
-	var anyFailed = false
-	var rows [][]string
-	for _, mock := range mocks {
-		engine.PopulateHealth(&mock)
-		if quiet {
-			os.Stdout.WriteString(mock.ID + "\n")
-		} else {
-			rows = append(rows, []string{mock.ID, mock.Name, strconv.Itoa(mock.Port), string(mock.Health)})
+	for _, engineType := range allEngineTypes {
+		var rows [][]string
+		var mocks int
+		var failed bool
+		err := runWithRecovery(func() {
+			var e error
+			rows, mocks, failed, e = listMocksForEngine(engineType, quiet, true)
+			if e != nil {
+				logger.Warnf("failed to list %s mocks: %s", engineType, e)
+			}
+		})
+		if err != nil {
+			logger.Warnf("failed to list %s mocks: %s", engineType, err)
+			continue
 		}
-		if mock.Health != engine.MockHealthHealthy {
+		allRows = append(allRows, rows...)
+		totalMocks += mocks
+		if failed {
 			anyFailed = true
 		}
 	}
 	if !quiet {
-		renderMocks(rows)
+		renderMocks(allRows, true)
 	}
 
 	if listFlags.healthExitCode {
-		// if there is at least one mock, and all mocks are healthy, return status 0
-		if len(mocks) > 0 && !anyFailed {
+		if totalMocks > 0 && !anyFailed {
 			os.Exit(0)
 		} else {
 			os.Exit(1)
@@ -87,9 +97,58 @@ func listMocks(engineType engine.EngineType, quiet bool) {
 	}
 }
 
-func renderMocks(rows [][]string) {
+func listMocks(engineType engine.EngineType, quiet bool, showEngine bool) {
+	rows, mockCount, anyFailed, err := listMocksForEngine(engineType, quiet, showEngine)
+	if err != nil {
+		logger.Fatalf("failed to list mocks: %s", err)
+	}
+	if !quiet {
+		renderMocks(rows, showEngine)
+	}
+
+	if listFlags.healthExitCode {
+		if mockCount > 0 && !anyFailed {
+			os.Exit(0)
+		} else {
+			os.Exit(1)
+		}
+	}
+}
+
+func listMocksForEngine(engineType engine.EngineType, quiet bool, showEngine bool) (rows [][]string, mockCount int, anyFailed bool, err error) {
+	configDir := filepath.Join(os.TempDir(), "imposter-list")
+	mockEngine := engine.BuildEngine(engineType, configDir, engine.StartOptions{})
+
+	mocks, err := mockEngine.ListAllManaged()
+	if err != nil {
+		return nil, 0, false, err
+	}
+
+	for _, mock := range mocks {
+		engine.PopulateHealth(&mock)
+		if quiet {
+			os.Stdout.WriteString(mock.ID + "\n")
+		} else {
+			row := []string{mock.ID, mock.Name, strconv.Itoa(mock.Port), string(mock.Health)}
+			if showEngine {
+				row = append(row, string(engineType))
+			}
+			rows = append(rows, row)
+		}
+		if mock.Health != engine.MockHealthHealthy {
+			anyFailed = true
+		}
+	}
+	return rows, len(mocks), anyFailed, nil
+}
+
+func renderMocks(rows [][]string, showEngine bool) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.Header([]string{"ID", "Name", "Port", "Health"})
+	header := []string{"ID", "Name", "Port", "Health"}
+	if showEngine {
+		header = append(header, "Engine")
+	}
+	table.Header(header)
 	table.Bulk(rows)
 	table.Render()
 }

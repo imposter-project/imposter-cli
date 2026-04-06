@@ -25,6 +25,7 @@ import (
 
 var downFlags = struct {
 	engineType string
+	all        bool
 }{}
 
 // downCmd represents the down command
@@ -33,25 +34,64 @@ var downCmd = &cobra.Command{
 	Short: "Stop running mocks",
 	Long:  `Stops running Imposter mocks for the current engine type.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stopAll(engine.GetConfiguredType(downFlags.engineType))
+		if downFlags.all {
+			stopAllEngines()
+		} else {
+			stopAll(engine.GetConfiguredType(downFlags.engineType))
+		}
 	},
 }
 
 func init() {
 	downCmd.Flags().StringVarP(&downFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
+	downCmd.Flags().BoolVarP(&downFlags.all, "all", "a", false, "Stop mocks for all engine types")
+	downCmd.MarkFlagsMutuallyExclusive("engine-type", "all")
 	registerEngineTypeCompletions(downCmd)
 	rootCmd.AddCommand(downCmd)
 }
 
+func stopAllEngines() {
+	logger.Info("stopping all managed mocks for all engine types...")
+	totalStopped := 0
+	for _, engineType := range allEngineTypes {
+		logger.Infof("checking %s engine...", engineType)
+		var stopped int
+		err := runWithRecovery(func() {
+			var e error
+			stopped, e = stopEngine(engineType)
+			if e != nil {
+				logger.Warnf("failed to stop %s mocks: %s", engineType, e)
+			}
+		})
+		if err != nil {
+			logger.Warnf("failed to stop %s mocks: %s", engineType, err)
+			continue
+		}
+		totalStopped += stopped
+	}
+	if totalStopped > 0 {
+		logger.Infof("stopped %d managed mock(s) in total", totalStopped)
+	} else {
+		logger.Info("no managed mocks were found")
+	}
+}
+
 func stopAll(engineType engine.EngineType) {
 	logger.Info("stopping all managed mocks...")
-
-	configDir := filepath.Join(os.TempDir(), "imposter-down")
-	mockEngine := engine.BuildEngine(engineType, configDir, engine.StartOptions{})
-
-	if stopped := mockEngine.StopAllManaged(); stopped > 0 {
+	stopped, err := stopEngine(engineType)
+	if err != nil {
+		logger.Fatalf("failed to stop mocks: %s", err)
+	}
+	if stopped > 0 {
 		logger.Infof("stopped %d managed mock(s)", stopped)
 	} else {
 		logger.Info("no managed mocks were found")
 	}
+}
+
+func stopEngine(engineType engine.EngineType) (int, error) {
+	configDir := filepath.Join(os.TempDir(), "imposter-down")
+	mockEngine := engine.BuildEngine(engineType, configDir, engine.StartOptions{})
+	stopped := mockEngine.StopAllManaged()
+	return stopped, nil
 }
