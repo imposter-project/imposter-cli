@@ -18,10 +18,11 @@ package cmd
 
 import (
 	"fmt"
+	"testing"
+
 	"gatehill.io/imposter/internal/engine"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_describeVersions(t *testing.T) {
@@ -54,9 +55,18 @@ func Test_describeVersions(t *testing.T) {
 			},
 		},
 		{
-			name: "print latest version",
+			name: "print latest version (jvm)",
 			args: args{
-				engineType: engine.EngineTypeDockerCore,
+				engineType: engine.EngineTypeJvmSingleJar,
+				version:    "latest",
+				full:       true,
+				format:     outputFormatPlain,
+			},
+		},
+		{
+			name: "print latest version (golang)",
+			args: args{
+				engineType: engine.EngineTypeGolang,
 				version:    "latest",
 				full:       true,
 				format:     outputFormatPlain,
