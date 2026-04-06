@@ -127,7 +127,8 @@ Some configuration elements can be specified as environment variables:
 
 ### Engine types
 
-Imposter supports different mock engine types: Docker (default) and JVM. For more information about configuring the engine type see:
+Imposter supports different mock engine types: Docker (default), JVM and Golang. For more information about configuring the engine type see:
 
-- [Docker engine](./docker_engine.md) (default)
-- [JVM engine](./jvm_engine.md)
+- [Docker engine](./engine_docker.md) (default)
+- [JVM engine](./engine_jvm.md)
+- [Golang engine](./engine_golang.md)

@@ -67,7 +67,7 @@ Send dynamic responses:
 
 ## Getting started & documentation
 
-You must have [Docker](https://docs.docker.com/get-docker/) installed and running, or if Docker is not available, you can run on the [JVM](./docs/jvm_engine.md).
+You must have [Docker](https://docs.docker.com/get-docker/) installed and running, or if Docker is not available, you can run on the [JVM](./docs/engine_jvm.md) or use the [Golang](./docs/engine_golang.md) engine.
 
 ### Installation
 

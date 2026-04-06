@@ -6,10 +6,11 @@ Imposter can be installed on Linux, macOS and Windows.
 
 ## Prerequisites
 
-Imposter supports different mock engine types: Docker (default) and JVM. For more information about configuring the engine type see:
+Imposter supports different mock engine types: Docker (default), JVM and Golang. For more information about configuring the engine type see:
 
-- [Docker engine](./docker_engine.md) (default)
-- [JVM engine](./jvm_engine.md)
+- [Docker engine](./engine_docker.md) (default)
+- [JVM engine](./engine_jvm.md)
+- [Golang engine](./engine_golang.md)
 
 **You must have at least one of the engine types configured to use Imposter.**
 

@@ -1,6 +1,6 @@
 # Using the Docker mock engine
 
-Imposter supports different mock engine types: Docker and [JVM](./jvm_engine.md). This document describes how to use the **Docker** engine.
+Imposter supports different mock engine types: Docker, [JVM](./engine_jvm.md) and [Golang](./engine_golang.md). This document describes how to use the **Docker** engine.
 
 ## Prerequisites
 
