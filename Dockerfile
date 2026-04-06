@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -9,23 +9,25 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the binary
-RUN go build -tags lambda.norpc -o imposter-cli
+# Build a statically linked binary
+RUN CGO_ENABLED=0 go build -tags lambda.norpc -ldflags="-s -w" -o imposter-cli
+
+# Create an empty directory to use in the scratch stage
+RUN mkdir /empty
 
 # Final stage
-FROM alpine:latest
+FROM scratch
 
-RUN apk --no-cache add ca-certificates curl openjdk17-jre docker-cli
-
-WORKDIR /app
-
-# Copy the binary from builder stage
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/imposter-cli /usr/local/bin/imposter
+COPY --from=builder /empty /mocks
+COPY --from=builder /empty /tmp
 
-# Create directory for output
-RUN mkdir -p /output
+WORKDIR /mocks
+
+ENV IMPOSTER_ENGINE=golang
 
 EXPOSE 8080
 
-# Default command shows help
-CMD ["imposter", "--help"]
+ENTRYPOINT ["imposter"]
+CMD ["--help"]
