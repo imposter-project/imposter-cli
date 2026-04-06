@@ -37,6 +37,8 @@ type RecorderOptions struct {
 	IgnoreDuplicateRequests   bool
 	RecordOnlyResponseHeaders []string
 	FlatResponseFileStructure bool
+	Soap11Mode                bool
+	Insecure                  bool
 }
 
 func StartRecorder(upstream string, dir string, options RecorderOptions) (chan HttpExchange, error) {
@@ -61,7 +63,16 @@ func StartRecorder(upstream string, dir string, options RecorderOptions) (chan H
 			exchange := <-recordC
 
 			var responseFilePrefix string
-			requestHash := getRequestHash(exchange.Request)
+			var requestHash string
+			
+			if options.Soap11Mode {
+				// In SOAP mode, use SOAPAction + path for uniqueness
+				soapAction := extractSoapAction(exchange.Request)
+				requestHash = getRequestHash(exchange.Request) + "_" + soapAction
+			} else {
+				requestHash = getRequestHash(exchange.Request)
+			}
+			
 			if stringutil.Contains(requestHashes, requestHash) {
 				if options.IgnoreDuplicateRequests {
 					logger.Debugf("skipping recording of duplicate request %s %v", exchange.Request.Method, exchange.Request.URL)
@@ -205,6 +216,25 @@ func buildResource(
 			}
 		}
 		resource.RequestHeaders = &headers
+	} else if options.Soap11Mode {
+		// In SOAP mode, capture the header that contains the action for matching
+		soapAction := extractSoapAction(&req)
+		if soapAction != "" {
+			headers := make(map[string]string)
+			
+			// Check if action came from SOAPAction header or Content-Type
+			if req.Header.Get("SOAPAction") != "" {
+				// SOAP 1.1 style - use SOAPAction header
+				headers["SOAPAction"] = soapAction
+			} else {
+				// SOAP 1.2 style - use Content-Type header
+				contentType := req.Header.Get("Content-Type")
+				if contentType != "" {
+					headers["Content-Type"] = contentType
+				}
+			}
+			resource.RequestHeaders = &headers
+		}
 	}
 	if options.CaptureRequestBody && exchange.RequestBody != nil {
 		contentType := req.Header.Get("Content-Type")
@@ -252,4 +282,19 @@ func updateConfigFile(exchange HttpExchange, options impostermodel2.ConfigGenera
 	}
 	logger.Debugf("wrote config file %s for %s %v", configFile, req.Method, req.URL)
 	return nil
+}
+
+// generateSoapFilename generates a filename that incorporates the SOAPAction value
+func generateSoapFilename(basePath string, soapAction string, fileType string) string {
+	sanitizedPath := strings.ReplaceAll(basePath, "/", "_")
+	sanitizedPath = strings.ReplaceAll(sanitizedPath, "\\", "_")
+	
+	if soapAction != "" {
+		// Sanitize SOAPAction for filename
+		sanitizedAction := strings.ReplaceAll(soapAction, "/", "_")
+		sanitizedAction = strings.ReplaceAll(sanitizedAction, "\\", "_")
+		sanitizedAction = strings.ReplaceAll(sanitizedAction, ":", "_")
+		return fmt.Sprintf("%s_%s.%s", sanitizedPath, sanitizedAction, fileType)
+	}
+	return fmt.Sprintf("%s.%s", sanitizedPath, fileType)
 }

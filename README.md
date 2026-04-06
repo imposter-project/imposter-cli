@@ -184,6 +184,10 @@ Example:
 
     imposter proxy https://example.com
 
+SOAP 1.1/1.2 example:
+
+    imposter proxy --soap1.1 http://soap-service.example.com/service
+
 Usage:
 
 ```
@@ -198,10 +202,12 @@ Flags:
       --flat                        Flatten the response file structure
   -h, --help                        help for proxy
   -i, --ignore-duplicate-requests   Ignore duplicate requests with same method and URI (default true)
+      --insecure                    Skip TLS certificate verification for HTTPS upstream servers
   -o, --output-dir string           Directory in which HTTP exchanges are recorded (default: current working directory)
   -p, --port int                    Port on which to listen (default 8080)
   -H, --response-headers strings    Record only these response headers
   -r, --rewrite-urls                Rewrite upstream URL in response body to proxy URL
+      --soap1.1                     Enable SOAP 1.1/1.2 aware mode for capturing requests/responses with action-based differentiation
 ```
 
 ### Pull engine

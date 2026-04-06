@@ -172,7 +172,7 @@ func TestHandle(t *testing.T) {
 			}
 
 			// Call the Handle function with our test server as upstream
-			Handle(server.URL, rr, req, listenerFn)
+			Handle(server.URL, rr, req, false, listenerFn)
 
 			// Verify status code
 			if capturedStatusCode != tc.statusCode {
@@ -268,7 +268,7 @@ func TestHandleEndToEnd(t *testing.T) {
 		w.Write([]byte(`{"status":"OK"}`))
 	})
 	proxyMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		Handle(upstreamURL, w, r, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
+		Handle(upstreamURL, w, r, false, func(reqBody *[]byte, statusCode int, respBody *[]byte, respHeaders *http.Header) (*[]byte, *http.Header) {
 			// Pass through unchanged
 			return respBody, respHeaders
 		})
