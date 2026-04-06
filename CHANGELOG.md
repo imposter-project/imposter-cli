@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.0] - 2026-04-06
+### Added
+- feat: add --all flag to ls and down commands (#106)
+
+### Changed
+- test: use jvm or golang engine type in latest version case
+
+### Fixed
+- fix: use modern format when scaffolding config
+
 ## [1.4.2] - 2026-04-04
 ### Fixed
 - fix(linux): fix cross-device link error when downloading engine binaries (#98)
