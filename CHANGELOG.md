@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.1] - 2026-04-07
+### Changed
+- build: add Dockerfile and .dockerignore
+- build: use scratch base image and add Docker CI workflow
+- chore(deps): bump github.com/docker/docker from 28.5.1 to 28.5.2
+- chore(deps): bump github.com/olekukonko/tablewriter from 1.0.9 to 1.1.4
+- chore(deps): bump github.com/testcontainers/testcontainers-go from 0.36.0 to 0.41.0
+- chore(deps): bump go.opentelemetry.io/otel/sdk from 1.35.0 to 1.40.0
+- chore(deps): bump the spf13 group with 2 updates
+- docs: describe golang engine
+
 ## [1.5.0] - 2026-04-06
 ### Added
 - feat: add --all flag to ls and down commands (#106)
