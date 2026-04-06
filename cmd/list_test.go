@@ -151,4 +151,3 @@ func Test_listCmd_mutual_exclusivity(t *testing.T) {
 	err := rootCmd.Execute()
 	require.Error(t, err, "should reject --all with --engine-type")
 }
-

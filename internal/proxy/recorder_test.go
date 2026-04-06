@@ -272,7 +272,7 @@ func Test_buildResource(t *testing.T) {
 				Method: "GET",
 				Response: &impostermodel.ResponseConfig{
 					StatusCode: 0,
-					StaticFile: "response.txt",
+					File:       "response.txt",
 				},
 			},
 			wantErr: false,

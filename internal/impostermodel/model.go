@@ -16,12 +16,20 @@ limitations under the License.
 
 package impostermodel
 
+const StepTypeScript = "script"
+
+type StepConfig struct {
+	Type     string `json:"type"`
+	Language string `json:"language,omitempty"`
+	File     string `json:"file,omitempty"`
+	Code     string `json:"code,omitempty"`
+}
+
 type ResponseConfig struct {
 	StatusCode  int                `json:"statusCode,omitempty"`
-	StaticFile  string             `json:"staticFile,omitempty"`
-	StaticData  string             `json:"staticData,omitempty"`
+	File        string             `json:"file,omitempty"`
+	Content     string             `json:"content,omitempty"`
 	ExampleName string             `json:"exampleName,omitempty"`
-	ScriptFile  string             `json:"scriptFile,omitempty"`
 	Headers     *map[string]string `json:"headers,omitempty"`
 }
 
@@ -37,6 +45,7 @@ type Resource struct {
 	QueryParams    *map[string]string `json:"queryParams,omitempty"`
 	RequestBody    *RequestBody       `json:"requestBody,omitempty"`
 	RequestHeaders *map[string]string `json:"requestHeaders,omitempty"`
+	Steps          *[]StepConfig      `json:"steps,omitempty"`
 	Response       *ResponseConfig    `json:"response,omitempty"`
 }
 

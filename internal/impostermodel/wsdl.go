@@ -36,7 +36,7 @@ func buildWsdlResources(wsdlFilePath string, scriptEngine ScriptEngine, scriptFi
 			},
 		}
 		if IsScriptEngineEnabled(scriptEngine) {
-			resource.Response.ScriptFile = scriptFileName
+			resource.Steps = &[]StepConfig{{Type: StepTypeScript, File: scriptFileName}}
 		}
 		resources = append(resources, resource)
 	}

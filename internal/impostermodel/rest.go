@@ -90,11 +90,11 @@ func buildRestResources(responseFilePath string, scriptEngine ScriptEngine, scri
 		Method: "GET",
 		Response: &ResponseConfig{
 			StatusCode: 200,
-			StaticFile: filepath.Base(responseFilePath),
+			File:       filepath.Base(responseFilePath),
 		},
 	}
 	if IsScriptEngineEnabled(scriptEngine) {
-		resource.Response.ScriptFile = scriptFileName
+		resource.Steps = &[]StepConfig{{Type: StepTypeScript, File: scriptFileName}}
 	}
 	return []Resource{resource}
 }

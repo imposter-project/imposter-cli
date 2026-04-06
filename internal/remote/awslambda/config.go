@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"os/signal"
+	"strconv"
+
 	"gatehill.io/imposter/internal/logging"
 	remote2 "gatehill.io/imposter/internal/remote"
 	"gatehill.io/imposter/internal/workspace"
 	"github.com/araddon/dateparse"
-	"os"
-	"os/signal"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	lambdatypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
-	"strconv"
 )
 
 type LambdaArchitecture string

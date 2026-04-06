@@ -17,13 +17,14 @@ limitations under the License.
 package impostermodel
 
 import (
+	"os"
+	"path"
+	"path/filepath"
+
 	"gatehill.io/imposter/internal/fileutil"
 	"gatehill.io/imposter/internal/logging"
 	"gatehill.io/imposter/internal/openapi"
 	"gatehill.io/imposter/internal/wsdl"
-	"os"
-	"path"
-	"path/filepath"
 	"sigs.k8s.io/yaml"
 )
 
@@ -37,7 +38,7 @@ type ConfigGenerationOptions struct {
 
 var logger = logging.GetLogger()
 
-func Create(configDir string, generateResources bool, forceOverwrite bool, scriptEngine ScriptEngine, requireOpenApi bool) {
+func Create(configDir string, generateResources bool, forceOverwrite bool, scriptEngine ScriptEngine, requireSpecFiles bool) {
 	openApiSpecs := openapi.DiscoverOpenApiSpecs(configDir)
 	wsdlFiles := wsdl.DiscoverWSDLFiles(configDir)
 	logger.Infof("found %d OpenAPI spec(s) and %d WSDL file(s)", len(openApiSpecs), len(wsdlFiles))
@@ -63,7 +64,7 @@ func Create(configDir string, generateResources bool, forceOverwrite bool, scrip
 	}
 
 	if !specsFound {
-		if !requireOpenApi {
+		if !requireSpecFiles {
 			logger.Infof("falling back to rest plugin")
 			syntheticMockPath := path.Join(configDir, "mock.txt")
 			_, responseFilePath := generateRestMockFiles(configDir)
@@ -89,9 +90,7 @@ func GenerateConfig(options ConfigGenerationOptions, resources []Resource) []byt
 		pluginConfig.Resources = resources
 	} else {
 		if IsScriptEngineEnabled(options.ScriptEngine) {
-			pluginConfig.Response = &ResponseConfig{
-				ScriptFile: options.ScriptFileName,
-			}
+			logger.Warn("script engine is enabled but no resources were present - skipping adding script step")
 		}
 	}
 

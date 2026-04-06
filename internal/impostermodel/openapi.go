@@ -17,10 +17,11 @@ limitations under the License.
 package impostermodel
 
 import (
-	"gatehill.io/imposter/internal/openapi"
 	"sort"
 	"strconv"
 	"strings"
+
+	"gatehill.io/imposter/internal/openapi"
 )
 
 type ResourceGenerationOptions struct {
@@ -70,7 +71,7 @@ func GenerateResourcesFromSpec(specFilePath string, options ResourceGenerationOp
 					},
 				}
 				if IsScriptEngineEnabled(options.ScriptEngine) {
-					resource.Response.ScriptFile = options.ScriptFileName
+					resource.Steps = &[]StepConfig{{Type: StepTypeScript, File: options.ScriptFileName}}
 				}
 				resources = append(resources, resource)
 			}

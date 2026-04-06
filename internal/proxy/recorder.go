@@ -18,9 +18,6 @@ package proxy
 
 import (
 	"fmt"
-	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
-	"gatehill.io/imposter/internal/stringutil"
-	"github.com/google/uuid"
 	"net"
 	"net/http"
 	"net/url"
@@ -28,6 +25,10 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
+	"gatehill.io/imposter/internal/stringutil"
+	"github.com/google/uuid"
 )
 
 type RecorderOptions struct {
@@ -179,7 +180,7 @@ func buildResource(
 		if err != nil {
 			return impostermodel2.Resource{}, fmt.Errorf("failed to get relative path for response file: %s: %v", respFile, err)
 		}
-		response.StaticFile = relResponseFile
+		response.File = relResponseFile
 	}
 	resource := impostermodel2.Resource{
 		Path:     req.URL.Path,
