@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

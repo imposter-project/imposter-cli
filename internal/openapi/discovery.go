@@ -19,8 +19,8 @@ package openapi
 import (
 	"encoding/json"
 	"fmt"
-	"gatehill.io/imposter/internal/fileutil"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"os"
 	"path/filepath"
 	"sigs.k8s.io/yaml"

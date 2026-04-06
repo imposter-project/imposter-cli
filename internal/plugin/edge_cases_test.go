@@ -2,8 +2,8 @@ package plugin
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/config"
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"os"
 	"runtime"
 	"testing"

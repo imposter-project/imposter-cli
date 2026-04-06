@@ -2,10 +2,10 @@ package golang
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/compression"
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/library"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/compression"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/library"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"os"
 	"os/exec"
 	"path/filepath"

@@ -18,9 +18,9 @@ package docker
 
 import (
 	"context"
-	"gatehill.io/imposter/internal/engine"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"io"

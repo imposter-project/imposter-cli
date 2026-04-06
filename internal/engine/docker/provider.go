@@ -18,8 +18,8 @@ package docker
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/debounce"
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/debounce"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 )
 
 type DockerMockEngine struct {

@@ -20,7 +20,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"gatehill.io/imposter/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"io"
 	"os"
 	"path"

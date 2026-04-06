@@ -2,8 +2,8 @@ package library
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/compression"
-	"gatehill.io/imposter/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/compression"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"io"
 	"net/http"
 	"os"

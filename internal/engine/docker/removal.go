@@ -18,9 +18,9 @@ package docker
 
 import (
 	"context"
-	"gatehill.io/imposter/internal/debounce"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/imposter-project/imposter-cli/internal/debounce"
 	"sync"
 )
 

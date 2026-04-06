@@ -3,7 +3,7 @@ package workspace
 import (
 	"encoding/json"
 	"fmt"
-	"gatehill.io/imposter/internal/library"
+	"github.com/imposter-project/imposter-cli/internal/library"
 	"os"
 	"path/filepath"
 )

@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	proxy2 "gatehill.io/imposter/internal/proxy"
+	proxy2 "github.com/imposter-project/imposter-cli/internal/proxy"
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"

@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	library2 "gatehill.io/imposter/internal/library"
+	library2 "github.com/imposter-project/imposter-cli/internal/library"
 	"github.com/spf13/viper"
 	"path/filepath"
 )

@@ -3,7 +3,7 @@ package jvm
 import (
 	"testing"
 
-	"gatehill.io/imposter/internal/engine/procutil"
+	"github.com/imposter-project/imposter-cli/internal/engine/procutil"
 )
 
 func Test_readArg(t *testing.T) {

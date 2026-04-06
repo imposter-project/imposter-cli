@@ -2,7 +2,7 @@ package workspace
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"regexp"
 )
 

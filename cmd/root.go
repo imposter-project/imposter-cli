@@ -17,9 +17,9 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/internal/config"
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"

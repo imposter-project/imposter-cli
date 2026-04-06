@@ -2,7 +2,7 @@ package proxy
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/engine/enginetests"
+	"github.com/imposter-project/imposter-cli/internal/engine/enginetests"
 	"io"
 	"net/http"
 	"net/http/httptest"

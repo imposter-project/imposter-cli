@@ -2,11 +2,11 @@ package golang
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/library"
+	"github.com/imposter-project/imposter-cli/internal/library"
 	"os"
 	"path/filepath"
 
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 )
 
 const binCacheDir = ".imposter/engines/golang"

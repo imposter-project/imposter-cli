@@ -1,7 +1,7 @@
 package wsdl
 
 import (
-	"gatehill.io/imposter/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"path/filepath"
 )
 

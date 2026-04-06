@@ -18,8 +18,8 @@ package config
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/logging"
 	"github.com/coreos/go-semver/semver"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"os"
 	"path"
 	"path/filepath"

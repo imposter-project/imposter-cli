@@ -18,7 +18,7 @@ package config
 
 import (
 	"fmt"
-	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
+	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"

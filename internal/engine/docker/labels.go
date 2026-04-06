@@ -19,12 +19,12 @@ package docker
 import (
 	"context"
 	"fmt"
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/stringutil"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	filters2 "github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 )
 
 const labelKeyManaged = "io.gatehill.imposter.managed"

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 )
 
 type JvmEngineLibrary struct {

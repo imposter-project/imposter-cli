@@ -2,12 +2,12 @@ package jvm
 
 import (
 	"fmt"
-	library2 "gatehill.io/imposter/internal/library"
+	library2 "github.com/imposter-project/imposter-cli/internal/library"
 	"os"
 	"os/exec"
 	"path/filepath"
 
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/spf13/viper"
 )
 

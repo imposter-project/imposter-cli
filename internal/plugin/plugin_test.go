@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/sirupsen/logrus"
 	"testing"
 )

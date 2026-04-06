@@ -17,8 +17,8 @@ limitations under the License.
 package cmd
 
 import (
-	"gatehill.io/imposter/internal/fileutil"
-	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
+	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"

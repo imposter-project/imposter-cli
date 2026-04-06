@@ -2,10 +2,10 @@ package docker
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/engine"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"strings"
 )
 

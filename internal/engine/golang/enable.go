@@ -3,7 +3,7 @@ package golang
 import (
 	"path/filepath"
 
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 )
 
 var golangInitialised = false

@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"gatehill.io/imposter/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/config"
 	"os"
 	"path/filepath"
 	"testing"

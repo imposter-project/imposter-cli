@@ -1,8 +1,8 @@
 package plugin
 
 import (
-	"gatehill.io/imposter/internal/engine"
-	library2 "gatehill.io/imposter/internal/library"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	library2 "github.com/imposter-project/imposter-cli/internal/library"
 )
 
 type pluginConfiguration struct {

@@ -17,8 +17,8 @@ limitations under the License.
 package golang
 
 import (
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/engine/enginetests"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine/enginetests"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"

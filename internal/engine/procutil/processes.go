@@ -2,13 +2,13 @@ package procutil
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/shirou/gopsutil/v4/process"
 )
 

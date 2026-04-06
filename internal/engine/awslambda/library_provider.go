@@ -17,8 +17,8 @@ limitations under the License.
 package awslambda
 
 import (
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 )
 
 type LambdaLibrary struct{}

@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gatehill.io/imposter/internal/openapi"
+	"github.com/imposter-project/imposter-cli/internal/openapi"
 )
 
 type ResourceGenerationOptions struct {

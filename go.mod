@@ -1,4 +1,4 @@
-module gatehill.io/imposter
+module github.com/imposter-project/imposter-cli
 
 go 1.25.0
 

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"testing"
 )
 

@@ -3,7 +3,7 @@ package jvm
 import (
 	"strconv"
 
-	"gatehill.io/imposter/internal/engine/procutil"
+	"github.com/imposter-project/imposter-cli/internal/engine/procutil"
 )
 
 var matcher = procutil.ProcessMatcher{

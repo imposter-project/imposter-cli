@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gatehill.io/imposter/internal/engine/procutil"
+	"github.com/imposter-project/imposter-cli/internal/engine/procutil"
 )
 
 var matcher = procutil.ProcessMatcher{

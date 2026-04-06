@@ -18,10 +18,10 @@ package cmd
 
 import (
 	"bytes"
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/engine/docker"
-	"gatehill.io/imposter/internal/engine/golang"
-	"gatehill.io/imposter/internal/engine/jvm"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine/docker"
+	"github.com/imposter-project/imposter-cli/internal/engine/golang"
+	"github.com/imposter-project/imposter-cli/internal/engine/jvm"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"

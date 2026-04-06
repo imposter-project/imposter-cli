@@ -18,7 +18,7 @@ package impostermodel
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"os"
 	"path/filepath"
 )

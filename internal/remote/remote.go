@@ -2,8 +2,8 @@ package remote
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/logging"
-	workspace2 "gatehill.io/imposter/internal/workspace"
+	"github.com/imposter-project/imposter-cli/internal/logging"
+	workspace2 "github.com/imposter-project/imposter-cli/internal/workspace"
 	"net/url"
 	"os"
 	"path/filepath"

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"gatehill.io/imposter/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/config"
 	"github.com/spf13/cobra"
 	"os"
 	"path"

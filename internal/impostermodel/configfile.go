@@ -21,10 +21,10 @@ import (
 	"path"
 	"path/filepath"
 
-	"gatehill.io/imposter/internal/fileutil"
-	"gatehill.io/imposter/internal/logging"
-	"gatehill.io/imposter/internal/openapi"
-	"gatehill.io/imposter/internal/wsdl"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/openapi"
+	"github.com/imposter-project/imposter-cli/internal/wsdl"
 	"sigs.k8s.io/yaml"
 )
 

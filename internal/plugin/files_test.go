@@ -2,7 +2,7 @@ package plugin
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"os"
 	"path/filepath"
 	"runtime"

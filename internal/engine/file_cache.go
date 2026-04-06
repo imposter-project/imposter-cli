@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"gatehill.io/imposter/internal/library"
+	"github.com/imposter-project/imposter-cli/internal/library"
 )
 
 const fileCacheDir = ".imposter/filecache/"

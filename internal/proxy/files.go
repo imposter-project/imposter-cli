@@ -18,8 +18,8 @@ package proxy
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/stringutil"
 	"github.com/google/uuid"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"mime"
 	"net/http"
 	"os"

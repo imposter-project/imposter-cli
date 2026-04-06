@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"gatehill.io/imposter/internal/remote"
+	"github.com/imposter-project/imposter-cli/internal/remote"
 	"io"
 	"mime/multipart"
 	"net/http"

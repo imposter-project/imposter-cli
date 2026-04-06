@@ -18,8 +18,8 @@ package fileutil
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/logging"
-	"gatehill.io/imposter/internal/stringutil"
+	"github.com/imposter-project/imposter-cli/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"io"
 	"os"
 	"path"

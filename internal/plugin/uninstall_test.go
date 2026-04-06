@@ -1,9 +1,9 @@
 package plugin
 
 import (
-	"gatehill.io/imposter/internal/config"
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/stringutil"
+	"github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"os"
 	"path/filepath"
 	"testing"

@@ -3,8 +3,8 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
-	"gatehill.io/imposter/internal/prefs"
 	"github.com/coreos/go-semver/semver"
+	"github.com/imposter-project/imposter-cli/internal/prefs"
 	"io"
 	"net/http"
 	"strings"

@@ -26,9 +26,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
-	"gatehill.io/imposter/internal/stringutil"
 	"github.com/google/uuid"
+	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 )
 
 type RecorderOptions struct {

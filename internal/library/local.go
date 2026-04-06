@@ -2,7 +2,7 @@ package library
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/logging"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"

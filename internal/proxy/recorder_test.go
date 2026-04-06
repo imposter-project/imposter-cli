@@ -2,7 +2,7 @@ package proxy
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/impostermodel"
+	"github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"net/http"
 	"net/url"
 	"os"

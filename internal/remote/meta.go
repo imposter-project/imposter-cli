@@ -3,8 +3,8 @@ package remote
 import (
 	"encoding/json"
 	"fmt"
-	"gatehill.io/imposter/internal/stringutil"
-	"gatehill.io/imposter/internal/workspace"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
+	"github.com/imposter-project/imposter-cli/internal/workspace"
 	"os"
 )
 

@@ -18,8 +18,8 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/remote"
-	"gatehill.io/imposter/internal/workspace"
+	"github.com/imposter-project/imposter-cli/internal/remote"
+	"github.com/imposter-project/imposter-cli/internal/workspace"
 	"github.com/spf13/cobra"
 	"os"
 )

@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"strings"
 
-	"gatehill.io/imposter/internal/logging"
-	"gatehill.io/imposter/internal/prefs"
-	remote2 "gatehill.io/imposter/internal/remote"
-	"gatehill.io/imposter/internal/workspace"
+	"github.com/imposter-project/imposter-cli/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/prefs"
+	remote2 "github.com/imposter-project/imposter-cli/internal/remote"
+	"github.com/imposter-project/imposter-cli/internal/workspace"
 )
 
 const remoteType = "mockscloud"

@@ -2,8 +2,8 @@ package plugin
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/engine"
-	library2 "gatehill.io/imposter/internal/library"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	library2 "github.com/imposter-project/imposter-cli/internal/library"
 )
 
 // downloadPlugin downloads the specified plugin for the given engine type and version.

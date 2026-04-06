@@ -19,17 +19,17 @@ package main
 import (
 	"os"
 
-	"gatehill.io/imposter/internal/config"
-	"gatehill.io/imposter/internal/logging"
-	"gatehill.io/imposter/internal/remote/awslambda"
-	"gatehill.io/imposter/internal/remote/mockscloud"
-	"gatehill.io/imposter/internal/stringutil"
+	"github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/remote/awslambda"
+	"github.com/imposter-project/imposter-cli/internal/remote/mockscloud"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 
-	"gatehill.io/imposter/cmd"
-	awslambdaengine "gatehill.io/imposter/internal/engine/awslambda"
-	"gatehill.io/imposter/internal/engine/docker"
-	"gatehill.io/imposter/internal/engine/golang"
-	"gatehill.io/imposter/internal/engine/jvm"
+	"github.com/imposter-project/imposter-cli/cmd"
+	awslambdaengine "github.com/imposter-project/imposter-cli/internal/engine/awslambda"
+	"github.com/imposter-project/imposter-cli/internal/engine/docker"
+	"github.com/imposter-project/imposter-cli/internal/engine/golang"
+	"github.com/imposter-project/imposter-cli/internal/engine/jvm"
 )
 
 const defaultLogLevel = "debug"

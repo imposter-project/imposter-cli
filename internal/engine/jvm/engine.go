@@ -18,16 +18,16 @@ package jvm
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/debounce"
-	"gatehill.io/imposter/internal/logging"
-	"gatehill.io/imposter/internal/plugin"
+	"github.com/imposter-project/imposter-cli/internal/debounce"
+	"github.com/imposter-project/imposter-cli/internal/logging"
+	"github.com/imposter-project/imposter-cli/internal/plugin"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/engine/procutil"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine/procutil"
 	"github.com/sirupsen/logrus"
 )
 

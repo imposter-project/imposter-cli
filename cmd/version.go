@@ -18,8 +18,8 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/config"
-	"gatehill.io/imposter/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/spf13/cobra"
 	"sort"
 )

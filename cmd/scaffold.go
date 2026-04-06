@@ -17,7 +17,7 @@ limitations under the License.
 package cmd
 
 import (
-	impostermodel2 "gatehill.io/imposter/internal/impostermodel"
+	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"

@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/config"
 	"os"
 	"strings"
 

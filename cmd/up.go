@@ -18,11 +18,11 @@ package cmd
 
 import (
 	"fmt"
-	config2 "gatehill.io/imposter/internal/config"
-	"gatehill.io/imposter/internal/engine"
-	"gatehill.io/imposter/internal/fileutil"
-	"gatehill.io/imposter/internal/plugin"
-	"gatehill.io/imposter/internal/stringutil"
+	config2 "github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/plugin"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"

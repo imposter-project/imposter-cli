@@ -18,8 +18,8 @@ package cmd
 
 import (
 	"fmt"
-	"gatehill.io/imposter/internal/remote"
-	"gatehill.io/imposter/internal/stringutil"
+	"github.com/imposter-project/imposter-cli/internal/remote"
+	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
