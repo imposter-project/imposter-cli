@@ -13,7 +13,7 @@ COPY . .
 ARG TARGETARCH
 ARG VERSION=dev
 RUN CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -tags lambda.norpc \
-    -ldflags="-s -w -X gatehill.io/imposter/internal/config.version=${VERSION}" \
+    -ldflags="-s -w -X github.com/imposter-project/imposter-cli/internal/config.version=${VERSION}" \
     -o imposter-cli
 
 # Create an empty directory to use in the scratch stage
