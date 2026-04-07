@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.3] - 2026-04-07
+### Changed
+- build: add multi-platform Docker support and set version in image
+- docs: rename embed.md to sdk.md and expand SDK documentation
+- refactor: change Go module path to github.com/imposter-project/imposter-cli
+
+### Fixed
+- fix: bump google.golang.org/grpc to v1.79.3 (CVE-2026-33186)
+- fix: update Go module path in Dockerfile
+
 ## [1.5.2] - 2026-04-07
 ### Changed
 - ci: move Docker job into CI workflow and push latest tag on release
