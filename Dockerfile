@@ -9,8 +9,12 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build a statically linked binary
-RUN CGO_ENABLED=0 go build -tags lambda.norpc -ldflags="-s -w" -o imposter-cli
+# Build a statically linked binary for the target platform
+ARG TARGETARCH
+ARG VERSION=dev
+RUN CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -tags lambda.norpc \
+    -ldflags="-s -w -X gatehill.io/imposter/internal/config.version=${VERSION}" \
+    -o imposter-cli
 
 # Create an empty directory to use in the scratch stage
 RUN mkdir /empty
