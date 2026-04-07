@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.4] - 2026-04-07
+### Changed
+- ci: increase docker job timeout for multi-platform builds
+
 ## [1.5.3] - 2026-04-07
 ### Changed
 - build: add multi-platform Docker support and set version in image
