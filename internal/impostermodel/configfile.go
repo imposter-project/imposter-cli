@@ -17,9 +17,11 @@ limitations under the License.
 package impostermodel
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"github.com/imposter-project/imposter-cli/internal/logging"
@@ -98,7 +100,42 @@ func GenerateConfig(options ConfigGenerationOptions, resources []Resource) []byt
 	if err != nil {
 		logger.Fatalf("unable to marshal imposter config: %v", err)
 	}
-	return config
+	return append([]byte(buildConfigHeader(options.PluginName)), config...)
+}
+
+// buildConfigHeader returns a YAML comment block describing the file and
+// linking to the relevant docs.imposter.sh pages for the given plugin.
+func buildConfigHeader(pluginName string) string {
+	links := []string{
+		"General configuration: https://docs.imposter.sh/configuration/",
+	}
+	switch pluginName {
+	case "rest":
+		links = append(links,
+			"REST plugin: https://docs.imposter.sh/rest_plugin/",
+			"Request matching: https://docs.imposter.sh/request_matching/",
+		)
+	case "openapi":
+		links = append(links,
+			"OpenAPI plugin: https://docs.imposter.sh/openapi_plugin/",
+		)
+	case "soap":
+		links = append(links,
+			"SOAP plugin: https://docs.imposter.sh/soap_plugin/",
+		)
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "# Imposter mock configuration (%s plugin)\n", pluginName)
+	b.WriteString("#\n")
+	b.WriteString("# Reference docs:\n")
+	for _, l := range links {
+		fmt.Fprintf(&b, "#   - %s\n", l)
+	}
+	b.WriteString("#\n")
+	b.WriteString("# Edit this file to customise your mock, then run: imposter up\n")
+	b.WriteString("\n")
+	return b.String()
 }
 
 func writeMockConfigAdjacent(anchorFilePath string, resources []Resource, forceOverwrite bool, options ConfigGenerationOptions) {
