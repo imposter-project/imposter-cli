@@ -42,18 +42,19 @@ import (
 func main() {
     configDir := "/path/to/imposter/config"
 
-    // can be docker, jvm or golang
-    engineType := docker.EnableEngine()
+    // register the engine implementation you want to use.
+    // swap for jvm.EnableEngine() or golang.EnableEngine() as required.
+    docker.EnableEngine()
 
     startOptions := engine.StartOptions{
         Port:           8080,
-        Version:        "2.4.2",
+        Version:        "latest",
         PullPolicy:     engine.PullIfNotPresent,
         LogLevel:       "DEBUG",
         ReplaceRunning: true,
     }
 
-    mockEngine := engine.BuildEngine(engineType, configDir, startOptions)
+    mockEngine := engine.BuildEngine(engine.EngineTypeDockerCore, configDir, startOptions)
 
     // block until the engine is terminated
     wg := &sync.WaitGroup{}
@@ -61,6 +62,12 @@ func main() {
     wg.Wait()
 }
 ```
+
+The matching engine type constants live on the `engine` package:
+
+- `engine.EngineTypeDockerCore` (paired with `docker.EnableEngine()`)
+- `engine.EngineTypeJvmSingleJar` (paired with `jvm.EnableEngine()`)
+- `engine.EngineTypeGolang` (paired with `golang.EnableEngine()`)
 
 ## Learn more
 
