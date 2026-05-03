@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.6.0] - 2026-05-03
+### Added
+- feat(proxy): add --insecure flag to skip upstream TLS verification
+- feat(proxy): add SOAP 1.1/1.2 aware recording
+- feat: add docs.imposter.sh header comment to scaffolded configs
+
+### Changed
+- chore: fix trailing newline
+- docs: refresh README and docs against current CLI
+- refactor: consolidate SOAP action sanitisation, remove dead code
+- refactor: drop --soap1.1 flag, auto-detect SOAP per-request
+- refactor: fold SOAP action into getRequestHash
+- refactor: use mime.ParseMediaType for SOAP 1.2 action extraction
+
+### Fixed
+- fix(test): error on non-200 status in sendSoapRequestToProxy
+
 ## [1.5.5] - 2026-04-07
 ### Changed
 - ci: bump docker actions to resolve Node.js 20 deprecation
