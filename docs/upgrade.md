@@ -10,7 +10,7 @@ If you installed Imposter using Homebrew, upgrade as follows:
 
 ### Shell script
 
-If you used the shell script approach (macOS and Linux only), you can re-run the script to upgrade
+If you used the shell script approach (macOS and Linux only), you can re-run the script to upgrade:
 
 ```shell
 curl -L https://raw.githubusercontent.com/imposter-project/imposter-cli/main/install/install_imposter.sh | bash -
@@ -25,32 +25,36 @@ See [Releases](https://github.com/imposter-project/imposter-cli/releases) for th
 
 ### macOS
 
-Only Intel x86_64 and ARM64 are supported on macOS.
+Only ARM64 and Intel x86_64 are supported on macOS.
 
 ```shell
 # see https://github.com/imposter-project/imposter-cli/releases
-export IMPOSTER_CLI_VERSION=0.1.0
+export IMPOSTER_CLI_VERSION=1.5.5
 
-curl -L -o imposter.tar.gz "https://github.com/imposter-project/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter_${IMPOSTER_CLI_VERSION}_macOS_x86_64.tar.gz"
-tar xvf imposter.tar.gz
+# choose one
+export IMPOSTER_ARCH=arm64
+#export IMPOSTER_ARCH=amd64
+
+curl -L -o imposter-cli.tar.gz "https://github.com/imposter-project/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter-cli_darwin_${IMPOSTER_ARCH}.tar.gz"
+tar xvf imposter-cli.tar.gz
 mv ./imposter /usr/local/bin/imposter
 ```
 
 ### Linux
 
-Intel x86_64, ARM32 and ARM64 is supported on Linux.
+Intel x86_64, ARM32 and ARM64 are supported on Linux.
 
 ```shell
 # see https://github.com/imposter-project/imposter-cli/releases
-export IMPOSTER_CLI_VERSION=0.1.0
+export IMPOSTER_CLI_VERSION=1.5.5
 
 # choose one
 #export IMPOSTER_ARCH=arm64
 #export IMPOSTER_ARCH=arm
-export IMPOSTER_ARCH=x86_64
+export IMPOSTER_ARCH=amd64
 
-curl -L -o imposter.tar.gz "https://github.com/imposter-project/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter_${IMPOSTER_CLI_VERSION}_Linux_{IMPOSTER_ARCH}.tar.gz"
-tar xvf imposter.tar.gz
+curl -L -o imposter-cli.tar.gz "https://github.com/imposter-project/imposter-cli/releases/download/v${IMPOSTER_CLI_VERSION}/imposter-cli_linux_${IMPOSTER_ARCH}.tar.gz"
+tar xvf imposter-cli.tar.gz
 mv ./imposter /usr/local/bin/imposter
 ```
 
@@ -62,10 +66,10 @@ Only Intel x86_64 is supported on Windows.
 
 ```
 # see https://github.com/imposter-project/imposter-cli/releases
-SET IMPOSTER_CLI_VERSION=0.1.0
+SET IMPOSTER_CLI_VERSION=1.5.5
 
-curl.exe --output imposter.zip --url "https://github.com/imposter-project/imposter-cli/releases/download/v%IMPOSTER_CLI_VERSION%/imposter_%IMPOSTER_CLI_VERSION%_Windows_x86_64.zip"
-unzip.exe imposter.zip
+curl.exe --output imposter-cli.zip --url "https://github.com/imposter-project/imposter-cli/releases/download/v%IMPOSTER_CLI_VERSION%/imposter-cli_windows_amd64.zip"
+unzip.exe imposter-cli.zip
 
 # use command (or add to PATH)
 imposter.exe [command/args]

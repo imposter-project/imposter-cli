@@ -46,7 +46,7 @@ Only ARM64 and Intel x86_64 are supported on macOS.
 
 ```shell
 # see https://github.com/imposter-project/imposter-cli/releases
-export IMPOSTER_CLI_VERSION=0.1.0
+export IMPOSTER_CLI_VERSION=1.5.5
 
 # choose one
 export IMPOSTER_ARCH=arm64
@@ -63,7 +63,7 @@ Intel x86_64, ARM32 and ARM64 are supported on Linux.
 
 ```shell
 # see https://github.com/imposter-project/imposter-cli/releases
-export IMPOSTER_CLI_VERSION=0.1.0
+export IMPOSTER_CLI_VERSION=1.5.5
 
 # choose one
 #export IMPOSTER_ARCH=arm64
@@ -83,7 +83,7 @@ Only Intel x86_64 is supported on Windows.
 
 ```
 # see https://github.com/imposter-project/imposter-cli/releases
-SET IMPOSTER_CLI_VERSION=0.1.0
+SET IMPOSTER_CLI_VERSION=1.5.5
 
 curl.exe --output imposter-cli.zip --url "https://github.com/imposter-project/imposter-cli/releases/download/v%IMPOSTER_CLI_VERSION%/imposter-cli_windows_amd64.zip"
 unzip.exe imposter-cli.zip

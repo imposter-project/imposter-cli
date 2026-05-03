@@ -6,31 +6,9 @@ You can configure the Imposter CLI using command line arguments/flags or configu
 
 Each command has its own list of arguments and flags, accessible using the `-h` flag, such as:
 
-```
-$ imposter up -h
-Starts a live mock of your APIs, using their Imposter configuration.
+    imposter up -h
 
-If CONFIG_DIR is not specified, the current working directory is used.
-
-Usage:
-  imposter up [CONFIG_DIR] [flags]
-
-Flags:
-      --auto-restart              Automatically restart when config dir contents change (default true)
-      --deduplicate string        Override deduplication ID for replacement of containers
-      --enable-file-cache         Enable file cache (default true)
-      --enable-plugins            Enable plugins (default true)
-  -t, --engine-type string        Imposter engine type (valid: docker,jvm - default "docker")
-  -e, --env stringArray           Explicit environment variables to set
-  -h, --help                      help for up
-      --install-default-plugins   Install missing default plugins (default true)
-      --mount-dir stringArray     (Docker engine type only) Extra directory bind-mounts in the form HOST_PATH:CONTAINER_PATH (e.g. $HOME/somedir:/opt/imposter/somedir) or simply HOST_PATH, which will mount the directory at /opt/imposter/<dir>
-  -p, --port int                  Port on which to listen (default 8080)
-      --pull                      Force engine pull
-  -r, --recursive-config-scan     Scan for config files in subdirectories (default false)
-  -s, --scaffold                  Scaffold Imposter configuration for all OpenAPI and WSDL files
-  -v, --version string            Imposter engine version (default "latest")
-```
+This prints the full set of flags, defaults, and usage for the command. The same applies to every subcommand (`imposter proxy -h`, `imposter scaffold -h`, and so on).
 
 ## Mock configuration files
 
@@ -55,7 +33,7 @@ You can also use a configuration file to set CLI defaults. By default, Imposter 
 The currently supported elements are as follows:
 
 ```yaml
-# the engine type - valid values are "docker" or "jvm"
+# the engine type - valid values are "docker", "jvm" or "golang"
 engine: "docker"
 
 # the engine version - valid values are "latest", or a binary release such as "2.0.1"
