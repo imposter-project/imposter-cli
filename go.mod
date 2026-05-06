@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.100.1
 	github.com/coreos/go-semver v0.3.1
 	github.com/docker/docker v28.5.2+incompatible
-	github.com/docker/go-connections v0.6.0
+	github.com/docker/go-connections v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/olekukonko/tablewriter v1.1.4
 	github.com/radovskyb/watcher v1.0.7
