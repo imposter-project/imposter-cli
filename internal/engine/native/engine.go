@@ -1,4 +1,4 @@
-package golang
+package native
 
 import (
 	"fmt"
@@ -16,8 +16,8 @@ import (
 
 var logger = logging.GetLogger()
 
-// GolangMockEngine implements the MockEngine interface for the golang implementation
-type GolangMockEngine struct {
+// NativeMockEngine implements the MockEngine interface for the native binary implementation
+type NativeMockEngine struct {
 	configDir string
 	options   engine.StartOptions
 	provider  *Provider
@@ -26,9 +26,9 @@ type GolangMockEngine struct {
 	shutDownC chan bool
 }
 
-// NewGolangMockEngine creates a new instance of the golang mock engine
-func NewGolangMockEngine(configDir string, options engine.StartOptions, provider *Provider) *GolangMockEngine {
-	return &GolangMockEngine{
+// NewNativeMockEngine creates a new instance of the native mock engine
+func NewNativeMockEngine(configDir string, options engine.StartOptions, provider *Provider) *NativeMockEngine {
+	return &NativeMockEngine{
 		configDir: configDir,
 		options:   options,
 		provider:  provider,
@@ -37,13 +37,13 @@ func NewGolangMockEngine(configDir string, options engine.StartOptions, provider
 	}
 }
 
-func (g *GolangMockEngine) Start(wg *sync.WaitGroup) bool {
+func (g *NativeMockEngine) Start(wg *sync.WaitGroup) bool {
 	return g.startWithOptions(wg, g.options)
 }
 
-func (g *GolangMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.StartOptions) (success bool) {
+func (g *NativeMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.StartOptions) (success bool) {
 	if len(options.DirMounts) > 0 {
-		logger.Warnf("golang engine does not support directory mounts - these will be ignored")
+		logger.Warnf("native engine does not support directory mounts - these will be ignored")
 	}
 	env := g.buildEnv(options)
 	command := (*g.provider).GetStartCommand([]string{}, env)
@@ -51,11 +51,11 @@ func (g *GolangMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	command.Stderr = os.Stderr
 
 	if err := command.Start(); err != nil {
-		logger.Errorf("failed to start golang mock engine: %v", err)
+		logger.Errorf("failed to start native mock engine: %v", err)
 		return false
 	}
 	g.debouncer.Register(wg, strconv.Itoa(command.Process.Pid))
-	logger.Trace("starting golang mock engine")
+	logger.Trace("starting native mock engine")
 	g.cmd = command
 
 	// watch in case process stops
@@ -65,7 +65,7 @@ func (g *GolangMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	return up
 }
 
-func (g *GolangMockEngine) buildEnv(options engine.StartOptions) []string {
+func (g *NativeMockEngine) buildEnv(options engine.StartOptions) []string {
 	env := engine.BuildEnv(options, engine.EnvOptions{IncludeHome: true, IncludePath: true})
 	env = append(env,
 		fmt.Sprintf("IMPOSTER_PORT=%d", options.Port),
@@ -85,14 +85,14 @@ func (g *GolangMockEngine) buildEnv(options engine.StartOptions) []string {
 		logger.Tracef("plugins are disabled")
 	}
 	if options.EnableFileCache {
-		logger.Tracef("file cache not supported by golang engine")
+		logger.Tracef("file cache not supported by native engine")
 	}
 	logger.Tracef("engine environment: %v", env)
 	return env
 
 }
 
-func (g *GolangMockEngine) Stop(wg *sync.WaitGroup) {
+func (g *NativeMockEngine) Stop(wg *sync.WaitGroup) {
 	if g.cmd == nil {
 		logger.Tracef("no process to remove")
 		wg.Done()
@@ -111,12 +111,12 @@ func (g *GolangMockEngine) Stop(wg *sync.WaitGroup) {
 	g.notifyOnStopBlocking(wg)
 }
 
-func (g *GolangMockEngine) StopImmediately(wg *sync.WaitGroup) {
+func (g *NativeMockEngine) StopImmediately(wg *sync.WaitGroup) {
 	go func() { g.shutDownC <- true }()
 	g.Stop(wg)
 }
 
-func (g *GolangMockEngine) Restart(wg *sync.WaitGroup) {
+func (g *NativeMockEngine) Restart(wg *sync.WaitGroup) {
 	wg.Add(1)
 	g.Stop(wg)
 
@@ -128,7 +128,7 @@ func (g *GolangMockEngine) Restart(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func (g *GolangMockEngine) notifyOnStopBlocking(wg *sync.WaitGroup) {
+func (g *NativeMockEngine) notifyOnStopBlocking(wg *sync.WaitGroup) {
 	if g.cmd == nil || g.cmd.Process == nil {
 		logger.Trace("no subprocess - notifying immediately")
 		g.debouncer.Notify(wg, debounce.AtMostOnceEvent{})
@@ -149,11 +149,11 @@ func (g *GolangMockEngine) notifyOnStopBlocking(wg *sync.WaitGroup) {
 	}
 }
 
-func (g *GolangMockEngine) ListAllManaged() ([]engine.ManagedMock, error) {
+func (g *NativeMockEngine) ListAllManaged() ([]engine.ManagedMock, error) {
 	return procutil.FindImposterProcesses(matcher)
 }
 
-func (g *GolangMockEngine) StopAllManaged() int {
+func (g *NativeMockEngine) StopAllManaged() int {
 	count, err := procutil.StopManagedProcesses(matcher)
 	if err != nil {
 		logger.Fatal(err)
@@ -161,7 +161,7 @@ func (g *GolangMockEngine) StopAllManaged() int {
 	return count
 }
 
-func (g *GolangMockEngine) GetVersionString() (string, error) {
+func (g *NativeMockEngine) GetVersionString() (string, error) {
 	// TODO get from binary
 	return g.options.Version, nil
 }

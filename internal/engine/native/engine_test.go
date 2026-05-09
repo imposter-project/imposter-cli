@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package golang
+package native
 
 import (
 	"github.com/imposter-project/imposter-cli/internal/engine"
@@ -26,7 +26,7 @@ import (
 )
 
 var engineBuilder = func(tt enginetests.EngineTestScenario) engine.MockEngine {
-	return engine.BuildEngine("golang", tt.Fields.ConfigDir, tt.Fields.Options)
+	return engine.BuildEngine("native", tt.Fields.ConfigDir, tt.Fields.Options)
 }
 
 func init() {
@@ -43,7 +43,7 @@ func TestEngine_StartStop(t *testing.T) {
 
 	tests := []enginetests.EngineTestScenario{
 		{
-			Name: "start golang engine",
+			Name: "start native engine",
 			Fields: enginetests.EngineTestFields{
 				ConfigDir: testConfigPath,
 				Options: engine.StartOptions{
@@ -68,7 +68,7 @@ func TestEngine_Restart(t *testing.T) {
 
 	tests := []enginetests.EngineTestScenario{
 		{
-			Name: "restart golang engine",
+			Name: "restart native engine",
 			Fields: enginetests.EngineTestFields{
 				ConfigDir: testConfigPath,
 				Options: engine.StartOptions{
@@ -93,7 +93,7 @@ func TestEngine_List(t *testing.T) {
 
 	tests := []enginetests.EngineTestScenario{
 		{
-			Name: "list golang engine",
+			Name: "list native engine",
 			Fields: enginetests.EngineTestFields{
 				ConfigDir: testConfigPath,
 				Options: engine.StartOptions{

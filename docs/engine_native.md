@@ -1,16 +1,18 @@
-# Using the Golang mock engine
+# Using the native mock engine
 
-Imposter supports different mock engine types: [Docker](./engine_docker.md), [JVM](./engine_jvm.md) and Golang. This document describes how to use the **Golang** engine.
+Imposter supports different mock engine types: [Docker](./engine_docker.md), [JVM](./engine_jvm.md) and native. This document describes how to use the **native** engine.
 
-The Golang engine is a lightweight, single-binary implementation of Imposter. It supports REST, OpenAPI, SOAP and gRPC mocking with JavaScript scripting.
+The native engine is a lightweight, single-binary implementation of Imposter. It supports REST, OpenAPI, SOAP and gRPC mocking with JavaScript scripting.
+
+> The native engine was previously named `golang`. The `golang` value is still accepted as a deprecated alias wherever the engine type can be configured.
 
 ## Prerequisites
 
-No additional software is required. The Golang engine is downloaded automatically by the CLI.
+No additional software is required. The native engine is downloaded automatically by the CLI.
 
 ## Features
 
-The Golang engine supports:
+The native engine supports:
 
 - REST, OpenAPI (2.0 and 3.0+), SOAP (1.1 and 1.2) and gRPC plugins
 - JavaScript scripting (Groovy is **not** supported)
@@ -30,17 +32,17 @@ The easiest way to set the engine type is to edit your user default [configurati
 
     $HOME/.imposter/config.yaml
 
-Set the `engine` key to `golang`:
+Set the `engine` key to `native`:
 
 ```yaml
-engine: golang
+engine: native
 ```
 
 ### Environment variable
 
 If you don't want to set your user defaults you can set the following environment variable:
 
-    IMPOSTER_ENGINE=golang
+    IMPOSTER_ENGINE=native
 
 ### Command line argument
 
@@ -48,11 +50,11 @@ You can also provide the `--engine-type` (or `-t`) command line argument to the 
 
 Example:
 
-    imposter up --engine-type golang
+    imposter up --engine-type native
 
 Or:
 
-    imposter up -t golang
+    imposter up -t native
 
 ## Differences from the JVM engine
 

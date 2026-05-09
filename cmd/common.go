@@ -11,7 +11,7 @@ var localTypes = []engine.EngineType{
 	engine.EngineTypeDockerAll,
 	engine.EngineTypeDockerDistroless,
 	engine.EngineTypeJvmSingleJar,
-	engine.EngineTypeGolang,
+	engine.EngineTypeNative,
 }
 
 // allEngineTypes is the distinct set of engine types used by --all flags.
@@ -19,7 +19,7 @@ var localTypes = []engine.EngineType{
 var allEngineTypes = []engine.EngineType{
 	engine.EngineTypeDockerCore,
 	engine.EngineTypeJvmSingleJar,
-	engine.EngineTypeGolang,
+	engine.EngineTypeNative,
 }
 
 // runWithRecovery executes fn, recovering from logger.Fatal calls that

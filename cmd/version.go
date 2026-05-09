@@ -55,7 +55,7 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	versionCmd.Flags().StringVarP(&versionFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
+	versionCmd.Flags().StringVarP(&versionFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,native,jvm - default \"docker\")")
 	versionCmd.Flags().StringVarP(&versionFlags.format, "output-format", "o", "", "Output format (valid: plain,json - default \"plain\")")
 	versionCmd.Flags().BoolVar(&versionFlags.full, "full", false, "Also print the engine version (if available)")
 	registerEngineTypeCompletions(versionCmd)

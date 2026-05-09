@@ -20,7 +20,7 @@ type pluginConfiguration struct {
 }
 
 var pluginConfigs = map[string]pluginConfiguration{
-	"golang": {
+	"native": {
 		downloadConfig: library2.NewDownloadConfig(
 			"https://github.com/imposter-project/imposter-go-plugins/releases/latest/download",
 			"https://github.com/imposter-project/imposter-go-plugins/releases/download/v%v",
@@ -46,8 +46,8 @@ var pluginConfigs = map[string]pluginConfiguration{
 // determinePluginConfig returns the plugin configuration based on the engine type.
 func determinePluginConfig(engineType engine.EngineType) pluginConfiguration {
 	switch engineType {
-	case engine.EngineTypeGolang:
-		return pluginConfigs["golang"]
+	case engine.EngineTypeNative:
+		return pluginConfigs["native"]
 	default:
 		return pluginConfigs["*"]
 	}

@@ -20,8 +20,8 @@ import (
 	"bytes"
 	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/imposter-project/imposter-cli/internal/engine/docker"
-	"github.com/imposter-project/imposter-cli/internal/engine/golang"
 	"github.com/imposter-project/imposter-cli/internal/engine/jvm"
+	"github.com/imposter-project/imposter-cli/internal/engine/native"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
@@ -30,7 +30,7 @@ import (
 func init() {
 	docker.EnableEngine()
 	jvm.EnableSingleJarEngine()
-	golang.EnableEngine()
+	native.EnableEngine()
 }
 
 func Test_renderMocks_without_engine(t *testing.T) {
@@ -124,8 +124,8 @@ func Test_listMocksForEngine(t *testing.T) {
 			showEngine: true,
 		},
 		{
-			name:       "list golang mocks",
-			engineType: engine.EngineTypeGolang,
+			name:       "list native mocks",
+			engineType: engine.EngineTypeNative,
 			showEngine: true,
 		},
 	}

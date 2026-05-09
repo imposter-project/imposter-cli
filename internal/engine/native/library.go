@@ -1,4 +1,4 @@
-package golang
+package native
 
 import (
 	"fmt"
@@ -9,14 +9,14 @@ import (
 	"github.com/imposter-project/imposter-cli/internal/engine"
 )
 
-const binCacheDir = ".imposter/engines/golang"
+const binCacheDir = ".imposter/engines/native"
 
-// Library implements the engine.EngineLibrary interface for the golang engine
+// Library implements the engine.EngineLibrary interface for the native engine
 type Library struct {
 	binCache string
 }
 
-// NewLibrary creates a new instance of the golang engine library
+// NewLibrary creates a new instance of the native engine library
 func NewLibrary() *Library {
 	return &Library{}
 }
@@ -38,7 +38,7 @@ func (l *Library) List() ([]engine.EngineMetadata, error) {
 	for _, file := range files {
 		if file.IsDir() {
 			available = append(available, engine.EngineMetadata{
-				EngineType: engine.EngineTypeGolang,
+				EngineType: engine.EngineTypeNative,
 				Version:    file.Name(),
 			})
 		}
@@ -64,5 +64,5 @@ func (l *Library) ShouldEnsurePlugins() bool {
 }
 
 func (l *Library) ensureBinCache() (string, error) {
-	return library.EnsureDirUsingConfig("golang.binCache", binCacheDir)
+	return library.EnsureDirUsingConfig("native.binCache", binCacheDir)
 }

@@ -36,9 +36,23 @@ const (
 	EngineTypeDockerDistroless EngineType = "docker-distroless"
 	EngineTypeJvmSingleJar     EngineType = "jvm"
 	EngineTypeJvmUnpacked      EngineType = "unpacked"
-	EngineTypeGolang           EngineType = "golang"
+	EngineTypeNative           EngineType = "native"
 )
 const defaultEngineType = EngineTypeDockerCore
+
+// engineTypeAliases maps deprecated user-facing engine type names to their canonical form.
+// Aliases are accepted on user input (CLI flag, env var, config file) but not surfaced in
+// help text or shell completions.
+var engineTypeAliases = map[EngineType]EngineType{
+	"golang": EngineTypeNative,
+}
+
+func normaliseEngineType(t EngineType) EngineType {
+	if canon, ok := engineTypeAliases[t]; ok {
+		return canon
+	}
+	return t
+}
 
 var logger = logging.GetLogger()
 
@@ -103,7 +117,7 @@ func build(engineType EngineType, configDir string, startOptions StartOptions) M
 
 func validateEngineType(engineType EngineType) error {
 	switch engineType {
-	case EngineTypeAwsLambda, EngineTypeDockerCore, EngineTypeDockerAll, EngineTypeDockerDistroless, EngineTypeJvmSingleJar, EngineTypeJvmUnpacked, EngineTypeGolang:
+	case EngineTypeAwsLambda, EngineTypeDockerCore, EngineTypeDockerAll, EngineTypeDockerDistroless, EngineTypeJvmSingleJar, EngineTypeJvmUnpacked, EngineTypeNative:
 		return nil
 	}
 	return fmt.Errorf("unsupported engine type: %v", engineType)
@@ -114,11 +128,11 @@ func GetConfiguredType(override string) EngineType {
 }
 
 func GetConfiguredTypeWithDefault(override string, defaultType EngineType) EngineType {
-	return EngineType(stringutil.GetFirstNonEmpty(
+	return normaliseEngineType(EngineType(stringutil.GetFirstNonEmpty(
 		override,
 		viper.GetString("engine"),
 		string(defaultType),
-	))
+	)))
 }
 
 func GetConfiguredVersion(engineType EngineType, override string, allowCached bool) string {

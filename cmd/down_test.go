@@ -36,8 +36,8 @@ func Test_stopEngine(t *testing.T) {
 			engineType: engine.EngineTypeJvmSingleJar,
 		},
 		{
-			name:       "stop golang engine",
-			engineType: engine.EngineTypeGolang,
+			name:       "stop native engine",
+			engineType: engine.EngineTypeNative,
 		},
 	}
 	for _, tt := range tests {
