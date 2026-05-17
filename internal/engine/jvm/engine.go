@@ -48,8 +48,18 @@ func (j *JvmMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.Star
 	}
 	env := buildEnv(options)
 	command := (*j.provider).GetStartCommand(args, env)
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	if options.IsDetached() {
+		f, err := procutil.OpenDetachLog(options.DetachLog)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		command.Stdout = f
+		command.Stderr = f
+		command.SysProcAttr = procutil.DetachSysProcAttr()
+	} else {
+		command.Stdout = os.Stdout
+		command.Stderr = os.Stderr
+	}
 	err := command.Start()
 	if err != nil {
 		logger.Fatalf("failed to exec: %v %v: %v", command.Path, command.Args, err)
@@ -58,12 +68,28 @@ func (j *JvmMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.Star
 	logger.Trace("starting JVM mock engine")
 	j.command = command
 
-	up := engine.WaitUntilUp(options.Port, j.shutDownC)
+	switch options.Detach {
+	case engine.DetachNow:
+		// do not wait for health, do not reap - the OS reparents the child
+		return true
+	case engine.DetachHealthy:
+		// wait for health but do not reap - the OS reparents the child
+		return engine.WaitUntilUp(options.Port, j.shutDownC)
+	default:
+		up := engine.WaitUntilUp(options.Port, j.shutDownC)
 
-	// watch in case process stops
-	go j.notifyOnStopBlocking(wg)
+		// watch in case process stops
+		go j.notifyOnStopBlocking(wg)
 
-	return up
+		return up
+	}
+}
+
+func (j *JvmMockEngine) GetID() string {
+	if j.command == nil || j.command.Process == nil {
+		return ""
+	}
+	return strconv.Itoa(j.command.Process.Pid)
 }
 
 func buildEnv(options engine.StartOptions) []string {

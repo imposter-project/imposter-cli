@@ -48,6 +48,9 @@ var upFlags = struct {
 	dirMounts           []string
 	recursiveConfigScan bool
 	debugMode           bool
+	detach              bool
+	noAwait             bool
+	logFile             string
 }{}
 
 // upCmd represents the up command
@@ -111,8 +114,49 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 			DirMounts:       upFlags.dirMounts,
 			DebugMode:       upFlags.debugMode,
 		}
-		start(&lib, startOptions, configDir, upFlags.restartOnChange)
+		restartOnChange := applyDetachOptions(&startOptions, engineType, upFlags.detach, upFlags.noAwait, upFlags.logFile, upFlags.restartOnChange)
+
+		start(&lib, startOptions, configDir, restartOnChange)
 	},
+}
+
+// applyDetachOptions resolves the detach-related flags onto startOptions
+// and returns the (possibly disabled) auto-restart setting. Auto-restart
+// is incompatible with detaching because the config-dir watcher lives in
+// the foreground CLI process, which exits once the mock is backgrounded.
+func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.EngineType, detach bool, noAwait bool, logFile string, restartOnChange bool) bool {
+	if !detach {
+		if noAwait {
+			logger.Warn("--no-await has no effect without --detach")
+		}
+		return restartOnChange
+	}
+
+	if noAwait {
+		startOptions.Detach = engine.DetachNow
+	} else {
+		startOptions.Detach = engine.DetachHealthy
+	}
+
+	if restartOnChange {
+		logger.Warn("--auto-restart is not supported with --detach; auto-restart disabled")
+		restartOnChange = false
+	}
+
+	if engine.IsDockerEngine(engineType) {
+		if logFile != "" {
+			logger.Warn("--log-file is ignored for the docker engine; use 'docker logs' instead")
+		}
+	} else if logFile != "" {
+		startOptions.DetachLog, _ = filepath.Abs(logFile)
+	} else {
+		detachLog, err := engine.DefaultDetachLogPath(startOptions.Port)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		startOptions.DetachLog = detachLog
+	}
+	return restartOnChange
 }
 
 func init() {
@@ -130,6 +174,9 @@ func init() {
 	upCmd.Flags().StringArrayVar(&upFlags.dirMounts, "mount-dir", []string{}, "(Docker engine type only) Extra directory bind-mounts in the form HOST_PATH:CONTAINER_PATH (e.g. $HOME/somedir:/opt/imposter/somedir) or simply HOST_PATH, which will mount the directory at /opt/imposter/<dir>")
 	upCmd.Flags().BoolVarP(&upFlags.recursiveConfigScan, "recursive-config-scan", "r", false, "Scan for config files in subdirectories")
 	upCmd.Flags().BoolVar(&upFlags.debugMode, "debug-mode", false, fmt.Sprintf("Enable JVM debug mode and listen on port %v", engine.DefaultDebugPort))
+	upCmd.Flags().BoolVarP(&upFlags.detach, "detach", "d", false, "Run the mock in the background and return control to the terminal once it is healthy")
+	upCmd.Flags().BoolVar(&upFlags.noAwait, "no-await", false, "With --detach, return immediately without waiting for the mock to become healthy")
+	upCmd.Flags().StringVar(&upFlags.logFile, "log-file", "", "(Process engine types only) File to write detached mock logs to (default ~/.imposter/logs/imposter-<port>.log)")
 	registerEngineTypeCompletions(upCmd)
 	rootCmd.AddCommand(upCmd)
 }
@@ -172,6 +219,23 @@ func start(lib *engine.EngineLibrary, startOptions engine.StartOptions, configDi
 	mockEngine := provider.Build(configDir, startOptions)
 
 	wg := &sync.WaitGroup{}
+
+	if startOptions.IsDetached() {
+		// DetachHealthy still traps Ctrl+C so an abort during the
+		// healthcheck wait stops the mock; DetachNow returns immediately
+		// so there is nothing to interrupt.
+		if startOptions.Detach == engine.DetachHealthy {
+			trapExit(mockEngine, wg)
+		}
+		if !mockEngine.Start(wg) {
+			// healthcheck timeout already calls logger.Fatalf; reaching
+			// here means the wait was aborted (e.g. Ctrl+C)
+			return
+		}
+		printDetachSummary(mockEngine, startOptions)
+		return
+	}
+
 	trapExit(mockEngine, wg)
 	success := mockEngine.Start(wg)
 
@@ -188,6 +252,14 @@ func start(lib *engine.EngineLibrary, startOptions engine.StartOptions, configDi
 
 	wg.Wait()
 	logger.Debug("shutting down")
+}
+
+func printDetachSummary(mockEngine engine.MockEngine, startOptions engine.StartOptions) {
+	logger.Infof("mock running in the background (id: %s, port: %d)", mockEngine.GetID(), startOptions.Port)
+	if startOptions.DetachLog != "" {
+		logger.Infof("logs: %s", startOptions.DetachLog)
+	}
+	logger.Info("use 'imposter ls' to list running mocks, or 'imposter down' to stop them")
 }
 
 // listen for an interrupt from the OS, then attempt engine cleanup

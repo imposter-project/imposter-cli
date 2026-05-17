@@ -99,15 +99,30 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	logger.Trace("starting Docker mock engine")
 
 	d.containerId = containerId
-	if err = streamLogsToStdIo(cli, ctx, containerId); err != nil {
-		logger.Warn(err)
+
+	switch options.Detach {
+	case engine.DetachNow:
+		// container runs in dockerd independently of the CLI
+		return true
+	case engine.DetachHealthy:
+		// wait for health but don't stream logs or reap - the container
+		// keeps running in dockerd after the CLI exits
+		return engine.WaitUntilUp(options.Port, d.shutDownC)
+	default:
+		if err = streamLogsToStdIo(cli, ctx, containerId); err != nil {
+			logger.Warn(err)
+		}
+		up := engine.WaitUntilUp(options.Port, d.shutDownC)
+
+		// watch in case container stops
+		go notifyOnStopBlocking(d, wg, containerId, cli, ctx)
+
+		return up
 	}
-	up := engine.WaitUntilUp(options.Port, d.shutDownC)
+}
 
-	// watch in case container stops
-	go notifyOnStopBlocking(d, wg, containerId, cli, ctx)
-
-	return up
+func (d *DockerMockEngine) GetID() string {
+	return d.containerId
 }
 
 func buildPorts(options engine.StartOptions) (nat.PortSet, nat.PortMap) {

@@ -47,8 +47,18 @@ func (g *NativeMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	}
 	env := g.buildEnv(options)
 	command := (*g.provider).GetStartCommand([]string{}, env)
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	if options.IsDetached() {
+		f, err := procutil.OpenDetachLog(options.DetachLog)
+		if err != nil {
+			logger.Fatal(err)
+		}
+		command.Stdout = f
+		command.Stderr = f
+		command.SysProcAttr = procutil.DetachSysProcAttr()
+	} else {
+		command.Stdout = os.Stdout
+		command.Stderr = os.Stderr
+	}
 
 	if err := command.Start(); err != nil {
 		logger.Errorf("failed to start native mock engine: %v", err)
@@ -58,11 +68,27 @@ func (g *NativeMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	logger.Trace("starting native mock engine")
 	g.cmd = command
 
-	// watch in case process stops
-	up := engine.WaitUntilUp(options.Port, g.shutDownC)
+	switch options.Detach {
+	case engine.DetachNow:
+		// do not wait for health, do not reap - the OS reparents the child
+		return true
+	case engine.DetachHealthy:
+		// wait for health but do not reap - the OS reparents the child
+		return engine.WaitUntilUp(options.Port, g.shutDownC)
+	default:
+		// watch in case process stops
+		up := engine.WaitUntilUp(options.Port, g.shutDownC)
 
-	go g.notifyOnStopBlocking(wg)
-	return up
+		go g.notifyOnStopBlocking(wg)
+		return up
+	}
+}
+
+func (g *NativeMockEngine) GetID() string {
+	if g.cmd == nil || g.cmd.Process == nil {
+		return ""
+	}
+	return strconv.Itoa(g.cmd.Process.Pid)
 }
 
 func (g *NativeMockEngine) buildEnv(options engine.StartOptions) []string {
