@@ -48,8 +48,7 @@ var upFlags = struct {
 	dirMounts           []string
 	recursiveConfigScan bool
 	debugMode           bool
-	detach              bool
-	noAwait             bool
+	detach              string
 	logFile             string
 }{}
 
@@ -114,7 +113,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 			DirMounts:       upFlags.dirMounts,
 			DebugMode:       upFlags.debugMode,
 		}
-		restartOnChange := applyDetachOptions(&startOptions, engineType, upFlags.detach, upFlags.noAwait, upFlags.logFile, upFlags.restartOnChange)
+		restartOnChange := applyDetachOptions(&startOptions, engineType, upFlags.detach, upFlags.logFile, upFlags.restartOnChange)
 
 		start(&lib, startOptions, configDir, restartOnChange)
 	},
@@ -124,18 +123,16 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 // and returns the (possibly disabled) auto-restart setting. Auto-restart
 // is incompatible with detaching because the config-dir watcher lives in
 // the foreground CLI process, which exits once the mock is backgrounded.
-func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.EngineType, detach bool, noAwait bool, logFile string, restartOnChange bool) bool {
-	if !detach {
-		if noAwait {
-			logger.Warn("--no-await has no effect without --detach")
-		}
+func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.EngineType, detach string, logFile string, restartOnChange bool) bool {
+	switch detach {
+	case "":
 		return restartOnChange
-	}
-
-	if noAwait {
-		startOptions.Detach = engine.DetachNow
-	} else {
+	case "healthy":
 		startOptions.Detach = engine.DetachHealthy
+	case "now":
+		startOptions.Detach = engine.DetachNow
+	default:
+		logger.Fatalf("invalid --detach mode %q (valid: healthy, now)", detach)
 	}
 
 	if restartOnChange {
@@ -174,8 +171,8 @@ func init() {
 	upCmd.Flags().StringArrayVar(&upFlags.dirMounts, "mount-dir", []string{}, "(Docker engine type only) Extra directory bind-mounts in the form HOST_PATH:CONTAINER_PATH (e.g. $HOME/somedir:/opt/imposter/somedir) or simply HOST_PATH, which will mount the directory at /opt/imposter/<dir>")
 	upCmd.Flags().BoolVarP(&upFlags.recursiveConfigScan, "recursive-config-scan", "r", false, "Scan for config files in subdirectories")
 	upCmd.Flags().BoolVar(&upFlags.debugMode, "debug-mode", false, fmt.Sprintf("Enable JVM debug mode and listen on port %v", engine.DefaultDebugPort))
-	upCmd.Flags().BoolVarP(&upFlags.detach, "detach", "d", false, "Run the mock in the background and return control to the terminal once it is healthy")
-	upCmd.Flags().BoolVar(&upFlags.noAwait, "no-await", false, "With --detach, return immediately without waiting for the mock to become healthy")
+	upCmd.Flags().StringVarP(&upFlags.detach, "detach", "d", "", "Run the mock in the background and return control to the terminal. Optional mode: 'healthy' (default, wait for the healthcheck before detaching) or 'now' (detach immediately)")
+	upCmd.Flags().Lookup("detach").NoOptDefVal = "healthy"
 	upCmd.Flags().StringVar(&upFlags.logFile, "log-file", "", "(Process engine types only) File to write detached mock logs to (default ~/.imposter/logs/imposter-<port>.log)")
 	registerEngineTypeCompletions(upCmd)
 	rootCmd.AddCommand(upCmd)

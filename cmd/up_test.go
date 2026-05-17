@@ -32,43 +32,43 @@ func Test_applyDetachOptions(t *testing.T) {
 
 	t.Run("no detach leaves foreground mode and keeps auto-restart", func(t *testing.T) {
 		opts := engine.StartOptions{Port: 8080}
-		restart := applyDetachOptions(&opts, engine.EngineTypeJvmSingleJar, false, false, "", true)
+		restart := applyDetachOptions(&opts, engine.EngineTypeJvmSingleJar, "", "", true)
 		assert.Equal(t, engine.DetachNone, opts.Detach)
 		assert.False(t, opts.IsDetached())
 		assert.True(t, restart)
 		assert.Empty(t, opts.DetachLog)
 	})
 
-	t.Run("detach defaults to await-healthy", func(t *testing.T) {
+	t.Run("detach=healthy waits for the healthcheck", func(t *testing.T) {
 		opts := engine.StartOptions{Port: 8080}
-		restart := applyDetachOptions(&opts, engine.EngineTypeJvmSingleJar, true, false, "", true)
+		restart := applyDetachOptions(&opts, engine.EngineTypeJvmSingleJar, "healthy", "", true)
 		assert.Equal(t, engine.DetachHealthy, opts.Detach)
 		assert.False(t, restart, "auto-restart must be disabled when detached")
 	})
 
-	t.Run("detach with no-await returns immediately", func(t *testing.T) {
+	t.Run("detach=now returns immediately", func(t *testing.T) {
 		opts := engine.StartOptions{Port: 8080}
-		applyDetachOptions(&opts, engine.EngineTypeNative, true, true, "", false)
+		applyDetachOptions(&opts, engine.EngineTypeNative, "now", "", false)
 		assert.Equal(t, engine.DetachNow, opts.Detach)
 	})
 
 	t.Run("process engine resolves default log path", func(t *testing.T) {
 		opts := engine.StartOptions{Port: 1234}
-		applyDetachOptions(&opts, engine.EngineTypeJvmSingleJar, true, false, "", false)
+		applyDetachOptions(&opts, engine.EngineTypeJvmSingleJar, "healthy", "", false)
 		expected := filepath.Join(tmpHome, "logs", "imposter-1234.log")
 		assert.Equal(t, expected, opts.DetachLog)
 	})
 
 	t.Run("explicit log file is honoured and made absolute", func(t *testing.T) {
 		opts := engine.StartOptions{Port: 8080}
-		applyDetachOptions(&opts, engine.EngineTypeNative, true, false, "relative/mock.log", false)
+		applyDetachOptions(&opts, engine.EngineTypeNative, "healthy", "relative/mock.log", false)
 		assert.True(t, filepath.IsAbs(opts.DetachLog))
 		assert.Equal(t, "mock.log", filepath.Base(opts.DetachLog))
 	})
 
 	t.Run("docker engine does not set a detach log", func(t *testing.T) {
 		opts := engine.StartOptions{Port: 8080}
-		applyDetachOptions(&opts, engine.EngineTypeDockerCore, true, false, "", false)
+		applyDetachOptions(&opts, engine.EngineTypeDockerCore, "healthy", "", false)
 		assert.Equal(t, engine.DetachHealthy, opts.Detach)
 		assert.Empty(t, opts.DetachLog)
 	})
