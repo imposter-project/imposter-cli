@@ -36,6 +36,19 @@ func ResolveLatestToVersion(engineType EngineType, allowCached bool) (string, er
 	return latest, nil
 }
 
+// UsesEnvConfig reports whether the given engine version expects its config
+// directory and listen port via IMPOSTER_CONFIG_DIR and IMPOSTER_PORT env
+// vars (5.x and later) rather than --configDir and --listenPort CLI flags
+// (4.x and earlier). Unparseable versions (e.g. "dev") default to the env-var
+// form.
+func UsesEnvConfig(version string) bool {
+	v, err := semver.NewVersion(version)
+	if err != nil {
+		return true
+	}
+	return v.Major >= 5
+}
+
 func GetHighestVersion(engines []EngineMetadata) string {
 	var highest *semver.Version
 	for _, engine := range engines {

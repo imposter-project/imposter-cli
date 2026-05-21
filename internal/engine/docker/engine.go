@@ -19,6 +19,14 @@ package docker
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -30,13 +38,6 @@ import (
 	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"io"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 const containerConfigDir = "/opt/imposter/config"
@@ -74,13 +75,11 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	logger.Tracef("container user: %s", containerUser)
 
 	exposedPorts, portBindings := buildPorts(options)
+	useEnvConfig := engine.UsesEnvConfig(options.Version)
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: d.provider.imageAndTag,
-		Cmd: []string{
-			"--configDir=" + containerConfigDir,
-			fmt.Sprintf("--listenPort=%d", options.Port),
-		},
-		Env:          buildEnv(options),
+		Image:        d.provider.imageAndTag,
+		Cmd:          buildCmd(options, useEnvConfig),
+		Env:          buildEnv(options, useEnvConfig),
 		ExposedPorts: exposedPorts,
 		Labels:       containerLabels,
 		User:         containerUser,
@@ -136,13 +135,29 @@ func buildPorts(options engine.StartOptions) (nat.PortSet, nat.PortMap) {
 	return exposedPorts, portBindings
 }
 
-func buildEnv(options engine.StartOptions) []string {
+func buildEnv(options engine.StartOptions, useEnvConfig bool) []string {
 	env := engine.BuildEnv(options, engine.EnvOptions{IncludeHome: false, IncludePath: false})
+	if useEnvConfig {
+		env = append(env,
+			"IMPOSTER_CONFIG_DIR="+containerConfigDir,
+			fmt.Sprintf("IMPOSTER_PORT=%d", options.Port),
+		)
+	}
 	if options.EnableFileCache {
 		env = append(env, "IMPOSTER_CACHE_DIR=/tmp/imposter-cache", "IMPOSTER_OPENAPI_REMOTE_FILE_CACHE=true")
 	}
 	logger.Tracef("engine environment: %v", env)
 	return env
+}
+
+func buildCmd(options engine.StartOptions, useEnvConfig bool) []string {
+	if useEnvConfig {
+		return nil
+	}
+	return []string{
+		"--configDir=" + containerConfigDir,
+		fmt.Sprintf("--listenPort=%d", options.Port),
+	}
 }
 
 func buildBinds(d *DockerMockEngine, options engine.StartOptions) []string {
