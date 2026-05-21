@@ -64,9 +64,9 @@ func Test_describeVersions(t *testing.T) {
 			},
 		},
 		{
-			name: "print latest version (golang)",
+			name: "print latest version (native)",
 			args: args{
-				engineType: engine.EngineTypeGolang,
+				engineType: engine.EngineTypeNative,
 				version:    "latest",
 				full:       true,
 				format:     outputFormatPlain,

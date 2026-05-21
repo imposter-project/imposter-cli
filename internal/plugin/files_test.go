@@ -19,7 +19,7 @@ func Test_buildPluginFileName(t *testing.T) {
 		want         string
 	}{
 		{
-			name: "golang plugin local file",
+			name: "native plugin local file",
 			pluginConfig: pluginConfiguration{
 				localFileTemplate:  "plugin-{{ .PluginName }}",
 				remoteFileTemplate: "plugin-{{ .PluginName }}_{{ .OS }}_{{ .Arch }}{{ .Ext }}",
@@ -31,7 +31,7 @@ func Test_buildPluginFileName(t *testing.T) {
 			want:       "plugin-test-plugin",
 		},
 		{
-			name: "golang plugin remote file",
+			name: "native plugin remote file",
 			pluginConfig: pluginConfiguration{
 				localFileTemplate:  "plugin-{{ .PluginName }}",
 				remoteFileTemplate: "plugin-{{ .PluginName }}_{{ .OS }}_{{ .Arch }}{{ .Ext }}",
@@ -135,8 +135,8 @@ func Test_GetPluginLocalPath(t *testing.T) {
 			wantErr:                false,
 		},
 		{
-			name: "get plugin local path for golang plugin",
-			args: args{pluginName: "swaggerui", engineType: engine.EngineTypeGolang, version: "1.2.2"},
+			name: "get plugin local path for native plugin",
+			args: args{pluginName: "swaggerui", engineType: engine.EngineTypeNative, version: "1.2.2"},
 			wantFullPluginFileName: func() string {
 				if runtime.GOOS == "windows" {
 					return "plugin-swaggerui.exe"
@@ -180,8 +180,8 @@ func Test_getPluginFileName(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name:       "golang plugin local name",
-			engineType: engine.EngineTypeGolang,
+			name:       "native plugin local name",
+			engineType: engine.EngineTypeNative,
 			pluginName: "swaggerui",
 			remote:     false,
 			want: func() string {
@@ -193,8 +193,8 @@ func Test_getPluginFileName(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "golang plugin remote name",
-			engineType: engine.EngineTypeGolang,
+			name:       "native plugin remote name",
+			engineType: engine.EngineTypeNative,
 			pluginName: "swaggerui",
 			remote:     true,
 			want:       fmt.Sprintf("plugin-swaggerui_%s_%s.zip", runtime.GOOS, runtime.GOARCH),
@@ -263,14 +263,14 @@ func Test_isValidPluginFile(t *testing.T) {
 			wantPluginName: "",
 		},
 		{
-			name: "valid golang plugin file",
+			name: "valid native plugin file",
 			candidateFile: func() string {
 				if runtime.GOOS == "windows" {
 					return "plugin-swaggerui.exe"
 				}
 				return "plugin-swaggerui"
 			}(),
-			engineType:     engine.EngineTypeGolang,
+			engineType:     engine.EngineTypeNative,
 			wantValid:      true,
 			wantPluginName: "swaggerui",
 		},

@@ -1,4 +1,4 @@
-package golang
+package native
 
 import (
 	"fmt"
@@ -26,14 +26,14 @@ var downloadConfig = library.NewDownloadConfig(
 	false,
 )
 
-// Provider handles downloading and managing the golang binary
+// Provider handles downloading and managing the native binary
 type Provider struct {
 	version    string
 	binDir     string
 	binaryPath string
 }
 
-// NewProvider creates a new golang provider instance
+// NewProvider creates a new native provider instance
 func NewProvider(version string, binDir string) *Provider {
 	return &Provider{
 		version: version,
@@ -126,16 +126,16 @@ func downloadAndExtractBinary(version string, binDir string) error {
 }
 
 func (p *Provider) GetEngineType() engine.EngineType {
-	return engine.EngineTypeGolang
+	return engine.EngineTypeNative
 }
 
 func (p *Provider) Build(configDir string, startOptions engine.StartOptions) engine.MockEngine {
-	return NewGolangMockEngine(configDir, startOptions, p)
+	return NewNativeMockEngine(configDir, startOptions, p)
 }
 
 func (p *Provider) Bundle(configDir string, dest string) error {
 	// TODO: Implement if required
-	return fmt.Errorf("bundling not implemented for golang engine")
+	return fmt.Errorf("bundling not implemented for native engine")
 }
 
 func (p *Provider) GetStartCommand(args []string, env []string) *exec.Cmd {

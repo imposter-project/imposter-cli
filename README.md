@@ -61,7 +61,7 @@ Run `imposter up` to start your mock.
 
 ## Install
 
-You'll need [Docker](https://docs.docker.com/get-docker/), or alternatively a JVM ([JVM engine](./docs/engine_jvm.md)) or no extra runtime at all ([Golang engine](./docs/engine_golang.md)).
+You'll need [Docker](https://docs.docker.com/get-docker/), or alternatively a JVM ([JVM engine](./docs/engine_jvm.md)) or no extra runtime at all ([Native engine](./docs/engine_native.md)).
 
 ### Homebrew
 
@@ -127,7 +127,7 @@ Other deeper guides:
 
 - [Docker engine](./docs/engine_docker.md) — the default
 - [JVM engine](./docs/engine_jvm.md)
-- [Golang engine](./docs/engine_golang.md)
+- [Native engine](./docs/engine_native.md)
 - [Run the CLI itself in Docker](./docs/docker.md)
 - [SDK — embed Imposter in your Go app](./docs/sdk.md)
 - [Upgrade](./docs/upgrade.md)

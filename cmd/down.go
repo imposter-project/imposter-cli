@@ -43,7 +43,7 @@ var downCmd = &cobra.Command{
 }
 
 func init() {
-	downCmd.Flags().StringVarP(&downFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default \"docker\")")
+	downCmd.Flags().StringVarP(&downFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,native,jvm - default \"docker\")")
 	downCmd.Flags().BoolVarP(&downFlags.all, "all", "a", false, "Stop mocks for all engine types")
 	downCmd.MarkFlagsMutuallyExclusive("engine-type", "all")
 	registerEngineTypeCompletions(downCmd)

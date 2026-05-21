@@ -48,9 +48,9 @@ func TestUninstallPlugin(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name:          "uninstall existing golang plugin",
+			name:          "uninstall existing native plugin",
 			pluginName:    "swaggerui",
-			engineType:    engine.EngineTypeGolang,
+			engineType:    engine.EngineTypeNative,
 			version:       version,
 			setupFile:     true,
 			expectRemoved: true,

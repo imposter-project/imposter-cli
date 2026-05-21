@@ -28,8 +28,8 @@ import (
 	"github.com/imposter-project/imposter-cli/cmd"
 	awslambdaengine "github.com/imposter-project/imposter-cli/internal/engine/awslambda"
 	"github.com/imposter-project/imposter-cli/internal/engine/docker"
-	"github.com/imposter-project/imposter-cli/internal/engine/golang"
 	"github.com/imposter-project/imposter-cli/internal/engine/jvm"
+	"github.com/imposter-project/imposter-cli/internal/engine/native"
 )
 
 const defaultLogLevel = "debug"
@@ -44,7 +44,7 @@ func main() {
 	docker.EnableEngine()
 	jvm.EnableSingleJarEngine()
 	jvm.EnableUnpackedDistroEngine()
-	golang.EnableEngine()
+	native.EnableEngine()
 
 	// remotes
 	awslambda.Register()

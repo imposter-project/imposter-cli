@@ -63,8 +63,8 @@ func TestList(t *testing.T) {
 			expectError:   false,
 		},
 		{
-			name:       "golang plugin",
-			engineType: engine.EngineTypeGolang,
+			name:       "native plugin",
+			engineType: engine.EngineTypeNative,
 			version:    version,
 			setupFiles: func() []string {
 				if runtime.GOOS == "windows" {

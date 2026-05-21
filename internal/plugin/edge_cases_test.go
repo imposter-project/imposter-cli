@@ -25,8 +25,8 @@ func TestGetPluginRemoteFileName(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			name:       "golang plugin remote filename",
-			engineType: engine.EngineTypeGolang,
+			name:       "native plugin remote filename",
+			engineType: engine.EngineTypeNative,
 			pluginName: "swaggerui",
 			want:       fmt.Sprintf("plugin-swaggerui_%s_%s.zip", runtime.GOOS, runtime.GOARCH),
 			wantErr:    false,

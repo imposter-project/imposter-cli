@@ -33,7 +33,8 @@ You can also use a configuration file to set CLI defaults. By default, Imposter 
 The currently supported elements are as follows:
 
 ```yaml
-# the engine type - valid values are "docker", "jvm" or "golang"
+# the engine type - valid values are "docker", "jvm" or "native"
+# (the legacy value "golang" is still accepted as an alias for "native")
 engine: "docker"
 
 # the engine version - valid values are "latest", or a binary release such as "2.0.1"
@@ -105,8 +106,8 @@ Some configuration elements can be specified as environment variables:
 
 ### Engine types
 
-Imposter supports different mock engine types: Docker (default), JVM and Golang. For more information about configuring the engine type see:
+Imposter supports different mock engine types: Docker (default), JVM and native. For more information about configuring the engine type see:
 
 - [Docker engine](./engine_docker.md) (default)
 - [JVM engine](./engine_jvm.md)
-- [Golang engine](./engine_golang.md)
+- [Native engine](./engine_native.md)

@@ -167,7 +167,7 @@ func Test_uninstallNonInstalledPluginFromDefaults(t *testing.T) {
 	})
 
 	// Test uninstalling a plugin that's in defaults but not installed
-	uninstallPlugins([]string{"swaggerui"}, engine.EngineTypeGolang, "1.2.4", true)
+	uninstallPlugins([]string{"swaggerui"}, engine.EngineTypeNative, "1.2.4", true)
 
 	// Verify plugin was removed from defaults
 	defaultPlugins, err := plugin.ListDefaultPlugins()
@@ -200,7 +200,7 @@ func Test_uninstallMultiplePluginsFromDefaults(t *testing.T) {
 	}
 
 	// Test uninstalling some plugins that are in defaults but not installed
-	uninstallPlugins([]string{"swaggerui", "store-redis"}, engine.EngineTypeGolang, "1.2.4", true)
+	uninstallPlugins([]string{"swaggerui", "store-redis"}, engine.EngineTypeNative, "1.2.4", true)
 
 	// Verify specified plugins were removed from defaults
 	defaultPlugins, err := plugin.ListDefaultPlugins()

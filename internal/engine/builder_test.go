@@ -49,6 +49,8 @@ func TestGetConfiguredType(t *testing.T) {
 		{name: "return overridden engine type", args: args{override: "docker"}, want: "docker"},
 		{name: "return configured engine type", args: args{override: ""}, configureType: "jvm", want: "jvm"},
 		{name: "return default engine type", args: args{override: ""}, want: defaultEngineType},
+		{name: "normalise legacy golang override to native", args: args{override: "golang"}, want: EngineTypeNative},
+		{name: "normalise legacy golang config to native", args: args{override: ""}, configureType: "golang", want: EngineTypeNative},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

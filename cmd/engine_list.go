@@ -77,7 +77,7 @@ func renderEngines(rows [][]string) {
 }
 
 func init() {
-	engineListCmd.Flags().StringVarP(&engineListFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,golang,jvm - default is all")
+	engineListCmd.Flags().StringVarP(&engineListFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,native,jvm - default is all")
 	registerEngineTypeCompletions(engineListCmd)
 	engineCmd.AddCommand(engineListCmd)
 }
