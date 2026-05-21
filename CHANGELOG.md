@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.0] - 2026-05-21
+### Added
+- feat(docker): use env vars for configDir and port on Imposter 5.x+ (#124)
+
+### Changed
+- chore(deps): bump actions/download-artifact from 4 to 8
+- chore(deps): bump actions/upload-artifact from 4 to 7
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.13 to 1.32.14
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.14 to 1.32.17
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.53.7 to 1.53.10
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.88.5 to 1.90.1
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.98.0 to 1.99.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.99.0 to 1.100.1
+- chore(deps): bump github.com/docker/go-connections from 0.6.0 to 0.7.0
+- chore(deps): bump github.com/outofcoffee/go-wsdl-parser from 0.1.0 to 0.2.0
+- chore(deps): bump github.com/shirou/gopsutil/v4 from 4.26.2 to 4.26.4
+- chore(deps): bump github.com/testcontainers/testcontainers-go
+- refactor: rename engine type 'golang' to 'native' (#121)
+
 ## [1.6.0] - 2026-05-03
 ### Added
 - feat(proxy): add --insecure flag to skip upstream TLS verification
