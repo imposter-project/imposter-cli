@@ -99,15 +99,33 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	logger.Trace("starting Docker mock engine")
 
 	d.containerId = containerId
-	if err = streamLogsToStdIo(cli, ctx, containerId); err != nil {
-		logger.Warn(err)
+
+	switch options.Detach {
+	case engine.DetachNow:
+		// container runs in dockerd independently of the CLI
+		return true
+	case engine.DetachHealthy:
+		// wait for health but don't stream logs or reap - the container
+		// keeps running in dockerd after the CLI exits
+		return engine.WaitUntilUp(options.Port, d.shutDownC)
+	default:
+		if err = streamLogsToStdIo(cli, ctx, containerId); err != nil {
+			logger.Warn(err)
+		}
+		up := engine.WaitUntilUp(options.Port, d.shutDownC)
+
+		// watch in case container stops
+		go notifyOnStopBlocking(d, wg, containerId, cli, ctx)
+
+		return up
 	}
-	up := engine.WaitUntilUp(options.Port, d.shutDownC)
+}
 
-	// watch in case container stops
-	go notifyOnStopBlocking(d, wg, containerId, cli, ctx)
-
-	return up
+func (d *DockerMockEngine) GetID() string {
+	if len(d.containerId) > 12 {
+		return d.containerId[:12]
+	}
+	return d.containerId
 }
 
 func buildPorts(options engine.StartOptions) (nat.PortSet, nat.PortMap) {
@@ -323,6 +341,25 @@ func (d *DockerMockEngine) ListAllManaged() ([]engine.ManagedMock, error) {
 		logger.Fatalf("error searching for existing containers: %v", err)
 	}
 	return containers, nil
+}
+
+func (d *DockerMockEngine) StopManaged(id string) (bool, error) {
+	ctx, cli, err := buildCliClient()
+	if err != nil {
+		return false, err
+	}
+	info, err := cli.ContainerInspect(ctx, id)
+	if err != nil {
+		if client.IsErrNotFound(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	if info.Config == nil || info.Config.Labels[labelKeyManaged] != "true" {
+		return false, nil
+	}
+	removeContainers(d, []string{info.ID})
+	return true, nil
 }
 
 func (d *DockerMockEngine) StopAllManaged() int {

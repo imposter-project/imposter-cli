@@ -84,6 +84,32 @@ func TestEngine_Restart(t *testing.T) {
 	enginetests.Restart(t, tests, engineBuilder)
 }
 
+func TestEngine_StartDetached(t *testing.T) {
+	workingDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	testConfigPath := filepath.Join(workingDir, "../enginetests/testdata")
+
+	tests := []enginetests.EngineTestScenario{
+		{
+			Name: "start jvm engine detached",
+			Fields: enginetests.EngineTestFields{
+				ConfigDir: testConfigPath,
+				Options: engine.StartOptions{
+					Port:       enginetests.GetFreePort(),
+					Version:    "4.9.1",
+					PullPolicy: engine.PullIfNotPresent,
+					LogLevel:   "DEBUG",
+					Detach:     engine.DetachHealthy,
+					DetachLog:  filepath.Join(t.TempDir(), "mock.log"),
+				},
+			},
+		},
+	}
+	enginetests.StartDetached(t, tests, engineBuilder)
+}
+
 // disabled flaky test
 func xTestEngine_List(t *testing.T) {
 	logger.SetLevel(logrus.TraceLevel)

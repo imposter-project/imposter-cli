@@ -16,7 +16,27 @@ limitations under the License.
 
 package engine
 
-import "sync"
+import (
+	"fmt"
+	"path/filepath"
+	"sync"
+
+	"github.com/imposter-project/imposter-cli/internal/config"
+)
+
+// DetachMode controls whether and how `up` backgrounds the mock.
+type DetachMode int
+
+const (
+	// DetachNone runs the mock in the foreground (default behaviour).
+	DetachNone DetachMode = iota
+	// DetachNow starts the mock and returns immediately without waiting
+	// for it to become healthy.
+	DetachNow
+	// DetachHealthy starts the mock, waits for the healthcheck to pass,
+	// then returns control to the caller.
+	DetachHealthy
+)
 
 type StartOptions struct {
 	Port            int
@@ -30,6 +50,25 @@ type StartOptions struct {
 	Environment     []string
 	DirMounts       []string
 	DebugMode       bool
+	Detach          DetachMode
+	// DetachLog is the resolved absolute path that a detached process
+	// engine writes stdout/stderr to. Unused by the docker engine.
+	DetachLog string
+}
+
+// IsDetached reports whether the mock should be run in the background.
+func (o StartOptions) IsDetached() bool {
+	return o.Detach != DetachNone
+}
+
+// DefaultDetachLogPath returns the default log file path for a detached
+// process-engine mock listening on the given port.
+func DefaultDetachLogPath(port int) (string, error) {
+	globalDir, err := config.GetGlobalConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(globalDir, "logs", fmt.Sprintf("imposter-%d.log", port)), nil
 }
 
 type EnvOptions struct {
@@ -52,7 +91,21 @@ type MockEngine interface {
 	Restart(wg *sync.WaitGroup)
 	ListAllManaged() ([]ManagedMock, error)
 	StopAllManaged() int
+
+	// StopManaged stops the single managed mock identified by id (the same
+	// value reported in ManagedMock.ID, i.e. the short container ID for
+	// docker or the PID for process engines). Returns (true, nil) if the
+	// mock was found and stopped; (false, nil) if no managed mock with
+	// that id exists in this engine; (false, err) if the engine could
+	// not be queried.
+	StopManaged(id string) (bool, error)
+
 	GetVersionString() (string, error)
+
+	// GetID returns an identifier for the running mock: the container ID
+	// for the docker engine, or the process PID for process engines.
+	// Returns an empty string if the mock has not been started.
+	GetID() string
 }
 
 type EngineMetadata struct {

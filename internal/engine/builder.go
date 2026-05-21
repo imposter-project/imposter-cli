@@ -123,6 +123,16 @@ func validateEngineType(engineType EngineType) error {
 	return fmt.Errorf("unsupported engine type: %v", engineType)
 }
 
+// IsDockerEngine reports whether the engine type is one of the
+// container-based docker variants.
+func IsDockerEngine(engineType EngineType) bool {
+	switch engineType {
+	case EngineTypeDockerCore, EngineTypeDockerAll, EngineTypeDockerDistroless:
+		return true
+	}
+	return false
+}
+
 func GetConfiguredType(override string) EngineType {
 	return GetConfiguredTypeWithDefault(override, defaultEngineType)
 }

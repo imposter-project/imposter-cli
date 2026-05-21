@@ -23,8 +23,10 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"testing"
+	"time"
 )
 
 type EngineTestFields struct {
@@ -125,6 +127,67 @@ func List(t *testing.T, tests []EngineTestScenario, builder func(scenario Engine
 			}
 		})
 	}
+}
+
+// StartDetached verifies the detach flow for process engines: Start
+// returns once healthy without the harness ever calling wg.Wait() (the
+// CLI exits in real usage), the mock keeps serving, its log file is
+// written, and it remains discoverable/stoppable via the managed-process
+// helpers.
+func StartDetached(t *testing.T, tests []EngineTestScenario, builder func(scenario EngineTestScenario) engine.MockEngine) {
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			wg := &sync.WaitGroup{}
+			mockEngine := builder(tt)
+
+			success := mockEngine.Start(wg)
+			if !success {
+				t.Fatalf("detached engine did not become healthy")
+			}
+
+			stopped := false
+			defer func() {
+				if !stopped {
+					mockEngine.StopAllManaged()
+				}
+			}()
+
+			// deliberately do NOT call wg.Wait() - in detach mode the CLI
+			// returns immediately and the OS reparents the child
+			checkUp(t, tt.Fields.Options.Port)
+
+			require.NotEmpty(t, mockEngine.GetID(), "detached mock should expose an id")
+
+			info, err := os.Stat(tt.Fields.Options.DetachLog)
+			require.NoErrorf(t, err, "detach log %s should exist", tt.Fields.Options.DetachLog)
+			require.NotZerof(t, info.Size(), "detach log %s should be non-empty", tt.Fields.Options.DetachLog)
+
+			mocks, err := mockEngine.ListAllManaged()
+			require.NoError(t, err, "failed to list managed mocks")
+			// Don't assert exact count — shared CI runners can have other
+			// imposter processes the matchers also pick up. We only care
+			// that the mock we just started is in the list.
+			require.True(t, containsMockOnPort(mocks, tt.Fields.Options.Port),
+				"expected detached mock on port %d to be in the managed list (got %d mocks)",
+				tt.Fields.Options.Port, len(mocks))
+
+			require.Positive(t, mockEngine.StopAllManaged(), "expected StopAllManaged to stop at least the detached mock")
+			stopped = true
+
+			require.Eventually(t, func() bool {
+				return engine.CheckMockStatus(tt.Fields.Options.Port) != nil
+			}, 10*time.Second, 200*time.Millisecond, "mock should stop serving after StopAllManaged")
+		})
+	}
+}
+
+func containsMockOnPort(mocks []engine.ManagedMock, port int) bool {
+	for _, m := range mocks {
+		if m.Port == port {
+			return true
+		}
+	}
+	return false
 }
 
 func GetFreePort() int {

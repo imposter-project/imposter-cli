@@ -49,8 +49,26 @@ func Test_stopEngine(t *testing.T) {
 	}
 }
 
-func Test_downCmd_mutual_exclusivity(t *testing.T) {
-	rootCmd.SetArgs([]string{"down", "-a", "-t", "docker"})
-	err := rootCmd.Execute()
-	require.Error(t, err, "should reject --all with --engine-type")
+func Test_downCmd_requires_id_or_all(t *testing.T) {
+	// bare `imposter down` is fatal — capture via runWithRecovery
+	rootCmd.SetArgs([]string{"down"})
+	err := runWithRecovery(func() {
+		_ = rootCmd.Execute()
+	})
+	require.Error(t, err, "should fail without an ID or --all")
+}
+
+func Test_downCmd_rejects_id_with_all(t *testing.T) {
+	rootCmd.SetArgs([]string{"down", "--all", "abc123"})
+	err := runWithRecovery(func() {
+		_ = rootCmd.Execute()
+	})
+	require.Error(t, err, "should reject ID together with --all")
+}
+
+func Test_stopMockByID_unknown(t *testing.T) {
+	err := runWithRecovery(func() {
+		stopMockByID("definitely-not-a-real-mock-id")
+	})
+	require.Error(t, err, "should fail when no engine has a mock with the given id")
 }
