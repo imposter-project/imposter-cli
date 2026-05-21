@@ -24,31 +24,6 @@ import (
 	"github.com/imposter-project/imposter-cli/internal/stringutil"
 )
 
-func TestUsesEnvConfig(t *testing.T) {
-	tests := []struct {
-		name    string
-		version string
-		want    bool
-	}{
-		{name: "3.x uses CLI flags", version: "3.40.0", want: false},
-		{name: "4.x uses CLI flags", version: "4.9.1", want: false},
-		{name: "4.x latest patch uses CLI flags", version: "4.99.99", want: false},
-		{name: "5.0.0 uses env vars", version: "5.0.0", want: true},
-		{name: "5.x uses env vars", version: "5.2.3", want: true},
-		{name: "6.x uses env vars", version: "6.0.0", want: true},
-		{name: "5.x pre-release uses env vars", version: "5.0.0-beta.1", want: true},
-		{name: "unparseable falls back to env vars", version: "dev", want: true},
-		{name: "empty version falls back to env vars", version: "", want: true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := usesEnvConfig(tt.version); got != tt.want {
-				t.Errorf("usesEnvConfig(%q) = %v, want %v", tt.version, got, tt.want)
-			}
-		})
-	}
-}
-
 func TestBuildCmd(t *testing.T) {
 	tests := []struct {
 		name         string

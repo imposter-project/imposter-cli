@@ -27,7 +27,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/go-semver/semver"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -76,7 +75,7 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	logger.Tracef("container user: %s", containerUser)
 
 	exposedPorts, portBindings := buildPorts(options)
-	useEnvConfig := usesEnvConfig(options.Version)
+	useEnvConfig := engine.UsesEnvConfig(options.Version)
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image:        d.provider.imageAndTag,
 		Cmd:          buildCmd(options, useEnvConfig),
@@ -159,17 +158,6 @@ func buildCmd(options engine.StartOptions, useEnvConfig bool) []string {
 		"--configDir=" + containerConfigDir,
 		fmt.Sprintf("--listenPort=%d", options.Port),
 	}
-}
-
-// 5.x dropped the --configDir and --listenPort CLI flags in favour of
-// IMPOSTER_CONFIG_DIR and IMPOSTER_PORT env vars. Unparseable versions
-// (e.g. "dev") use the new form.
-func usesEnvConfig(version string) bool {
-	v, err := semver.NewVersion(version)
-	if err != nil {
-		return true
-	}
-	return v.Major >= 5
 }
 
 func buildBinds(d *DockerMockEngine, options engine.StartOptions) []string {
