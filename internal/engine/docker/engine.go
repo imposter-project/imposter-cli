@@ -343,6 +343,25 @@ func (d *DockerMockEngine) ListAllManaged() ([]engine.ManagedMock, error) {
 	return containers, nil
 }
 
+func (d *DockerMockEngine) StopManaged(id string) (bool, error) {
+	ctx, cli, err := buildCliClient()
+	if err != nil {
+		return false, err
+	}
+	info, err := cli.ContainerInspect(ctx, id)
+	if err != nil {
+		if client.IsErrNotFound(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	if info.Config == nil || info.Config.Labels[labelKeyManaged] != "true" {
+		return false, nil
+	}
+	removeContainers(d, []string{info.ID})
+	return true, nil
+}
+
 func (d *DockerMockEngine) StopAllManaged() int {
 	cli, ctx, err := buildCliClient()
 	if err != nil {

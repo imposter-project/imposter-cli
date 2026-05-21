@@ -104,6 +104,35 @@ func StopManagedProcesses(matcher ProcessMatcher) (int, error) {
 	return len(processes), nil
 }
 
+// StopManagedProcess kills the single managed process whose PID matches id,
+// provided it satisfies matcher. Returns (true, nil) if killed, (false, nil)
+// if no matching process exists, (false, err) on lookup/kill errors.
+func StopManagedProcess(matcher ProcessMatcher, id string) (bool, error) {
+	pid, err := strconv.Atoi(id)
+	if err != nil {
+		return false, nil
+	}
+	processes, err := FindImposterProcesses(matcher)
+	if err != nil {
+		return false, err
+	}
+	for _, mock := range processes {
+		if mock.ID != id {
+			continue
+		}
+		logger.Debugf("killing %s process with PID: %d", matcher.ProcessName, pid)
+		p, err := os.FindProcess(pid)
+		if err != nil {
+			return false, fmt.Errorf("failed to find process %d: %v", pid, err)
+		}
+		if err := p.Kill(); err != nil {
+			return false, fmt.Errorf("failed to kill process %d: %v", pid, err)
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
 // ReadArg parses the command line arguments to find the value of a given argument
 func ReadArg(cmdline []string, longArg string, shortArg string) string {
 	for i := range cmdline {

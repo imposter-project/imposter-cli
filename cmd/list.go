@@ -27,7 +27,6 @@ import (
 
 var listFlags = struct {
 	engineType     string
-	all            bool
 	healthExitCode bool
 	quiet          bool
 }{}
@@ -37,23 +36,23 @@ var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
 	Short:   "List running mocks",
-	Long: `Lists running Imposter mocks for the current engine type
-and reports their health.`,
+	Long: `Lists running Imposter mocks and reports their health.
+
+By default, mocks across all engine types are listed. Use --engine-type / -t
+to filter to a single engine type.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if listFlags.all {
-			listAllMocks(listFlags.quiet)
-		} else {
+		if listFlags.engineType != "" {
 			listMocks(engine.GetConfiguredType(listFlags.engineType), listFlags.quiet, false)
+		} else {
+			listAllMocks(listFlags.quiet)
 		}
 	},
 }
 
 func init() {
-	listCmd.Flags().StringVarP(&listFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,native,jvm - default \"docker\")")
-	listCmd.Flags().BoolVarP(&listFlags.all, "all", "a", false, "List mocks for all engine types")
+	listCmd.Flags().StringVarP(&listFlags.engineType, "engine-type", "t", "", "Filter mocks to this engine type (valid: docker,native,jvm)")
 	listCmd.Flags().BoolVarP(&listFlags.healthExitCode, "exit-code-health", "x", false, "Set exit code based on mock health")
 	listCmd.Flags().BoolVarP(&listFlags.quiet, "quiet", "q", false, "Quieten output; only print ID")
-	listCmd.MarkFlagsMutuallyExclusive("engine-type", "all")
 	registerEngineTypeCompletions(listCmd)
 	rootCmd.AddCommand(listCmd)
 }

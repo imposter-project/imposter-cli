@@ -187,6 +187,10 @@ func (j *JvmMockEngine) StopAllManaged() int {
 	return count
 }
 
+func (j *JvmMockEngine) StopManaged(id string) (bool, error) {
+	return procutil.StopManagedProcess(matcher, id)
+}
+
 func (j *JvmMockEngine) GetVersionString() (string, error) {
 	if !(*j.provider).Satisfied() {
 		if err := (*j.provider).Provide(engine.PullSkip); err != nil {

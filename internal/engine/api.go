@@ -91,6 +91,15 @@ type MockEngine interface {
 	Restart(wg *sync.WaitGroup)
 	ListAllManaged() ([]ManagedMock, error)
 	StopAllManaged() int
+
+	// StopManaged stops the single managed mock identified by id (the same
+	// value reported in ManagedMock.ID, i.e. the short container ID for
+	// docker or the PID for process engines). Returns (true, nil) if the
+	// mock was found and stopped; (false, nil) if no managed mock with
+	// that id exists in this engine; (false, err) if the engine could
+	// not be queried.
+	StopManaged(id string) (bool, error)
+
 	GetVersionString() (string, error)
 
 	// GetID returns an identifier for the running mock: the container ID

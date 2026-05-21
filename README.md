@@ -87,8 +87,8 @@ Each command has full help via `imposter <command> --help`.
 | `imposter up [DIR]` | Start a live mock from Imposter config in `DIR` (defaults to current directory). Add `-s` to scaffold first. |
 | `imposter scaffold [DIR]` | Generate Imposter config from any OpenAPI/Swagger or WSDL files in `DIR`. |
 | `imposter proxy URL` | Forward traffic to `URL` and record each exchange to disk as a replayable mock. Add `--insecure` to skip TLS verification. |
-| `imposter down` | Stop running mocks for the current engine type. Add `-a` to stop them all. |
-| `imposter list` | List running mocks and their health. `-qx` makes a tidy healthcheck. |
+| `imposter down ID` | Stop the mock with the given ID (see `imposter ls`). `-a` / `--all` stops every managed mock across all engine types. |
+| `imposter list` | List running mocks and their health across all engine types. `-t` filters by engine type; `-qx` makes a tidy healthcheck. |
 | `imposter bundle [DIR]` | Bundle config and engine into a Docker image or Lambda zip. |
 | `imposter doctor` | Check that you have at least one engine ready to run. |
 | `imposter engine pull` / `engine list` | Manage cached engine binaries and images. |

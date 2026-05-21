@@ -146,8 +146,8 @@ func Test_listMocksForEngine(t *testing.T) {
 	}
 }
 
-func Test_listCmd_mutual_exclusivity(t *testing.T) {
-	rootCmd.SetArgs([]string{"list", "-a", "-t", "docker"})
+func Test_listCmd_rejects_unknown_flag(t *testing.T) {
+	rootCmd.SetArgs([]string{"list", "--all"})
 	err := rootCmd.Execute()
-	require.Error(t, err, "should reject --all with --engine-type")
+	require.Error(t, err, "--all is no longer a flag; listing across engines is the default")
 }

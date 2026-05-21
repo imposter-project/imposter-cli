@@ -17,36 +17,45 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/imposter-project/imposter-cli/internal/engine"
-	"github.com/spf13/cobra"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/spf13/cobra"
 )
 
 var downFlags = struct {
-	engineType string
-	all        bool
+	all bool
 }{}
 
 // downCmd represents the down command
 var downCmd = &cobra.Command{
-	Use:   "down",
-	Short: "Stop running mocks",
-	Long:  `Stops running Imposter mocks for the current engine type.`,
+	Use:   "down [ID]",
+	Short: "Stop a running mock by ID, or all mocks with --all",
+	Long: `Stops a single running Imposter mock identified by ID, or all
+managed mocks across every engine type with --all.
+
+Use 'imposter ls' to discover the IDs of running mocks.`,
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if downFlags.all {
+			if len(args) > 0 {
+				logger.Fatal("cannot specify both --all and a mock ID")
+			}
 			stopAllEngines()
-		} else {
-			stopAll(engine.GetConfiguredType(downFlags.engineType))
+			return
 		}
+		if len(args) == 0 {
+			logger.Fatal("a mock ID is required (or use --all to stop all mocks); see 'imposter ls' for IDs")
+		}
+		stopMockByID(args[0])
 	},
 }
 
 func init() {
-	downCmd.Flags().StringVarP(&downFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,native,jvm - default \"docker\")")
-	downCmd.Flags().BoolVarP(&downFlags.all, "all", "a", false, "Stop mocks for all engine types")
-	downCmd.MarkFlagsMutuallyExclusive("engine-type", "all")
-	registerEngineTypeCompletions(downCmd)
+	downCmd.Flags().BoolVarP(&downFlags.all, "all", "a", false, "Stop all managed mocks across all engine types")
 	rootCmd.AddCommand(downCmd)
 }
 
@@ -76,17 +85,34 @@ func stopAllEngines() {
 	}
 }
 
-func stopAll(engineType engine.EngineType) {
-	logger.Info("stopping all managed mocks...")
-	stopped, err := stopEngine(engineType)
-	if err != nil {
-		logger.Fatalf("failed to stop mocks: %s", err)
+// stopMockByID searches every engine type for a managed mock with the
+// given ID and stops it.
+func stopMockByID(id string) {
+	var engineErrors []string
+	for _, engineType := range allEngineTypes {
+		var stopped bool
+		var stopErr error
+		err := runWithRecovery(func() {
+			mockEngine := engine.BuildEngine(engineType, filepath.Join(os.TempDir(), "imposter-down"), engine.StartOptions{})
+			stopped, stopErr = mockEngine.StopManaged(id)
+		})
+		if err != nil {
+			engineErrors = append(engineErrors, fmt.Sprintf("%s: %v", engineType, err))
+			continue
+		}
+		if stopErr != nil {
+			engineErrors = append(engineErrors, fmt.Sprintf("%s: %v", engineType, stopErr))
+			continue
+		}
+		if stopped {
+			logger.Infof("stopped mock %s (%s engine)", id, engineType)
+			return
+		}
 	}
-	if stopped > 0 {
-		logger.Infof("stopped %d managed mock(s)", stopped)
-	} else {
-		logger.Info("no managed mocks were found")
+	if len(engineErrors) == len(allEngineTypes) {
+		logger.Fatalf("failed to query any engine: %s", strings.Join(engineErrors, "; "))
 	}
+	logger.Fatalf("no managed mock found with ID %q (run 'imposter ls' to see running mocks)", id)
 }
 
 func stopEngine(engineType engine.EngineType) (int, error) {

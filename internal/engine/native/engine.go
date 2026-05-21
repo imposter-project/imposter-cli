@@ -187,6 +187,10 @@ func (g *NativeMockEngine) StopAllManaged() int {
 	return count
 }
 
+func (g *NativeMockEngine) StopManaged(id string) (bool, error) {
+	return procutil.StopManagedProcess(matcher, id)
+}
+
 func (g *NativeMockEngine) GetVersionString() (string, error) {
 	// TODO get from binary
 	return g.options.Version, nil
