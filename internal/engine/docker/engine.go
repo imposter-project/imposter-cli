@@ -122,6 +122,9 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 }
 
 func (d *DockerMockEngine) GetID() string {
+	if len(d.containerId) > 12 {
+		return d.containerId[:12]
+	}
 	return d.containerId
 }
 
