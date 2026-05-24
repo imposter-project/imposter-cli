@@ -23,6 +23,15 @@ const (
 	LambdaArchitectureArm64  LambdaArchitecture = "arm64"
 )
 
+// goArchFor translates an AWS Lambda architecture name to the Go arch name
+// used by per-architecture binary releases (e.g. imposter-go's Lambda zips).
+func goArchFor(a LambdaArchitecture) string {
+	if a == LambdaArchitectureArm64 {
+		return "arm64"
+	}
+	return "amd64"
+}
+
 const remoteType = "awslambda"
 const defaultArchitecture = LambdaArchitectureX86_64
 const defaultRegion = "us-east-1"

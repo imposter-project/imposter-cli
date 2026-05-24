@@ -137,12 +137,35 @@ func GetConfiguredType(override string) EngineType {
 	return GetConfiguredTypeWithDefault(override, defaultEngineType)
 }
 
+// GetConfiguredTypeWithVersion is like GetConfiguredType but also takes an
+// engine-version override so that a pinned version can imply an engine type
+// when no explicit one is configured. CLI commands that expose a --version
+// flag should pass its value as versionOverride.
+func GetConfiguredTypeWithVersion(typeOverride string, versionOverride string) EngineType {
+	return getConfiguredType(typeOverride, versionOverride, defaultEngineType)
+}
+
 func GetConfiguredTypeWithDefault(override string, defaultType EngineType) EngineType {
-	return normaliseEngineType(EngineType(stringutil.GetFirstNonEmpty(
-		override,
+	return getConfiguredType(override, "", defaultType)
+}
+
+func getConfiguredType(typeOverride string, versionOverride string, defaultType EngineType) EngineType {
+	explicit := stringutil.GetFirstNonEmpty(
+		typeOverride,
 		viper.GetString("engine"),
-		string(defaultType),
-	)))
+	)
+	if explicit != "" {
+		return normaliseEngineType(EngineType(explicit))
+	}
+	// No explicit engine type configured. If the user has pinned a specific
+	// engine version we can sometimes derive the engine type from it (e.g.
+	// 5.x implies the native engine). "latest" intentionally does not derive
+	// — callers keep the supplied default until "latest" is re-pointed at v5.
+	version := stringutil.GetFirstNonEmpty(versionOverride, viper.GetString("version"))
+	if derived := DeriveEngineTypeFromVersion(version); derived != EngineTypeNone {
+		return derived
+	}
+	return defaultType
 }
 
 func GetConfiguredVersion(engineType EngineType, override string, allowCached bool) string {

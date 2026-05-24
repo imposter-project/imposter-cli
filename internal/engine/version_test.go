@@ -42,3 +42,28 @@ func TestUsesEnvConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestDeriveEngineTypeFromVersion(t *testing.T) {
+	tests := []struct {
+		name    string
+		version string
+		want    EngineType
+	}{
+		{name: "3.x has no derivation", version: "3.40.0", want: EngineTypeNone},
+		{name: "4.x has no derivation", version: "4.9.1", want: EngineTypeNone},
+		{name: "5.0.0 derives native", version: "5.0.0", want: EngineTypeNative},
+		{name: "5.x derives native", version: "5.2.3", want: EngineTypeNative},
+		{name: "6.x derives native", version: "6.0.0", want: EngineTypeNative},
+		{name: "5.x pre-release derives native", version: "5.0.0-beta.1", want: EngineTypeNative},
+		{name: "latest keeps default", version: "latest", want: EngineTypeNone},
+		{name: "empty keeps default", version: "", want: EngineTypeNone},
+		{name: "unparseable keeps default", version: "dev", want: EngineTypeNone},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := DeriveEngineTypeFromVersion(tt.version); got != tt.want {
+				t.Errorf("DeriveEngineTypeFromVersion(%q) = %v, want %v", tt.version, got, tt.want)
+			}
+		})
+	}
+}

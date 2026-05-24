@@ -25,6 +25,12 @@ type LambdaLibrary struct{}
 
 type LambdaProvider struct {
 	engine.EngineMetadata
+
+	// Architecture selects the target CPU architecture for the bundled
+	// binary (Go-style: "amd64" or "arm64"). It is only consulted by engine
+	// flavours that ship per-architecture binaries (the native engine). If
+	// left empty, CreateDeploymentPackage falls back to DefaultLambdaArch.
+	Architecture string
 }
 
 var logger = logging.GetLogger()

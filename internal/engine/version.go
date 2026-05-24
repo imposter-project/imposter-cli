@@ -36,17 +36,51 @@ func ResolveLatestToVersion(engineType EngineType, allowCached bool) (string, er
 	return latest, nil
 }
 
+// parseMajorVersion returns the major component of the given engine version,
+// or (0, false) if the version cannot be parsed as semver. Callers decide how
+// to treat the unparseable case (typically: assume the modern 5.x+ line).
+func parseMajorVersion(version string) (int64, bool) {
+	v, err := semver.NewVersion(version)
+	if err != nil {
+		return 0, false
+	}
+	return v.Major, true
+}
+
 // UsesEnvConfig reports whether the given engine version expects its config
 // directory and listen port via IMPOSTER_CONFIG_DIR and IMPOSTER_PORT env
 // vars (5.x and later) rather than --configDir and --listenPort CLI flags
 // (4.x and earlier). Unparseable versions (e.g. "dev") default to the env-var
 // form.
 func UsesEnvConfig(version string) bool {
-	v, err := semver.NewVersion(version)
-	if err != nil {
+	major, ok := parseMajorVersion(version)
+	if !ok {
 		return true
 	}
-	return v.Major >= 5
+	return major >= 5
+}
+
+// DeriveEngineTypeFromVersion returns the engine type implied by an explicit
+// engine version, or EngineTypeNone if no derivation can be made. Callers
+// should fall back to their configured/default engine type when this returns
+// EngineTypeNone.
+//
+// Versions 5.x and later resolve to EngineTypeNative. Earlier versions, the
+// "latest" alias, the empty string, and unparseable values all return
+// EngineTypeNone so the default engine continues to apply. (Future: "latest"
+// will be re-pointed at v5 and so will yield EngineTypeNative.)
+func DeriveEngineTypeFromVersion(version string) EngineType {
+	if version == "" || version == "latest" {
+		return EngineTypeNone
+	}
+	major, ok := parseMajorVersion(version)
+	if !ok {
+		return EngineTypeNone
+	}
+	if major >= 5 {
+		return EngineTypeNative
+	}
+	return EngineTypeNone
 }
 
 func GetHighestVersion(engines []EngineMetadata) string {
