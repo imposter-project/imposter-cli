@@ -34,7 +34,8 @@ func (m LambdaRemote) Deploy() error {
 	}
 
 	engineVersion := engine.GetConfiguredVersion(engine.EngineTypeAwsLambda, m.Config[configKeyEngineVersion], true)
-	zipContents, err := awslambda.CreateDeploymentPackage(engineVersion, m.Dir)
+	flavour := flavourForVersion(engineVersion)
+	zipContents, err := awslambda.CreateDeploymentPackage(engineVersion, m.Dir, goArchFor(m.getArchitecture()))
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -56,6 +57,10 @@ func (m LambdaRemote) Deploy() error {
 	}
 
 	snapStart := stringutil.ToBool(m.Config[configKeySnapStart])
+	if snapStart && !flavour.supportsSnapStart {
+		logger.Warnf("SnapStart is not supported by the %s lambda runtime — ignoring", flavour.runtime)
+		snapStart = false
+	}
 	funcArn, err := ensureFunctionExists(
 		svc,
 		region,
@@ -65,6 +70,7 @@ func (m LambdaRemote) Deploy() error {
 		m.getArchitecture(),
 		location,
 		snapStart,
+		flavour,
 	)
 	if err != nil {
 		return err
@@ -345,6 +351,7 @@ func ensureFunctionExists(
 	arch LambdaArchitecture,
 	location codeLocation,
 	snapStart bool,
+	flavour lambdaFlavour,
 ) (string, error) {
 	var funcArn string
 
@@ -361,6 +368,7 @@ func ensureFunctionExists(
 				arch,
 				location,
 				snapStart,
+				flavour,
 			)
 			if err != nil {
 				return "", err
@@ -372,8 +380,10 @@ func ensureFunctionExists(
 
 	} else {
 		funcArn = *result.Configuration.FunctionArn
-		if err = ensureSnapStart(svc, funcArn, snapStart); err != nil {
-			return "", err
+		if flavour.supportsSnapStart {
+			if err = ensureSnapStart(svc, funcArn, snapStart); err != nil {
+				return "", err
+			}
 		}
 		if err = updateFunctionCode(svc, funcArn, location); err != nil {
 			return "", err
@@ -404,28 +414,29 @@ func createFunction(
 	arch LambdaArchitecture,
 	location codeLocation,
 	snapStart bool,
+	flavour lambdaFlavour,
 ) (arn string, err error) {
 	logger.Debugf("creating function: %s in region: %s", funcName, region)
 
-	var desiredConfig lambdatypes.SnapStartApplyOn
-	if snapStart {
-		desiredConfig = lambdatypes.SnapStartApplyOnPublishedVersions
-	} else {
-		desiredConfig = lambdatypes.SnapStartApplyOnNone
-	}
-
 	input := &lambda.CreateFunctionInput{
 		FunctionName:  aws.String(funcName),
-		Handler:       aws.String("io.gatehill.imposter.awslambda.HandlerV2"),
+		Handler:       aws.String(flavour.handler),
 		MemorySize:    aws.Int32(memoryMb),
 		Role:          aws.String(roleArn),
-		Runtime:       lambdatypes.RuntimeJava11,
+		Runtime:       flavour.runtime,
 		Architectures: []lambdatypes.Architecture{lambdatypes.Architecture(arch)},
-		Environment:   buildEnv(),
+		Environment:   flavour.buildEnv(),
 		Code:          &lambdatypes.FunctionCode{},
-		SnapStart: &lambdatypes.SnapStart{
-			ApplyOn: desiredConfig,
-		},
+	}
+
+	if flavour.supportsSnapStart {
+		var desiredConfig lambdatypes.SnapStartApplyOn
+		if snapStart {
+			desiredConfig = lambdatypes.SnapStartApplyOnPublishedVersions
+		} else {
+			desiredConfig = lambdatypes.SnapStartApplyOnNone
+		}
+		input.SnapStart = &lambdatypes.SnapStart{ApplyOn: desiredConfig}
 	}
 
 	if location.bucket != "" {
@@ -493,13 +504,6 @@ func (m LambdaRemote) getAwsRegion() string {
 		return configuredRegion
 	}
 	panic("no AWS default region set")
-}
-
-func buildEnv() *lambdatypes.Environment {
-	env := make(map[string]string)
-	env["IMPOSTER_CONFIG_DIR"] = "/var/task/config"
-	env["JAVA_TOOL_OPTIONS"] = "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
-	return &lambdatypes.Environment{Variables: env}
 }
 
 func (m LambdaRemote) deleteFunction(funcArn string, svc *lambda.Client) error {

@@ -28,7 +28,7 @@ import (
 )
 
 func (p *LambdaProvider) Bundle(configDir string, dest string) error {
-	deploymentPackage, err := CreateDeploymentPackage(p.Version, configDir)
+	deploymentPackage, err := CreateDeploymentPackage(p.Version, configDir, p.Architecture)
 	if err != nil {
 		return fmt.Errorf("failed to create bundle: %v", err)
 	}
@@ -44,8 +44,13 @@ func (p *LambdaProvider) Bundle(configDir string, dest string) error {
 	return nil
 }
 
-func CreateDeploymentPackage(version string, dir string) (*[]byte, error) {
-	binaryPath, err := checkOrDownloadBinary(version)
+// CreateDeploymentPackage assembles the AWS Lambda zip for the given engine
+// version, embedding the configuration directory contents. arch selects the
+// underlying binary's CPU architecture (Go-style: "amd64" or "arm64") for
+// engine flavours whose binaries are arch-specific (the native engine);
+// callers may pass "" to fall back to DefaultLambdaArch.
+func CreateDeploymentPackage(version string, dir string, arch string) (*[]byte, error) {
+	binaryPath, err := checkOrDownloadBinary(version, arch)
 	if err != nil {
 		return nil, err
 	}

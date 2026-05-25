@@ -67,6 +67,45 @@ func TestGetConfiguredType(t *testing.T) {
 	}
 }
 
+func TestGetConfiguredTypeWithVersion(t *testing.T) {
+	type args struct {
+		typeOverride    string
+		versionOverride string
+	}
+	tests := []struct {
+		name             string
+		args             args
+		configureType    string
+		configureVersion string
+		want             EngineType
+	}{
+		{name: "explicit type wins over version", args: args{typeOverride: "docker", versionOverride: "5.0.0"}, want: EngineTypeDockerCore},
+		{name: "configured type wins over version", args: args{versionOverride: "5.0.0"}, configureType: "jvm", want: EngineTypeJvmSingleJar},
+		{name: "5.x version override derives native", args: args{versionOverride: "5.0.0"}, want: EngineTypeNative},
+		{name: "5.x configured version derives native", configureVersion: "5.2.3", want: EngineTypeNative},
+		{name: "4.x version keeps default", args: args{versionOverride: "4.9.0"}, want: defaultEngineType},
+		{name: "latest keeps default", args: args{versionOverride: "latest"}, want: defaultEngineType},
+		{name: "no version, no type, returns default", want: defaultEngineType},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.configureType != "" {
+				viper.Set("engine", tt.configureType)
+			}
+			if tt.configureVersion != "" {
+				viper.Set("version", tt.configureVersion)
+			}
+			t.Cleanup(func() {
+				viper.Set("engine", nil)
+				viper.Set("version", nil)
+			})
+			if got := GetConfiguredTypeWithVersion(tt.args.typeOverride, tt.args.versionOverride); got != tt.want {
+				t.Errorf("GetConfiguredTypeWithVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSanitiseVersionOutput(t *testing.T) {
 	type args struct {
 		s string

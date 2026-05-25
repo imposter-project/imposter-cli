@@ -18,18 +18,21 @@ package cmd
 
 import (
 	"fmt"
-	config2 "github.com/imposter-project/imposter-cli/internal/config"
-	"github.com/imposter-project/imposter-cli/internal/engine"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"time"
+
+	config2 "github.com/imposter-project/imposter-cli/internal/config"
+	"github.com/imposter-project/imposter-cli/internal/engine"
+	"github.com/imposter-project/imposter-cli/internal/engine/awslambda"
+	"github.com/spf13/cobra"
 )
 
 var bundleFlags = struct {
 	engineType    string
 	engineVersion string
 	output        string
+	architecture  string
 }{}
 
 // bundleCmd represents the bundle command
@@ -58,7 +61,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 		// Search for CLI config files in the mock config dir.
 		config2.MergeCliConfigIfExists(configDir)
 
-		engineType := engine.GetConfiguredType(bundleFlags.engineType)
+		engineType := engine.GetConfiguredTypeWithVersion(bundleFlags.engineType, bundleFlags.engineVersion)
 		lib := engine.GetLibrary(engineType)
 
 		if lib.IsSealedDistro() {
@@ -75,6 +78,7 @@ func init() {
 	bundleCmd.Flags().StringVarP(&bundleFlags.output, "output", "o", "", "The destination to write the bundle to. If using the 'docker' engine type, this must be a valid image name. Otherwise, this must be a path to a writeable file. If not specified, a name is generated.")
 	bundleCmd.Flags().StringVarP(&bundleFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: awslambda,docker,jvm)")
 	bundleCmd.Flags().StringVarP(&bundleFlags.engineVersion, "version", "v", "", "Imposter engine version (default \"latest\")")
+	bundleCmd.Flags().StringVarP(&bundleFlags.architecture, "architecture", "a", awslambda.DefaultLambdaArch, "Target CPU architecture for the awslambda engine bundle (amd64 or arm64). Ignored by other engine types.")
 
 	_ = bundleCmd.MarkFlagRequired("engine-type")
 	registerEngineTypeCompletions(bundleCmd, engine.EngineTypeAwsLambda)
@@ -107,6 +111,9 @@ func getBundleDest(engineType engine.EngineType) string {
 
 func bundle(lib *engine.EngineLibrary, version string, configDir string, dest string) {
 	provider := (*lib).GetProvider(version)
+	if lambdaProv, ok := provider.(*awslambda.LambdaProvider); ok {
+		lambdaProv.Architecture = bundleFlags.architecture
+	}
 	logger.Debugf("creating %s bundle %s using version %s", provider.GetEngineType(), configDir, version)
 
 	err := provider.Provide(engine.PullIfNotPresent)

@@ -83,7 +83,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 			pullPolicy = engine.PullIfNotPresent
 		}
 
-		engineType := engine.GetConfiguredType(upFlags.engineType)
+		engineType := engine.GetConfiguredTypeWithVersion(upFlags.engineType, upFlags.engineVersion)
 		lib := engine.GetLibrary(engineType)
 
 		var version string
