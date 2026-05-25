@@ -156,7 +156,8 @@ func StartDetached(t *testing.T, tests []EngineTestScenario, builder func(scenar
 			// returns immediately and the OS reparents the child
 			checkUp(t, tt.Fields.Options.Port)
 
-			require.NotEmpty(t, mockEngine.GetID(), "detached mock should expose an id")
+			id := mockEngine.GetID()
+			require.NotEmpty(t, id, "detached mock should expose an id")
 
 			info, err := os.Stat(tt.Fields.Options.DetachLog)
 			require.NoErrorf(t, err, "detach log %s should exist", tt.Fields.Options.DetachLog)
@@ -164,12 +165,13 @@ func StartDetached(t *testing.T, tests []EngineTestScenario, builder func(scenar
 
 			mocks, err := mockEngine.ListAllManaged()
 			require.NoError(t, err, "failed to list managed mocks")
-			// Don't assert exact count — shared CI runners can have other
-			// imposter processes the matchers also pick up. We only care
-			// that the mock we just started is in the list.
-			require.True(t, containsMockOnPort(mocks, tt.Fields.Options.Port),
-				"expected detached mock on port %d to be in the managed list (got %d mocks)",
-				tt.Fields.Options.Port, len(mocks))
+			// Match by ID (PID) rather than port: shared CI runners can have
+			// other imposter processes the matchers also pick up, and on macOS
+			// gopsutil cannot read another process's env, so the matcher's
+			// port detection falls back to a default.
+			require.True(t, containsMockWithID(mocks, id),
+				"expected detached mock with id %s to be in the managed list (got %d mocks)",
+				id, len(mocks))
 
 			require.Positive(t, mockEngine.StopAllManaged(), "expected StopAllManaged to stop at least the detached mock")
 			stopped = true
@@ -181,9 +183,9 @@ func StartDetached(t *testing.T, tests []EngineTestScenario, builder func(scenar
 	}
 }
 
-func containsMockOnPort(mocks []engine.ManagedMock, port int) bool {
+func containsMockWithID(mocks []engine.ManagedMock, id string) bool {
 	for _, m := range mocks {
-		if m.Port == port {
+		if m.ID == id {
 			return true
 		}
 	}
