@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.8.0] - 2026-05-25
+### Added
+- feat: add native engine support for AWS Lambda bundle and deploy (#126)
+- feat: add support for running mocks in detached/background mode (#125)
+
+### Changed
+- test: match detached mock by PID instead of port
+
 ## [1.7.0] - 2026-05-21
 ### Added
 - feat(docker): use env vars for configDir and port on Imposter 5.x+ (#124)
