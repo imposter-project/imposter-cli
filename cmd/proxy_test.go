@@ -93,7 +93,7 @@ func Test_proxyUpstream(t *testing.T) {
 			go func() {
 				proxyUpstream(upstream, port, outputDir, tt.args.rewrite, false, tt.args.options)
 			}()
-			if up := engine.WaitUntilUp(port, nil); !up {
+			if up, _ := engine.WaitUntilUp(port, nil); !up {
 				t.Fatalf("proxy did not come up on port %d", port)
 			}
 
@@ -122,7 +122,7 @@ func Test_proxyUpstream(t *testing.T) {
 				indexFileName = "GET-index.txt"
 			}
 
-			if cfgExists := engine.WaitForOp(fmt.Sprintf("config file: %s", cfgFileName), 10*time.Second, nil, func() bool {
+			if cfgExists, _ := engine.WaitForOp(fmt.Sprintf("config file: %s", cfgFileName), 10*time.Second, nil, func() bool {
 				if _, err = os.Stat(path.Join(outputDir, cfgFileName)); err != nil {
 					return false
 				}
@@ -131,7 +131,7 @@ func Test_proxyUpstream(t *testing.T) {
 				t.Fatalf("config file not found")
 			}
 
-			if indexExists := engine.WaitForOp(fmt.Sprintf("index file: %s", indexFileName), 10*time.Second, nil, func() bool {
+			if indexExists, _ := engine.WaitForOp(fmt.Sprintf("index file: %s", indexFileName), 10*time.Second, nil, func() bool {
 				if _, err = os.Stat(path.Join(outputDir, indexFileName)); err != nil {
 					return false
 				}
@@ -155,7 +155,7 @@ func startUpstream() (server *http.Server, url string, port int, err error) {
 		server.ListenAndServe()
 	}()
 	url = fmt.Sprintf("http://localhost:%d", port)
-	if up := engine.WaitForUrl("upstream", url, nil); !up {
+	if up, _ := engine.WaitForUrl("upstream", url, nil); !up {
 		return nil, "", 0, fmt.Errorf("failed to start upstream on port %d", port)
 	}
 	return server, url, port, nil

@@ -107,18 +107,36 @@ func (d *DockerMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 	case engine.DetachHealthy:
 		// wait for health but don't stream logs or reap - the container
 		// keeps running in dockerd after the CLI exits
-		return engine.WaitUntilUp(options.Port, d.shutDownC)
+		up, timedOut := engine.WaitUntilUp(options.Port, d.shutDownC)
+		if !up && timedOut {
+			d.stopAfterFailedStart(wg)
+		}
+		return up
 	default:
 		if err = streamLogsToStdIo(cli, ctx, containerId); err != nil {
 			logger.Warn(err)
 		}
-		up := engine.WaitUntilUp(options.Port, d.shutDownC)
+		up, timedOut := engine.WaitUntilUp(options.Port, d.shutDownC)
+		if !up {
+			if timedOut {
+				d.stopAfterFailedStart(wg)
+			}
+			return false
+		}
 
 		// watch in case container stops
 		go notifyOnStopBlocking(d, wg, containerId, cli, ctx)
 
-		return up
+		return true
 	}
+}
+
+// stopAfterFailedStart removes the container that was started but never
+// became healthy, so a failed `up` does not leave an orphaned container
+// running in dockerd.
+func (d *DockerMockEngine) stopAfterFailedStart(wg *sync.WaitGroup) {
+	logger.Warnf("stopping mock that did not become healthy")
+	d.Stop(wg)
 }
 
 func (d *DockerMockEngine) GetID() string {

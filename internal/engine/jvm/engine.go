@@ -74,15 +74,32 @@ func (j *JvmMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.Star
 		return true
 	case engine.DetachHealthy:
 		// wait for health but do not reap - the OS reparents the child
-		return engine.WaitUntilUp(options.Port, j.shutDownC)
+		up, timedOut := engine.WaitUntilUp(options.Port, j.shutDownC)
+		if !up && timedOut {
+			j.stopAfterFailedStart(wg)
+		}
+		return up
 	default:
-		up := engine.WaitUntilUp(options.Port, j.shutDownC)
+		up, timedOut := engine.WaitUntilUp(options.Port, j.shutDownC)
+		if !up {
+			if timedOut {
+				j.stopAfterFailedStart(wg)
+			}
+			return false
+		}
 
 		// watch in case process stops
 		go j.notifyOnStopBlocking(wg)
 
-		return up
+		return true
 	}
+}
+
+// stopAfterFailedStart kills the child process that was started but never
+// became healthy, so a failed `up` does not leave an orphaned mock behind.
+func (j *JvmMockEngine) stopAfterFailedStart(wg *sync.WaitGroup) {
+	logger.Warnf("stopping mock that did not become healthy")
+	j.Stop(wg)
 }
 
 func (j *JvmMockEngine) GetID() string {

@@ -67,7 +67,12 @@ func CheckMockStatus(port int) error {
 	return fmt.Errorf("healthcheck status was %d for mock at %s: %s", resp.StatusCode, url, err)
 }
 
-func WaitUntilUp(port int, shutDownC chan bool) (success bool) {
+// WaitUntilUp blocks until the mock on the given port reports healthy.
+// It returns success=true once healthy. If it returns success=false,
+// timedOut distinguishes a healthcheck timeout (true) from an external
+// abort via shutDownC, e.g. Ctrl+C (false), so callers can clean up a
+// mock that never became healthy.
+func WaitUntilUp(port int, shutDownC chan bool) (success bool, timedOut bool) {
 	url := getStatusUrl(port)
 	return WaitForUrl(fmt.Sprintf("status endpoint to return HTTP 200 at %v", url), url, shutDownC)
 }
@@ -76,7 +81,7 @@ func getStatusUrl(port int) string {
 	return fmt.Sprintf("http://localhost:%d/system/status", port)
 }
 
-func WaitForUrl(desc string, url string, abortC chan bool) (success bool) {
+func WaitForUrl(desc string, url string, abortC chan bool) (success bool, timedOut bool) {
 	return WaitForOp(desc, getStartTimeout(), abortC, func() bool {
 		resp, err := http.Get(url)
 		if err != nil {
@@ -90,7 +95,11 @@ func WaitForUrl(desc string, url string, abortC chan bool) (success bool) {
 	})
 }
 
-func WaitForOp(desc string, timeoutDuration time.Duration, abortC chan bool, operation func() bool) (success bool) {
+// WaitForOp polls operation until it succeeds, the timeout elapses, or an
+// abort is received on abortC. On timeout it returns (false, true) rather
+// than terminating the process, so the caller can stop any mock it started
+// before exiting; an abort returns (false, false).
+func WaitForOp(desc string, timeoutDuration time.Duration, abortC chan bool, operation func() bool) (success bool, timedOut bool) {
 	logger.Tracef("waiting for %s", desc)
 
 	successC := make(chan bool)
@@ -107,21 +116,16 @@ func WaitForOp(desc string, timeoutDuration time.Duration, abortC chan bool, ope
 		}
 	}()
 
-	finished := false
 	select {
 	case <-timeout.C:
-		finished = true
-		logger.Fatalf("timed out waiting for %s", desc)
-		return false
+		logger.Errorf("timed out waiting for %s", desc)
+		return false, true
 	case <-successC:
-		finished = true
 		logger.Tracef("successfully waited for %s", desc)
-		return true
+		return true, false
 	case <-abortC:
-		if !finished {
-			logger.Debugf("aborted waiting for %s", desc)
-		}
-		return false
+		logger.Debugf("aborted waiting for %s", desc)
+		return false, false
 	}
 }
 

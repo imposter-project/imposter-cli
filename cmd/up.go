@@ -30,6 +30,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 )
 
@@ -216,27 +217,44 @@ func start(lib *engine.EngineLibrary, startOptions engine.StartOptions, configDi
 	mockEngine := provider.Build(configDir, startOptions)
 
 	wg := &sync.WaitGroup{}
+	var interrupted atomic.Bool
 
 	if startOptions.IsDetached() {
 		// DetachHealthy still traps Ctrl+C so an abort during the
 		// healthcheck wait stops the mock; DetachNow returns immediately
 		// so there is nothing to interrupt.
 		if startOptions.Detach == engine.DetachHealthy {
-			trapExit(mockEngine, wg)
+			trapExit(mockEngine, wg, &interrupted)
 		}
 		if !mockEngine.Start(wg) {
-			// healthcheck timeout already calls logger.Fatalf; reaching
-			// here means the wait was aborted (e.g. Ctrl+C)
+			// on a healthcheck timeout the engine has already stopped the
+			// mock it started; exit non-zero so the failed start is
+			// visible. A false return with interrupted set means the wait
+			// was aborted (e.g. Ctrl+C), which is a clean shutdown.
+			if !interrupted.Load() {
+				os.Exit(1)
+			}
 			return
 		}
 		printDetachSummary(mockEngine, startOptions)
 		return
 	}
 
-	trapExit(mockEngine, wg)
+	trapExit(mockEngine, wg, &interrupted)
 	success := mockEngine.Start(wg)
 
-	if success && restartOnChange {
+	if !success {
+		// wait for any in-progress cleanup (the engine stops a mock that
+		// timed out; Ctrl+C triggers StopImmediately) to finish before
+		// returning, so we never leak a running mock.
+		wg.Wait()
+		if !interrupted.Load() {
+			os.Exit(1)
+		}
+		return
+	}
+
+	if restartOnChange {
 		dirUpdated := fileutil.WatchDir(configDir)
 		go func() {
 			for {
@@ -259,12 +277,15 @@ func printDetachSummary(mockEngine engine.MockEngine, startOptions engine.StartO
 	logger.Info("use 'imposter ls' to list running mocks, or 'imposter down' to stop them")
 }
 
-// listen for an interrupt from the OS, then attempt engine cleanup
-func trapExit(mockEngine engine.MockEngine, wg *sync.WaitGroup) {
-	c := make(chan os.Signal)
+// listen for an interrupt from the OS, then attempt engine cleanup.
+// interrupted is set before cleanup begins so the caller can tell an
+// abort apart from a healthcheck timeout once Start returns.
+func trapExit(mockEngine engine.MockEngine, wg *sync.WaitGroup, interrupted *atomic.Bool) {
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
+		interrupted.Store(true)
 		println()
 		mockEngine.StopImmediately(wg)
 	}()
