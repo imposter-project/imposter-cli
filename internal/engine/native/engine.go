@@ -74,14 +74,31 @@ func (g *NativeMockEngine) startWithOptions(wg *sync.WaitGroup, options engine.S
 		return true
 	case engine.DetachHealthy:
 		// wait for health but do not reap - the OS reparents the child
-		return engine.WaitUntilUp(options.Port, g.shutDownC)
-	default:
-		// watch in case process stops
-		up := engine.WaitUntilUp(options.Port, g.shutDownC)
-
-		go g.notifyOnStopBlocking(wg)
+		up, timedOut := engine.WaitUntilUp(options.Port, g.shutDownC)
+		if !up && timedOut {
+			g.stopAfterFailedStart(wg)
+		}
 		return up
+	default:
+		up, timedOut := engine.WaitUntilUp(options.Port, g.shutDownC)
+		if !up {
+			if timedOut {
+				g.stopAfterFailedStart(wg)
+			}
+			return false
+		}
+
+		// watch in case process stops
+		go g.notifyOnStopBlocking(wg)
+		return true
 	}
+}
+
+// stopAfterFailedStart kills the child process that was started but never
+// became healthy, so a failed `up` does not leave an orphaned mock behind.
+func (g *NativeMockEngine) stopAfterFailedStart(wg *sync.WaitGroup) {
+	logger.Warnf("stopping mock that did not become healthy")
+	g.Stop(wg)
 }
 
 func (g *NativeMockEngine) GetID() string {
