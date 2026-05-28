@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.8.1] - 2026-05-28
+### Fixed
+- fix: stop orphaned mock on healthcheck timeout (#129)
+
 ## [1.8.0] - 2026-05-25
 ### Added
 - feat: add native engine support for AWS Lambda bundle and deploy (#126)
