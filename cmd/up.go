@@ -51,6 +51,7 @@ var upFlags = struct {
 	debugMode           bool
 	detach              string
 	logFile             string
+	idFile              string
 }{}
 
 // upCmd represents the up command
@@ -114,7 +115,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 			DirMounts:       upFlags.dirMounts,
 			DebugMode:       upFlags.debugMode,
 		}
-		restartOnChange := applyDetachOptions(&startOptions, engineType, upFlags.detach, upFlags.logFile, upFlags.restartOnChange)
+		restartOnChange := applyDetachOptions(&startOptions, engineType, upFlags.detach, upFlags.logFile, upFlags.idFile, upFlags.restartOnChange)
 
 		start(&lib, startOptions, configDir, restartOnChange)
 	},
@@ -124,9 +125,12 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 // and returns the (possibly disabled) auto-restart setting. Auto-restart
 // is incompatible with detaching because the config-dir watcher lives in
 // the foreground CLI process, which exits once the mock is backgrounded.
-func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.EngineType, detach string, logFile string, restartOnChange bool) bool {
+func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.EngineType, detach string, logFile string, idFile string, restartOnChange bool) bool {
 	switch detach {
 	case "":
+		if idFile != "" {
+			logger.Warn("--id-file is ignored without --detach")
+		}
 		return restartOnChange
 	case "healthy":
 		startOptions.Detach = engine.DetachHealthy
@@ -135,6 +139,8 @@ func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.Eng
 	default:
 		logger.Fatalf("invalid --detach mode %q (valid: healthy, now)", detach)
 	}
+
+	startOptions.DetachIdFile = idFile
 
 	if restartOnChange {
 		logger.Warn("--auto-restart is not supported with --detach; auto-restart disabled")
@@ -175,6 +181,7 @@ func init() {
 	upCmd.Flags().StringVarP(&upFlags.detach, "detach", "d", "", "Run the mock in the background and return control to the terminal. Optional mode: 'healthy' (default, wait for the healthcheck before detaching) or 'now' (detach immediately)")
 	upCmd.Flags().Lookup("detach").NoOptDefVal = "healthy"
 	upCmd.Flags().StringVar(&upFlags.logFile, "log-file", "", "(Process engine types only) File to write detached mock logs to (default ~/.imposter/logs/imposter-<port>.log)")
+	upCmd.Flags().StringVar(&upFlags.idFile, "id-file", "", "(Detach mode only) File to write the started mock ID to (plaintext, no newline)")
 	registerEngineTypeCompletions(upCmd)
 	rootCmd.AddCommand(upCmd)
 }
@@ -270,11 +277,23 @@ func start(lib *engine.EngineLibrary, startOptions engine.StartOptions, configDi
 }
 
 func printDetachSummary(mockEngine engine.MockEngine, startOptions engine.StartOptions) {
-	logger.Infof("mock running in the background (id: %s, port: %d)", mockEngine.GetID(), startOptions.Port)
+	id := mockEngine.GetID()
+	if startOptions.DetachIdFile != "" {
+		if err := writeMockIDFile(startOptions.DetachIdFile, id); err != nil {
+			logger.Warnf("failed to write mock ID to %s: %s", startOptions.DetachIdFile, err)
+		}
+	}
+	logger.Infof("mock running in the background (id: %s, port: %d)", id, startOptions.Port)
 	if startOptions.DetachLog != "" {
 		logger.Infof("logs: %s", startOptions.DetachLog)
 	}
 	logger.Info("use 'imposter ls' to list running mocks, or 'imposter down' to stop them")
+}
+
+// writeMockIDFile writes the mock ID to path as plaintext with no trailing
+// newline, so the file can be consumed directly by scripts.
+func writeMockIDFile(path string, id string) error {
+	return os.WriteFile(path, []byte(id), 0644)
 }
 
 // listen for an interrupt from the OS, then attempt engine cleanup.

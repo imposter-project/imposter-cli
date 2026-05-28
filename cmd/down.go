@@ -27,7 +27,8 @@ import (
 )
 
 var downFlags = struct {
-	all bool
+	all    bool
+	idFile string
 }{}
 
 // downCmd represents the down command
@@ -37,26 +38,59 @@ var downCmd = &cobra.Command{
 	Long: `Stops a single running Imposter mock identified by ID, or all
 managed mocks across every engine type with --all.
 
+The ID can be given as an argument or read from a file with --id-file
+(as written by 'imposter up --id-file').
+
 Use 'imposter ls' to discover the IDs of running mocks.`,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if downFlags.all {
-			if len(args) > 0 {
-				logger.Fatal("cannot specify both --all and a mock ID")
+			if len(args) > 0 || downFlags.idFile != "" {
+				logger.Fatal("cannot specify --all together with a mock ID or --id-file")
 			}
 			stopAllEngines()
 			return
 		}
-		if len(args) == 0 {
-			logger.Fatal("a mock ID is required (or use --all to stop all mocks); see 'imposter ls' for IDs")
+
+		var id string
+		if downFlags.idFile != "" {
+			if len(args) > 0 {
+				logger.Fatal("cannot specify both a mock ID and --id-file")
+			}
+			var err error
+			id, err = readMockIDFile(downFlags.idFile)
+			if err != nil {
+				logger.Fatal(err)
+			}
+		} else {
+			if len(args) == 0 {
+				logger.Fatal("a mock ID is required (or use --all to stop all mocks, or --id-file to read one from a file); see 'imposter ls' for IDs")
+			}
+			id = args[0]
 		}
-		stopMockByID(args[0])
+		stopMockByID(id)
 	},
 }
 
 func init() {
 	downCmd.Flags().BoolVarP(&downFlags.all, "all", "a", false, "Stop all managed mocks across all engine types")
+	downCmd.Flags().StringVar(&downFlags.idFile, "id-file", "", "Read the mock ID to stop from this file (as written by 'imposter up --id-file')")
 	rootCmd.AddCommand(downCmd)
+}
+
+// readMockIDFile reads a mock ID written by 'imposter up --id-file',
+// trimming surrounding whitespace. Returns an error if the file cannot be
+// read or contains no ID.
+func readMockIDFile(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	id := strings.TrimSpace(string(data))
+	if id == "" {
+		return "", fmt.Errorf("id file %s contains no mock ID", path)
+	}
+	return id, nil
 }
 
 func stopAllEngines() {
