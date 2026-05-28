@@ -1,0 +1,97 @@
+name: Downstream GitHub Action
+
+# Assurance gate: exercises the official imposter-github-action against the
+# CLI built from the current branch, so that breaking changes to CLI commands
+# or arguments are caught before they reach downstream consumers.
+#
+# The action's `setup` step is deliberately skipped: it installs the released
+# CLI from GitHub, which would mask the change under test. Instead we build the
+# branch CLI and place it on PATH where the action expects to find `imposter`.
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  github-action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout CLI (current branch)
+        uses: actions/checkout@v6
+        with:
+          path: cli
+
+      - name: Checkout imposter-github-action
+        uses: actions/checkout@v6
+        with:
+          repository: imposter-project/imposter-github-action
+          ref: main
+          path: imposter-github-action
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.0'
+          # CLI is checked out under cli/, so point the build cache there.
+          cache-dependency-path: cli/go.sum
+
+      - name: Build branch CLI and place on PATH
+        working-directory: cli
+        run: |
+          make build
+          # Same install location the action's setup step uses.
+          cp ./imposter /usr/local/bin/imposter
+          echo "Installed CLI under test:"
+          imposter version
+
+      - name: Create test mock config
+        run: |
+          mkdir -p mocks
+          # Pin the engine version so the gate fails on CLI changes, not on a
+          # new engine release.
+          cat > mocks/.imposter.yaml << 'EOF'
+          version: "4.5.4"
+          EOF
+          cat > mocks/imposter-config.yaml << 'EOF'
+          plugin: rest
+          resources:
+          - path: /test
+            response:
+              statusCode: 200
+              content: Hello from Imposter
+          EOF
+
+      - name: Start mocks (downstream action)
+        id: start-mocks
+        uses: ./imposter-github-action/start-mocks
+        with:
+          port: '8080'
+          config-dir: './mocks'
+          engine-type: 'docker'
+
+      - name: Assert mock responds
+        run: |
+          base="${{ steps.start-mocks.outputs.base-url }}"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$base/test")
+          if [ "$code" != "200" ]; then
+            echo "Expected status 200 but got $code"
+            exit 1
+          fi
+          body=$(curl -s "$base/test")
+          if [ "$body" != "Hello from Imposter" ]; then
+            echo "Expected 'Hello from Imposter' but got '$body'"
+            exit 1
+          fi
+          echo "Mock responded correctly"
+
+      - name: Stop mocks (downstream action)
+        uses: ./imposter-github-action/stop-mocks
+
+      - name: Assert server stopped
+        run: |
+          if curl -s --max-time 5 "${{ steps.start-mocks.outputs.base-url }}/system/status"; then
+            echo "Mock server is still running"
+            exit 1
+          fi
+          echo "Mock server stopped"
