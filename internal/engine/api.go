@@ -54,6 +54,10 @@ type StartOptions struct {
 	// DetachLog is the resolved absolute path that a detached process
 	// engine writes stdout/stderr to. Unused by the docker engine.
 	DetachLog string
+	// DetachIdFile is the path the mock ID is written to (plaintext, no
+	// trailing newline) once a detached mock has started. Empty disables
+	// the behaviour.
+	DetachIdFile string
 }
 
 // IsDetached reports whether the mock should be run in the background.
