@@ -33,6 +33,8 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '1.25.0'
+          # CLI is checked out under cli/, so point the build cache there.
+          cache-dependency-path: cli/go.sum
 
       - name: Build branch CLI and place on PATH
         working-directory: cli
@@ -85,8 +87,6 @@ jobs:
 
       - name: Stop mocks (downstream action)
         uses: ./imposter-github-action/stop-mocks
-        with:
-          engine-type: 'docker'
 
       - name: Assert server stopped
         run: |
