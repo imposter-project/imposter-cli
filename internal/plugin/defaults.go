@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 )
 
+const pluginsConfigKey = "plugins"
+
+// Deprecated: use pluginsConfigKey instead.
 const defaultPluginsConfigKey = "default.plugins"
 
 // addDefaultPlugins adds the provided plugins to the list of default
@@ -45,9 +48,20 @@ func ListDefaultPlugins() ([]string, error) {
 	v, err := parseConfigFile()
 	if err != nil {
 		return []string{}, err
-	} else {
-		return v.GetStringSlice(defaultPluginsConfigKey), nil
 	}
+	return getConfiguredPlugins(v), nil
+}
+
+// getConfiguredPlugins reads plugins from both the top-level "plugins"
+// key and the deprecated "default.plugins" key, merging and deduplicating.
+func getConfiguredPlugins(v *viper.Viper) []string {
+	plugins := v.GetStringSlice(pluginsConfigKey)
+	deprecated := v.GetStringSlice(defaultPluginsConfigKey)
+	if len(deprecated) > 0 {
+		logger.Warnf("'default.plugins' config key is deprecated; use top-level 'plugins' instead")
+		plugins = stringutil.CombineUnique(plugins, deprecated)
+	}
+	return plugins
 }
 
 func writeDefaultPlugins(plugins []string) error {
@@ -55,7 +69,12 @@ func writeDefaultPlugins(plugins []string) error {
 	if err != nil {
 		return err
 	}
-	v.Set(defaultPluginsConfigKey, plugins)
+	v.Set(pluginsConfigKey, plugins)
+
+	// clear deprecated nested key so it is not written back
+	if v.IsSet(defaultPluginsConfigKey) {
+		v.Set(defaultPluginsConfigKey, []string{})
+	}
 
 	configDir, err := config.GetGlobalConfigDir()
 	if err != nil {

@@ -71,12 +71,10 @@ plugin:
   # ignored if plugin.dir is set
   baseDir: "/path/to/base/dir"
 
-# Default configuration regardless of engine version
-default:
-  # List of plugins to install
-  plugins:
-    - store-dynamodb
-    - store-redis
+# List of plugins to install
+plugins:
+  - store-dynamodb
+  - store-redis
 
 # Map of environment variables to set
 env:

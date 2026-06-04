@@ -61,9 +61,9 @@ func TestEnsureConfiguredPlugins(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup viper configuration
-			viper.Set(defaultPluginsConfigKey, tt.configuredPlugins)
-			defer viper.Set(defaultPluginsConfigKey, nil) // Clean up
+			// Setup viper configuration using the new top-level key
+			viper.Set(pluginsConfigKey, tt.configuredPlugins)
+			defer viper.Set(pluginsConfigKey, nil) // Clean up
 
 			// Test EnsureConfiguredPlugins
 			count, err := EnsureConfiguredPlugins(tt.engineType, tt.version)
@@ -76,5 +76,67 @@ func TestEnsureConfiguredPlugins(t *testing.T) {
 				t.Errorf("EnsureConfiguredPlugins() count = %v, expectedCount %v", count, tt.expectedCount)
 			}
 		})
+	}
+}
+
+func TestEnsureConfiguredPlugins_DeprecatedKey(t *testing.T) {
+	configDir, err := os.MkdirTemp(os.TempDir(), "imposter-plugin-configs-deprecated-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(configDir)
+	config.DirPath = configDir
+
+	tests := []struct {
+		name              string
+		deprecatedPlugins []string
+		expectedCount     int
+	}{
+		{
+			name:              "deprecated key with plugins",
+			deprecatedPlugins: []string{"store-redis"},
+			expectedCount:     1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Set(defaultPluginsConfigKey, tt.deprecatedPlugins)
+			defer viper.Set(defaultPluginsConfigKey, nil)
+
+			count, err := EnsureConfiguredPlugins(engine.EngineTypeDockerCore, "4.9.1")
+			if err != nil {
+				t.Errorf("EnsureConfiguredPlugins() error = %v", err)
+				return
+			}
+			if count != tt.expectedCount {
+				t.Errorf("EnsureConfiguredPlugins() count = %v, expectedCount %v", count, tt.expectedCount)
+			}
+		})
+	}
+}
+
+func TestEnsureConfiguredPlugins_BothKeys(t *testing.T) {
+	configDir, err := os.MkdirTemp(os.TempDir(), "imposter-plugin-configs-both-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(configDir)
+	config.DirPath = configDir
+
+	viper.Set(pluginsConfigKey, []string{"store-redis"})
+	viper.Set(defaultPluginsConfigKey, []string{"store-redis"})
+	defer func() {
+		viper.Set(pluginsConfigKey, nil)
+		viper.Set(defaultPluginsConfigKey, nil)
+	}()
+
+	count, err := EnsureConfiguredPlugins(engine.EngineTypeDockerCore, "4.9.1")
+	if err != nil {
+		t.Errorf("EnsureConfiguredPlugins() error = %v", err)
+		return
+	}
+	if count != 1 {
+		t.Errorf("EnsureConfiguredPlugins() count = %v, expected 1 (merged and deduplicated)", count)
 	}
 }
