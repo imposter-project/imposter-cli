@@ -26,6 +26,7 @@ import (
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"github.com/imposter-project/imposter-cli/internal/logging"
 	"github.com/imposter-project/imposter-cli/internal/openapi"
+	"github.com/imposter-project/imposter-cli/internal/protobuf"
 	"github.com/imposter-project/imposter-cli/internal/wsdl"
 	"sigs.k8s.io/yaml"
 )
@@ -36,6 +37,7 @@ type ConfigGenerationOptions struct {
 	ScriptFileName string
 	SpecFilePath   string
 	WSDLFilePath   string
+	ProtoFilePath  string
 }
 
 var logger = logging.GetLogger()
@@ -43,9 +45,11 @@ var logger = logging.GetLogger()
 func Create(configDir string, generateResources bool, forceOverwrite bool, scriptEngine ScriptEngine, requireSpecFiles bool) {
 	openApiSpecs := openapi.DiscoverOpenApiSpecs(configDir)
 	wsdlFiles := wsdl.DiscoverWSDLFiles(configDir)
-	logger.Infof("found %d OpenAPI spec(s) and %d WSDL file(s)", len(openApiSpecs), len(wsdlFiles))
+	protoFiles := protobuf.DiscoverProtoFiles(configDir)
+	logger.Infof("found %d OpenAPI spec(s), %d WSDL file(s) and %d proto file(s)", len(openApiSpecs), len(wsdlFiles), len(protoFiles))
 
 	specsFound := false
+	grpcFound := false
 
 	if len(openApiSpecs) > 0 {
 		specsFound = true
@@ -65,6 +69,16 @@ func Create(configDir string, generateResources bool, forceOverwrite bool, scrip
 		}
 	}
 
+	if len(protoFiles) > 0 {
+		specsFound = true
+		grpcFound = true
+		logger.Tracef("using grpc plugin")
+		for _, protoFile := range protoFiles {
+			scriptFileName := getScriptFileName(protoFile, scriptEngine, forceOverwrite)
+			writeGrpcMockConfig(protoFile, forceOverwrite, scriptEngine, scriptFileName)
+		}
+	}
+
 	if !specsFound {
 		if !requireSpecFiles {
 			logger.Infof("falling back to rest plugin")
@@ -73,9 +87,18 @@ func Create(configDir string, generateResources bool, forceOverwrite bool, scrip
 			scriptFileName := getScriptFileName(syntheticMockPath, scriptEngine, forceOverwrite)
 			writeRestMockConfig(syntheticMockPath, responseFilePath, generateResources, forceOverwrite, scriptEngine, scriptFileName)
 		} else {
-			logger.Fatalf("no OpenAPI or WSDL specs found in: %s", configDir)
+			logger.Fatalf("no OpenAPI, WSDL or protobuf specs found in: %s", configDir)
 		}
 	}
+
+	dotConfig := DotImposterConfig{
+		Version: "latest",
+	}
+	if grpcFound {
+		dotConfig.Version = "5-beta"
+		dotConfig.Plugins = []string{"grpc"}
+	}
+	writeDotImposterYaml(configDir, dotConfig, forceOverwrite)
 }
 
 func GenerateConfig(options ConfigGenerationOptions, resources []Resource) []byte {
@@ -87,6 +110,11 @@ func GenerateConfig(options ConfigGenerationOptions, resources []Resource) []byt
 	}
 	if options.WSDLFilePath != "" {
 		pluginConfig.WSDLFile = filepath.Base(options.WSDLFilePath)
+	}
+	if options.ProtoFilePath != "" {
+		pluginConfig.Config = &GrpcPluginConfig{
+			ProtoFiles: []string{filepath.Base(options.ProtoFilePath)},
+		}
 	}
 	if len(resources) > 0 {
 		pluginConfig.Resources = resources
@@ -123,6 +151,10 @@ func buildConfigHeader(pluginName string) string {
 		links = append(links,
 			"SOAP plugin: https://docs.imposter.sh/soap_plugin/",
 		)
+	case "grpc":
+		links = append(links,
+			"gRPC plugin: https://docs.imposter.sh/grpc_plugin/",
+		)
 	}
 
 	var b strings.Builder
@@ -157,4 +189,43 @@ func writeMockConfig(configFilePath string, resources []Resource, forceOverwrite
 	}
 
 	logger.Infof("wrote Imposter config: %v", configFilePath)
+}
+
+type DotImposterConfig struct {
+	Version string
+	Plugins []string
+}
+
+func writeDotImposterYaml(configDir string, dotConfig DotImposterConfig, forceOverwrite bool) {
+	filePath := filepath.Join(configDir, ".imposter.yaml")
+	fileutil.MustNotExist(filePath, forceOverwrite)
+
+	var b strings.Builder
+	b.WriteString("# or pin to a particular version\n")
+	fmt.Fprintf(&b, "version: %s\n", dotConfig.Version)
+	b.WriteString("\n")
+	b.WriteString("# See https://docs.imposter.sh/environment_variables/\n")
+	b.WriteString("env:\n")
+	b.WriteString("  IMPOSTER_LOG_LEVEL: DEBUG\n")
+
+	if len(dotConfig.Plugins) > 0 {
+		b.WriteString("\ndefault:\n")
+		b.WriteString("  plugins:\n")
+		for _, p := range dotConfig.Plugins {
+			fmt.Fprintf(&b, "    - %s\n", p)
+		}
+	}
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(b.String())
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	logger.Infof("wrote Imposter config: %v", filePath)
 }
