@@ -61,7 +61,7 @@ func TestEnsureConfiguredPlugins(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup viper configuration using the new top-level key
+			// Setup viper configuration
 			viper.Set(pluginsConfigKey, tt.configuredPlugins)
 			defer viper.Set(pluginsConfigKey, nil) // Clean up
 
