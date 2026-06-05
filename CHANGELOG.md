@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.1] - 2026-06-05
+### Changed
+- chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.41.7 to 1.41.8
+- chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.41.8 to 1.41.9
+- chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.41.9 to 1.41.11
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.17 to 1.32.18
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.18 to 1.32.19
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.19 to 1.32.20
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.20 to 1.32.22
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.53.10 to 1.53.11
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.53.11 to 1.54.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.54.0 to 1.54.2
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.90.1 to 1.90.2
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.90.2 to 1.91.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.91.0 to 1.92.1
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.101.0 to 1.102.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.102.0 to 1.102.2
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.102.2 to 1.103.1
+- chore(deps): bump github.com/shirou/gopsutil/v4 from 4.26.4 to 4.26.5
+- chore(deps): run go mod tidy to sync go.sum
+- chore(deps): update various indirect Go module dependencies
+- refactor: migrate plugins config to top-level key (#148)
+
 ## [1.9.0] - 2026-05-28
 ### Added
 - feat: add --id-file flag to up and down commands
