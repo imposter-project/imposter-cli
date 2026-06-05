@@ -29,7 +29,23 @@ func TestListDefaultPlugins(t *testing.T) {
 			expectError:     false,
 		},
 		{
-			name: "config with plugins",
+			name: "top-level plugins",
+			configContent: `plugins:
+  - store-redis
+  - js-graal
+`,
+			expectedPlugins: []string{"store-redis", "js-graal"},
+			expectError:     false,
+		},
+		{
+			name: "top-level empty plugins list",
+			configContent: `plugins: []
+`,
+			expectedPlugins: []string{},
+			expectError:     false,
+		},
+		{
+			name: "deprecated default.plugins format",
 			configContent: `default:
   plugins:
     - store-redis
@@ -39,11 +55,23 @@ func TestListDefaultPlugins(t *testing.T) {
 			expectError:     false,
 		},
 		{
-			name: "config with empty plugins list",
+			name: "deprecated default.plugins empty list",
 			configContent: `default:
   plugins: []
 `,
 			expectedPlugins: []string{},
+			expectError:     false,
+		},
+		{
+			name: "both formats merges and deduplicates",
+			configContent: `plugins:
+  - store-redis
+default:
+  plugins:
+    - js-graal
+    - store-redis
+`,
+			expectedPlugins: []string{"store-redis", "js-graal"},
 			expectError:     false,
 		},
 	}
@@ -321,18 +349,17 @@ func TestParseConfigFile(t *testing.T) {
 	config.DirPath = configDir
 
 	// Test with non-existent config file
-	viper, err := parseConfigFile()
+	v, err := parseConfigFile()
 	if err != nil {
 		t.Errorf("parseConfigFile() with non-existent file error = %v", err)
 	}
-	if viper == nil {
+	if v == nil {
 		t.Error("parseConfigFile() returned nil viper instance")
 	}
 
-	// Test with existing config file
-	configContent := `default:
-  plugins:
-    - test-plugin
+	// Test with existing config file using top-level plugins
+	configContent := `plugins:
+  - test-plugin
 `
 	configFilePath := filepath.Join(configDir, "config.yaml")
 	err = os.WriteFile(configFilePath, []byte(configContent), 0644)
@@ -340,17 +367,36 @@ func TestParseConfigFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	viper, err = parseConfigFile()
+	v, err = parseConfigFile()
 	if err != nil {
 		t.Errorf("parseConfigFile() with existing file error = %v", err)
 	}
-	if viper == nil {
+	if v == nil {
 		t.Error("parseConfigFile() returned nil viper instance")
 	}
 
-	// Verify the config was parsed correctly
-	plugins := viper.GetStringSlice("default.plugins")
+	plugins := v.GetStringSlice("plugins")
 	if len(plugins) != 1 || plugins[0] != "test-plugin" {
 		t.Errorf("parseConfigFile() parsed plugins incorrectly: got %v, expected [test-plugin]", plugins)
+	}
+
+	// Test with deprecated default.plugins format
+	configContent = `default:
+  plugins:
+    - legacy-plugin
+`
+	err = os.WriteFile(configFilePath, []byte(configContent), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	v, err = parseConfigFile()
+	if err != nil {
+		t.Errorf("parseConfigFile() with deprecated format error = %v", err)
+	}
+
+	legacyPlugins := v.GetStringSlice("default.plugins")
+	if len(legacyPlugins) != 1 || legacyPlugins[0] != "legacy-plugin" {
+		t.Errorf("parseConfigFile() parsed deprecated plugins incorrectly: got %v, expected [legacy-plugin]", legacyPlugins)
 	}
 }

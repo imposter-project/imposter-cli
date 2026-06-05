@@ -46,19 +46,24 @@ func EnsureConfiguredPlugins(engineType engine.EngineType, version string) (int,
 	// this includes the config from the current configuration context,
 	// not just the global CLI config file, so it includes any
 	// configuration in the working directory
-	plugins := viper.GetStringSlice(defaultPluginsConfigKey)
+	plugins := viper.GetStringSlice(pluginsConfigKey)
 
+	deprecated := viper.GetStringSlice(defaultPluginsConfigKey)
+	if len(deprecated) > 0 {
+		logger.Warnf("'default.plugins' config key is deprecated; use top-level 'plugins' instead")
+		plugins = append(plugins, deprecated...)
+	}
+
+	var expanded []string
 	for _, plugin := range plugins {
 		// work-around for https://github.com/spf13/viper/issues/380
 		if strings.Contains(plugin, ",") {
-			for _, p := range strings.Split(plugin, ",") {
-				plugins = append(plugins, p)
-			}
+			expanded = append(expanded, strings.Split(plugin, ",")...)
 		} else {
-			plugins = append(plugins, plugin)
+			expanded = append(expanded, plugin)
 		}
 	}
-	plugins = stringutil.Unique(plugins)
+	plugins = stringutil.Unique(expanded)
 
 	logger.Tracef("found %d configured plugin(s): %v", len(plugins), plugins)
 	return EnsurePlugins(plugins, engineType, version, false)
