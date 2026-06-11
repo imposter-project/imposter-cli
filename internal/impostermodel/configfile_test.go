@@ -31,6 +31,7 @@ func TestGenerateConfig_includesHeaderAndDocsLinks(t *testing.T) {
 		{plugin: "rest", expectedLink: "https://docs.imposter.sh/rest_plugin/"},
 		{plugin: "openapi", expectedLink: "https://docs.imposter.sh/openapi_plugin/"},
 		{plugin: "soap", expectedLink: "https://docs.imposter.sh/soap_plugin/"},
+		{plugin: "grpc", expectedLink: "https://docs.imposter.sh/grpc_plugin/"},
 	}
 
 	for _, tt := range tests {

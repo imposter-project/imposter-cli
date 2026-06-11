@@ -17,12 +17,14 @@ limitations under the License.
 package cmd
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 func init() {
@@ -42,6 +44,7 @@ func Test_createMockConfig(t *testing.T) {
 		scriptEngine      impostermodel2.ScriptEngine
 		copySpecs         bool
 		copyWsdl          bool
+		copyProto         bool
 		anchorFileName    string
 		checkResponseFile bool
 	}
@@ -148,6 +151,28 @@ func Test_createMockConfig(t *testing.T) {
 				checkResponseFile: false,
 			},
 		},
+		{
+			name: "generate grpc mock no script",
+			args: args{
+				generateResources: true,
+				forceOverwrite:    true,
+				scriptEngine:      impostermodel2.ScriptEngineNone,
+				anchorFileName:    "pet_store",
+				copyProto:         true,
+				checkResponseFile: false,
+			},
+		},
+		{
+			name: "generate grpc mock with script",
+			args: args{
+				generateResources: true,
+				forceOverwrite:    true,
+				scriptEngine:      impostermodel2.ScriptEngineJavaScript,
+				anchorFileName:    "pet_store",
+				copyProto:         true,
+				checkResponseFile: false,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -160,6 +185,12 @@ func Test_createMockConfig(t *testing.T) {
 			}
 			if tt.args.copyWsdl {
 				err = fileutil.CopyFile(filepath.Join(testConfigPath, "pet_service.wsdl"), filepath.Join(configDir, "pet_service.wsdl"))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if tt.args.copyProto {
+				err = fileutil.CopyFile(filepath.Join(workingDir, "testdata_grpc", "pet_store.proto"), filepath.Join(configDir, "pet_store.proto"))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -182,6 +213,37 @@ func Test_createMockConfig(t *testing.T) {
 				if doesFileExist(scriptPath) {
 					t.Fatalf("script file should not exist")
 				}
+			}
+
+			dotImposterPath := filepath.Join(configDir, ".imposter.yaml")
+			if !doesFileExist(dotImposterPath) {
+				t.Fatalf(".imposter.yaml should exist")
+			}
+			dotImposterContent, err := os.ReadFile(dotImposterPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			content := string(dotImposterContent)
+			if tt.args.copyProto {
+				if !strings.Contains(content, "version: 5-beta") {
+					t.Fatalf(".imposter.yaml should contain version: 5-beta for grpc, got:\n%s", content)
+				}
+				if !strings.Contains(content, "- grpc") {
+					t.Fatalf(".imposter.yaml should contain grpc plugin for grpc, got:\n%s", content)
+				}
+			} else {
+				if !strings.Contains(content, "version: latest") {
+					t.Fatalf(".imposter.yaml should contain version: latest, got:\n%s", content)
+				}
+			}
+			if !strings.Contains(content, "IMPOSTER_LOG_LEVEL: DEBUG") {
+				t.Fatalf(".imposter.yaml should contain IMPOSTER_LOG_LEVEL: DEBUG, got:\n%s", content)
+			}
+			if !strings.Contains(content, "# or pin to a particular version") {
+				t.Fatalf(".imposter.yaml should contain version comment, got:\n%s", content)
+			}
+			if !strings.Contains(content, "# See https://docs.imposter.sh/environment_variables/") {
+				t.Fatalf(".imposter.yaml should contain env docs comment, got:\n%s", content)
 			}
 		})
 	}
