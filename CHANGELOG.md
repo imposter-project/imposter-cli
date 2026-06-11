@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.2] - 2026-06-11
+### Changed
+- chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.41.11 to 1.41.12
+- chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.41.12 to 1.42.0 and service/lambda from 1.92.2 to 1.92.3
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.22 to 1.32.23
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.54.2 to 1.54.3
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.54.3 to 1.54.4
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.103.1 to 1.103.2
+- chore(deps): bump golang.org/x/sys from 0.45.0 to 0.46.0
+
 ## [1.9.1] - 2026-06-05
 ### Changed
 - chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.41.7 to 1.41.8
