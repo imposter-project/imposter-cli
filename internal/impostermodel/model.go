@@ -49,10 +49,15 @@ type Resource struct {
 	Response       *ResponseConfig    `json:"response,omitempty"`
 }
 
+type GrpcPluginConfig struct {
+	ProtoFiles []string `json:"protoFiles"`
+}
+
 type PluginConfig struct {
-	Plugin    string          `json:"plugin"`
-	SpecFile  string          `json:"specFile,omitempty"`
-	WSDLFile  string          `json:"wsdlFile,omitempty"`
-	Response  *ResponseConfig `json:"response,omitempty"`
-	Resources []Resource      `json:"resources,omitempty"`
+	Plugin    string            `json:"plugin"`
+	SpecFile  string            `json:"specFile,omitempty"`
+	WSDLFile  string            `json:"wsdlFile,omitempty"`
+	Config    *GrpcPluginConfig `json:"config,omitempty"`
+	Response  *ResponseConfig   `json:"response,omitempty"`
+	Resources []Resource        `json:"resources,omitempty"`
 }
