@@ -67,6 +67,7 @@ You'll need [Docker](https://docs.docker.com/get-docker/), or alternatively a JV
 
 ```shell
 brew tap imposter-project/imposter
+brew trust imposter-project/imposter
 brew install imposter
 ```
 
