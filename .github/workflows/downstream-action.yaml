@@ -18,12 +18,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout CLI (current branch)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: cli
 
       - name: Checkout imposter-github-action
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: imposter-project/imposter-github-action
           ref: main
