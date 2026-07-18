@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/imposter-project/imposter-cli/internal/config"
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	"github.com/imposter-project/imposter-cli/internal/logging"
 	"github.com/imposter-project/imposter-cli/internal/openapi"
@@ -91,14 +92,14 @@ func Create(configDir string, generateResources bool, forceOverwrite bool, scrip
 		}
 	}
 
-	dotConfig := DotImposterConfig{
+	projectConfig := config.ProjectConfig{
 		Version: "latest",
 	}
 	if grpcFound {
-		dotConfig.Version = "5-beta"
-		dotConfig.Plugins = []string{"grpc"}
+		projectConfig.Version = "5-beta"
+		projectConfig.Plugins = []string{"grpc"}
 	}
-	writeDotImposterYaml(configDir, dotConfig, forceOverwrite)
+	config.WriteProjectConfig(configDir, projectConfig, forceOverwrite)
 }
 
 func GenerateConfig(options ConfigGenerationOptions, resources []Resource) []byte {
