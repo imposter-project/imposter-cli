@@ -63,5 +63,5 @@ func WriteProjectConfig(configDir string, projectConfig ProjectConfig, forceOver
 		logger.Fatal(err)
 	}
 
-	logger.Infof("wrote Imposter config: %v", filePath)
+	logger.Infof("wrote project config: %v", filePath)
 }
