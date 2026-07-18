@@ -18,14 +18,16 @@ package config
 
 import (
 	"fmt"
-	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func ValidateConfigExists(configDir string, scaffoldMissing bool) error {
+// ValidateConfigExists checks that configDir is a directory containing at least
+// one mock configuration file. Scaffolding of missing config is the caller's
+// responsibility.
+func ValidateConfigExists(configDir string) error {
 	fileInfo, err := os.Stat(configDir)
 	if err != nil {
 		return fmt.Errorf("cannot find config dir: %v", err)
@@ -40,11 +42,6 @@ func ValidateConfigExists(configDir string, scaffoldMissing bool) error {
 		return nil
 	}
 
-	if scaffoldMissing {
-		logger.Infof("scaffolding Imposter configuration files")
-		impostermodel2.Create(configDir, false, false, impostermodel2.ScriptEngineNone, true)
-		return nil
-	}
 	return fmt.Errorf(`No Imposter configuration files found in: %v
 Consider running 'imposter scaffold' first.`, configDir)
 }

@@ -47,8 +47,14 @@ var version = DevCliVersion
 // The GlobalConfigFileName is the file name without the file extension.
 const GlobalConfigFileName = "config"
 
-// The LocalDirConfigFileName is the file name without the file extension.
-const LocalDirConfigFileName = ".imposter"
+// The LocalDirConfigFileName is the canonical local project config file name,
+// without the file extension.
+const LocalDirConfigFileName = "imposter-project"
+
+// The LegacyLocalDirConfigFileName is the deprecated local project config file
+// name, without the file extension. It is still honoured for backward
+// compatibility, but takes lower precedence than LocalDirConfigFileName.
+const LegacyLocalDirConfigFileName = ".imposter"
 
 var logger = logging.GetLogger()
 
@@ -82,9 +88,20 @@ func getDefaultGlobalConfigDir() (string, error) {
 
 func MergeCliConfigIfExists(configDir string) {
 	viper.AddConfigPath(configDir)
-	viper.SetConfigName(LocalDirConfigFileName)
 
-	// If a local CLI config file is found, read it in.
+	// Merge the legacy config file first, so that the canonical file takes
+	// precedence over it when both are present.
+	viper.SetConfigName(LegacyLocalDirConfigFileName)
+	if err := viper.MergeInConfig(); err == nil {
+		logger.Warnf(
+			"using deprecated local CLI config file: %v - rename it to %s.yaml (or .yml/.json)",
+			viper.ConfigFileUsed(), LocalDirConfigFileName,
+		)
+	}
+
+	// If a local CLI config file is found, read it in. This takes precedence
+	// over the legacy file merged above.
+	viper.SetConfigName(LocalDirConfigFileName)
 	if err := viper.MergeInConfig(); err == nil {
 		logger.Tracef("using local CLI config file: %v", viper.ConfigFileUsed())
 	}
@@ -134,10 +151,34 @@ func ParseConfig(args []string) []ConfigPair {
 	return pairs
 }
 
+// localConfigExtensions are the supported extensions for the local project
+// config file, in preference order.
+var localConfigExtensions = []string{"yaml", "yml", "json"}
+
+// FindLocalConfigFile returns the path to an existing local project config file
+// in configDir, preferring the canonical name over the legacy name (and yaml
+// over other extensions). It returns an empty string if none exists.
+func FindLocalConfigFile(configDir string) string {
+	for _, name := range []string{LocalDirConfigFileName, LegacyLocalDirConfigFileName} {
+		for _, ext := range localConfigExtensions {
+			candidate := path.Join(configDir, name+"."+ext)
+			if _, err := os.Stat(candidate); err == nil {
+				return candidate
+			}
+		}
+	}
+	return ""
+}
+
 func WriteLocalConfigValue(configDir string, key string, value string) error {
 	v := viper.New()
 
-	localConfig := path.Join(configDir, LocalDirConfigFileName+".yaml")
+	// Update an existing config file if one is present (including the legacy
+	// name), otherwise create a new one using the canonical name.
+	localConfig := FindLocalConfigFile(configDir)
+	if localConfig == "" {
+		localConfig = path.Join(configDir, LocalDirConfigFileName+".yaml")
+	}
 	v.SetConfigFile(localConfig)
 
 	// sink if does not exist

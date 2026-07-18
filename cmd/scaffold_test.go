@@ -22,6 +22,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/imposter-project/imposter-cli/internal/config"
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
 	impostermodel2 "github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/sirupsen/logrus"
@@ -215,35 +216,36 @@ func Test_createMockConfig(t *testing.T) {
 				}
 			}
 
-			dotImposterPath := filepath.Join(configDir, ".imposter.yaml")
-			if !doesFileExist(dotImposterPath) {
-				t.Fatalf(".imposter.yaml should exist")
+			projectConfigName := config.LocalDirConfigFileName + ".yaml"
+			projectConfigPath := filepath.Join(configDir, projectConfigName)
+			if !doesFileExist(projectConfigPath) {
+				t.Fatalf("%s should exist", projectConfigName)
 			}
-			dotImposterContent, err := os.ReadFile(dotImposterPath)
+			projectConfigContent, err := os.ReadFile(projectConfigPath)
 			if err != nil {
 				t.Fatal(err)
 			}
-			content := string(dotImposterContent)
+			content := string(projectConfigContent)
 			if tt.args.copyProto {
 				if !strings.Contains(content, "version: 5-beta") {
-					t.Fatalf(".imposter.yaml should contain version: 5-beta for grpc, got:\n%s", content)
+					t.Fatalf("%s should contain version: 5-beta for grpc, got:\n%s", projectConfigName, content)
 				}
 				if !strings.Contains(content, "- grpc") {
-					t.Fatalf(".imposter.yaml should contain grpc plugin for grpc, got:\n%s", content)
+					t.Fatalf("%s should contain grpc plugin for grpc, got:\n%s", projectConfigName, content)
 				}
 			} else {
 				if !strings.Contains(content, "version: latest") {
-					t.Fatalf(".imposter.yaml should contain version: latest, got:\n%s", content)
+					t.Fatalf("%s should contain version: latest, got:\n%s", projectConfigName, content)
 				}
 			}
 			if !strings.Contains(content, "IMPOSTER_LOG_LEVEL: DEBUG") {
-				t.Fatalf(".imposter.yaml should contain IMPOSTER_LOG_LEVEL: DEBUG, got:\n%s", content)
+				t.Fatalf("%s should contain IMPOSTER_LOG_LEVEL: DEBUG, got:\n%s", projectConfigName, content)
 			}
 			if !strings.Contains(content, "# or pin to a particular version") {
-				t.Fatalf(".imposter.yaml should contain version comment, got:\n%s", content)
+				t.Fatalf("%s should contain version comment, got:\n%s", projectConfigName, content)
 			}
 			if !strings.Contains(content, "# See https://docs.imposter.sh/environment_variables/") {
-				t.Fatalf(".imposter.yaml should contain env docs comment, got:\n%s", content)
+				t.Fatalf("%s should contain env docs comment, got:\n%s", projectConfigName, content)
 			}
 		})
 	}

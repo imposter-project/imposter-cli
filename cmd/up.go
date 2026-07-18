@@ -21,6 +21,7 @@ import (
 	config2 "github.com/imposter-project/imposter-cli/internal/config"
 	"github.com/imposter-project/imposter-cli/internal/engine"
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
+	"github.com/imposter-project/imposter-cli/internal/impostermodel"
 	"github.com/imposter-project/imposter-cli/internal/plugin"
 	"github.com/imposter-project/imposter-cli/internal/stringutil"
 	"github.com/spf13/cobra"
@@ -71,8 +72,12 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 		} else {
 			configDir, _ = filepath.Abs(args[0])
 		}
-		if err := config2.ValidateConfigExists(configDir, upFlags.scaffoldMissing); err != nil {
-			logger.Fatal(err)
+		if err := config2.ValidateConfigExists(configDir); err != nil {
+			if !upFlags.scaffoldMissing {
+				logger.Fatal(err)
+			}
+			logger.Infof("scaffolding Imposter configuration files")
+			impostermodel.Create(configDir, false, false, impostermodel.ScriptEngineNone, true)
 		}
 
 		// Search for CLI config files in the mock config dir.

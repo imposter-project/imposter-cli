@@ -126,6 +126,7 @@ See [Configuration](./docs/config.md) for the CLI config file, environment varia
 
 Other deeper guides:
 
+- [Project configuration file](./docs/project_config.md) — pin the engine version and plugins per project
 - [Docker engine](./docs/engine_docker.md) — the default
 - [JVM engine](./docs/engine_jvm.md)
 - [Native engine](./docs/engine_native.md)

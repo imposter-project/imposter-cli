@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/imposter-project/imposter-cli/internal/config"
 	"github.com/imposter-project/imposter-cli/internal/fileutil"
 )
 
@@ -15,7 +16,7 @@ type DotImposterConfig struct {
 }
 
 func writeDotImposterYaml(configDir string, dotConfig DotImposterConfig, forceOverwrite bool) {
-	filePath := filepath.Join(configDir, ".imposter.yaml")
+	filePath := filepath.Join(configDir, config.LocalDirConfigFileName+".yaml")
 	fileutil.MustNotExist(filePath, forceOverwrite)
 
 	var b strings.Builder

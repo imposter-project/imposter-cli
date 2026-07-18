@@ -54,7 +54,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 		} else {
 			configDir, _ = filepath.Abs(args[0])
 		}
-		if err := config2.ValidateConfigExists(configDir, false); err != nil {
+		if err := config2.ValidateConfigExists(configDir); err != nil {
 			logger.Fatal(err)
 		}
 

@@ -24,6 +24,12 @@ These files control behaviour such as responses, validation, scripting and more.
 
 Learn about [Imposter mock configuration](https://docs.imposter.sh/configuration/) files.
 
+## Project configuration file
+
+You can commit a per-project configuration file (`imposter-project.yaml`) alongside your mocks to pin the engine version, declare plugins, and set environment variables. It is merged over the global CLI configuration described below.
+
+See [Project configuration file](./project_config.md) for details.
+
 ## CLI Configuration file
 
 You can also use a configuration file to set CLI defaults. By default, Imposter looks for a CLI configuration file located at `$HOME/.imposter/config.yaml`
