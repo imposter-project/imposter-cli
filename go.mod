@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.29
 	github.com/aws/aws-sdk-go-v2/service/iam v1.55.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.99.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.105.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.105.2
 	github.com/coreos/go-semver v0.3.1
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/go-connections v0.7.0
