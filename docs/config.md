@@ -28,7 +28,7 @@ Learn about [Imposter mock configuration](https://docs.imposter.sh/configuration
 
 You can commit a per-project configuration file (`imposter-project.yaml`) alongside your mocks to pin the engine version, declare plugins, and set environment variables. It is merged over the global CLI configuration described below.
 
-See [Project configuration file](./project_config.md) for details.
+See [Project configuration file](https://docs.imposter.sh/project_config/) for details.
 
 ## CLI Configuration file
 
