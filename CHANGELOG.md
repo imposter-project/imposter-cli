@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.11.0] - 2026-07-24
+### Added
+- feat: adopt imposter-project config file name (#184)
+
+### Changed
+- chore(deps): bump actions/checkout from 6 to 7
+- chore(deps): bump actions/setup-go from 6 to 7
+- chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.42.1 to 1.43.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.23 to 1.32.25
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.26 to 1.32.28
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.28 to 1.32.29
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.29 to 1.32.30
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/config from 1.32.30 to 1.32.31
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/credentials from 1.19.25 to 1.19.27
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/credentials from 1.19.27 to 1.19.28
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.54.4 to 1.54.5
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.54.5 to 1.54.6
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.54.6 to 1.55.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.55.0 to 1.55.1
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/iam from 1.55.1 to 1.56.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.92.3 to 1.93.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.93.0 to 1.96.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.96.0 to 1.97.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.97.0 to 1.98.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.98.0 to 1.99.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.99.0 to 1.100.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.103.2 to 1.103.3
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.103.3 to 1.104.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.104.0 to 1.104.1
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.104.1 to 1.105.0
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.105.0 to 1.105.1
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.105.1 to 1.105.2
+- chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.105.2 to 1.106.0
+- chore(deps): bump github.com/shirou/gopsutil/v4 from 4.26.5 to 4.26.6
+- chore(deps): bump github.com/testcontainers/testcontainers-go from 0.42.0 to 0.43.0
+- chore(deps): bump golang.org/x/sys from 0.46.0 to 0.47.0
+- docs: add brew trust step for third-party tap (#161)
+
 ## [1.10.0] - 2026-06-11
 ### Added
 - feat: add gRPC plugin support to scaffold subcommand
