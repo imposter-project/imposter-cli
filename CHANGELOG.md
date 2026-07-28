@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.11.1] - 2026-07-28
+### Changed
+- chore(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.1
+- docs: clarify agent guidance
+
 ## [1.11.0] - 2026-07-24
 ### Added
 - feat: adopt imposter-project config file name (#184)
