@@ -8,5 +8,4 @@ dist/
 
 # tools
 .tool-versions
-CLAUDE.md
-/.claude/settings.local.json
+/.claude/*.local.json
