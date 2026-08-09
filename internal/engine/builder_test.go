@@ -36,6 +36,27 @@ func TestGetConfiguredVersion(t *testing.T) {
 	}
 }
 
+func TestGetConfiguredVersionUnresolved(t *testing.T) {
+	tests := []struct {
+		name     string
+		override string
+		want     string
+	}{
+		{name: "latest alias left unresolved", override: "latest", want: "latest"},
+		{name: "major alias left unresolved", override: "5", want: "5"},
+		{name: "no version defaults to latest alias", override: "", want: "latest"},
+		{name: "explicit version returned as-is", override: "5.21.3", want: "5.21.3"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetConfiguredVersionOrResolve(EngineTypeDockerCore, tt.override, false, false)
+			if got != tt.want {
+				t.Errorf("GetConfiguredVersionOrResolve() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetConfiguredType(t *testing.T) {
 	type args struct {
 		override string
@@ -84,6 +105,9 @@ func TestGetConfiguredTypeWithVersion(t *testing.T) {
 		{name: "5.x version override derives native", args: args{versionOverride: "5.0.0"}, want: EngineTypeNative},
 		{name: "5.x configured version derives native", configureVersion: "5.2.3", want: EngineTypeNative},
 		{name: "4.x version keeps default", args: args{versionOverride: "4.9.0"}, want: defaultEngineType},
+		{name: "major alias 5 derives native", args: args{versionOverride: "5"}, want: EngineTypeNative},
+		{name: "configured major alias 5 derives native", configureVersion: "5", want: EngineTypeNative},
+		{name: "major alias 4 keeps default", args: args{versionOverride: "4"}, want: defaultEngineType},
 		{name: "latest keeps default", args: args{versionOverride: "latest"}, want: defaultEngineType},
 		{name: "no version, no type, returns default", want: defaultEngineType},
 	}

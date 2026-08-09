@@ -75,12 +75,20 @@ func describeVersions(engineType engine.EngineType, full bool, format outputForm
 		if len(engines) == 0 {
 			props["imposter-engine"] = "none"
 		} else {
+			// prefer a locally installed engine matching the configured
+			// alias over hitting the releases API
 			engineConfigVersion := engine.GetConfiguredVersionOrResolve(engineType, "", true, false)
-			if engineConfigVersion == "latest" {
+			if engineConfigVersion == engine.VersionLatest {
 				engineConfigVersion = engine.GetHighestVersion(engines)
+			} else if major, ok := engine.ParseMajorAlias(engineConfigVersion); ok {
+				engineConfigVersion = engine.GetHighestVersionForMajor(engines, major)
 			}
-			props["imposter-engine"] = engineConfigVersion
-			props["engine-output"] = getInstalledEngineVersion(engineType, engineConfigVersion)
+			if engineConfigVersion == "" {
+				props["imposter-engine"] = "none"
+			} else {
+				props["imposter-engine"] = engineConfigVersion
+				props["engine-output"] = getInstalledEngineVersion(engineType, engineConfigVersion)
+			}
 		}
 	}
 

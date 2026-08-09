@@ -49,14 +49,14 @@ Example 3: Uninstall plugin and remove from defaults
 	imposter plugin uninstall store-redis --remove-default`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		engineType := engine.GetConfiguredType(pluginFlags.engineType)
+		engineType := engine.GetConfiguredTypeWithVersion(pluginFlags.engineType, pluginUninstallFlags.engineVersion)
 		version := engine.GetConfiguredVersion(engineType, pluginUninstallFlags.engineVersion, true)
 		uninstallPlugins(args, engineType, version, pluginUninstallFlags.removeDefault)
 	},
 }
 
 func init() {
-	pluginUninstallCmd.Flags().StringVarP(&pluginUninstallFlags.engineVersion, "version", "v", "", "Imposter engine version (default \"latest\")")
+	pluginUninstallCmd.Flags().StringVarP(&pluginUninstallFlags.engineVersion, "version", "v", "", "Imposter engine version, e.g. \"5.21.3\", \"4\" or \"5\" (latest of that engine line) or \"latest\" (default \"latest\")")
 	pluginUninstallCmd.Flags().BoolVarP(&pluginUninstallFlags.removeDefault, "remove-default", "d", false, "Whether to remove the plugin from defaults")
 	pluginCmd.AddCommand(pluginUninstallCmd)
 }

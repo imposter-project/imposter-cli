@@ -15,7 +15,7 @@ There are a few key concepts to learn before using the SDK:
 
 - **configuration directory**: a directory containing a valid Imposter [configuration](https://docs.imposter.sh/configuration/)
 - **engine type**: this can be `docker`, `jvm` or `native` - see [Docker Engine](./engine_docker.md), [JVM Engine](./engine_jvm.md) or [Native Engine](./engine_native.md)
-- **engine version**: this is the version of Imposter - see [Releases](https://github.com/imposter-project/imposter-jvm-engine/releases)
+- **engine version**: this is the version of Imposter, given as `latest` or an exact release such as `5.21.3` - see releases for the [native engine](https://github.com/imposter-project/imposter-go/releases) (version 5 and above) or the [JVM engine](https://github.com/imposter-project/imposter-jvm-engine/releases) (version 4 and below)
 
 ## Getting started
 

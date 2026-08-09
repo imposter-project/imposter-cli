@@ -43,8 +43,11 @@ The currently supported elements are as follows:
 # (the legacy value "golang" is still accepted as an alias for "native")
 engine: "docker"
 
-# the engine version - valid values are "latest", or a binary release such as "2.0.1"
-# see: https://github.com/imposter-project/imposter-jvm-engine/releases
+# the engine version - valid values are "latest", a binary release such as "5.21.3",
+# or the shorthand "4" or "5", meaning the latest release of that engine line
+# ("5" is the native engine, "4" is the JVM engine)
+# see: https://github.com/imposter-project/imposter-go/releases
+# and: https://github.com/imposter-project/imposter-jvm-engine/releases
 version: "latest"
 
 # Docker engine specific configuration

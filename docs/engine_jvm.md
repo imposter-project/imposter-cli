@@ -43,3 +43,13 @@ Example:
 Or:
 
     imposter up -t jvm
+
+### Engine version
+
+The JVM engine is version 4 and below. Passing `--version 4` (or `-v 4`) runs the latest JVM engine release:
+
+    imposter up -t jvm -v 4
+
+To pin an exact release, pass it in full:
+
+    imposter up -t jvm -v 4.9.3
