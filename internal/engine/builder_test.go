@@ -108,6 +108,10 @@ func TestGetConfiguredTypeWithVersion(t *testing.T) {
 		{name: "major alias 5 derives native", args: args{versionOverride: "5"}, want: EngineTypeNative},
 		{name: "configured major alias 5 derives native", configureVersion: "5", want: EngineTypeNative},
 		{name: "major alias 4 keeps default", args: args{versionOverride: "4"}, want: defaultEngineType},
+		{name: "explicit type wins over major alias", args: args{typeOverride: "jvm", versionOverride: "5"}, want: EngineTypeJvmSingleJar},
+		{name: "configured type wins over major alias", args: args{versionOverride: "5"}, configureType: "jvm", want: EngineTypeJvmSingleJar},
+		{name: "configured type wins over configured major alias", configureType: "docker", configureVersion: "5", want: EngineTypeDockerCore},
+		{name: "explicit type wins over configured major alias", args: args{typeOverride: "jvm"}, configureVersion: "5", want: EngineTypeJvmSingleJar},
 		{name: "latest keeps default", args: args{versionOverride: "latest"}, want: defaultEngineType},
 		{name: "no version, no type, returns default", want: defaultEngineType},
 	}
