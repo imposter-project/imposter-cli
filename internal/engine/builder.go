@@ -193,6 +193,9 @@ func GetConfiguredVersionOrResolve(engineType EngineType, override string, allow
 		return latest
 	}
 	if major, ok := ParseMajorAlias(version); ok {
+		if err := CheckMajorAliasSupported(engineType, version, major); err != nil {
+			logger.Fatal(err)
+		}
 		resolved, err := ResolveMajorToVersion(major, allowCached)
 		if err != nil {
 			panic(err)

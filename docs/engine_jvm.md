@@ -53,3 +53,5 @@ The JVM engine is version 4 and below. Passing `--version 4` (or `-v 4`) runs th
 To pin an exact release, pass it in full:
 
     imposter up -t jvm -v 4.9.3
+
+The `5` alias is rejected for this engine type, as version 5 and above is the [native engine](./engine_native.md).

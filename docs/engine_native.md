@@ -66,6 +66,8 @@ To pin an exact release, pass it in full:
 
     imposter up -v 5.21.3
 
+The `4` alias is rejected for this engine type, as version 4 and below is the [JVM engine](./engine_jvm.md).
+
 ## Differences from the JVM engine
 
 - **No Groovy scripting** - use JavaScript instead

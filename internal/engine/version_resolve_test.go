@@ -170,7 +170,7 @@ func TestGetConfiguredVersionResolvesAliases(t *testing.T) {
 	}{
 		{name: "alias 5 resolves against the native repo", engineType: EngineTypeDockerCore, override: "5", want: "5.21.3"},
 		{name: "alias 5 resolves against the native repo for lambda", engineType: EngineTypeAwsLambda, override: "5", want: "5.21.3"},
-		{name: "alias 4 resolves against the jvm repo", engineType: EngineTypeNative, override: "4", want: "4.9.3"},
+		{name: "alias 4 resolves against the jvm repo", engineType: EngineTypeAwsLambda, override: "4", want: "4.9.3"},
 		{name: "latest resolves against the engine type", engineType: EngineTypeDockerCore, override: "latest", want: "4.9.1"},
 		{name: "explicit version is not resolved", engineType: EngineTypeDockerCore, override: "4.8.0", want: "4.8.0"},
 	}
@@ -187,6 +187,71 @@ func TestGetConfiguredVersionResolvesAliases(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCheckMajorAliasSupported(t *testing.T) {
+	tests := []struct {
+		name       string
+		engineType EngineType
+		alias      string
+		major      int64
+		wantErr    string
+	}{
+		{name: "jvm engine rejects alias 5", engineType: EngineTypeJvmSingleJar, alias: "5", major: 5, wantErr: "the JVM engine is version 4 and below"},
+		{name: "unpacked engine rejects alias 5", engineType: EngineTypeJvmUnpacked, alias: "5", major: 5, wantErr: "the JVM engine is version 4 and below"},
+		{name: "native engine rejects alias 4", engineType: EngineTypeNative, alias: "4", major: 4, wantErr: "the native engine is version 5 and above"},
+		{name: "jvm engine accepts alias 4", engineType: EngineTypeJvmSingleJar, alias: "4", major: 4},
+		{name: "native engine accepts alias 5", engineType: EngineTypeNative, alias: "5", major: 5},
+		// docker images and lambda are built from both engine lines
+		{name: "docker engine accepts alias 4", engineType: EngineTypeDockerCore, alias: "4", major: 4},
+		{name: "docker engine accepts alias 5", engineType: EngineTypeDockerCore, alias: "5", major: 5},
+		{name: "lambda accepts alias 4", engineType: EngineTypeAwsLambda, alias: "4", major: 4},
+		{name: "lambda accepts alias 5", engineType: EngineTypeAwsLambda, alias: "5", major: 5},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := CheckMajorAliasSupported(tt.engineType, tt.alias, tt.major)
+			if tt.wantErr == "" {
+				if err != nil {
+					t.Fatalf("CheckMajorAliasSupported() error = %v, want nil", err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatalf("CheckMajorAliasSupported() error = nil, want it to contain %q", tt.wantErr)
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("CheckMajorAliasSupported() error = %q, want it to contain %q", err, tt.wantErr)
+			}
+			if !strings.Contains(err.Error(), fmt.Sprintf("alias '%s'", tt.alias)) {
+				t.Errorf("CheckMajorAliasSupported() error = %q, want it to name the alias", err)
+			}
+		})
+	}
+}
+
+// TestGetConfiguredVersionRejectsUnsupportedAlias checks that an alias naming
+// the wrong engine line fails before any attempt to fetch that version.
+func TestGetConfiguredVersionRejectsUnsupportedAlias(t *testing.T) {
+	useTempPrefs(t)
+
+	oldExitFunc := logger.ExitFunc
+	logger.ExitFunc = func(code int) {
+		panic(fmt.Sprintf("fatal exit with code %d", code))
+	}
+	t.Cleanup(func() {
+		logger.ExitFunc = oldExitFunc
+	})
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("GetConfiguredVersion() returned normally, want a fatal exit")
+		}
+	}()
+
+	// resolving would need the API, so a fatal exit here also proves the
+	// check happens before the version is looked up
+	GetConfiguredVersion(EngineTypeJvmSingleJar, "5", true)
 }
 
 func TestGetRepoNameForMajor(t *testing.T) {
