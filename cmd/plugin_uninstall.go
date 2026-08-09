@@ -56,7 +56,7 @@ Example 3: Uninstall plugin and remove from defaults
 }
 
 func init() {
-	pluginUninstallCmd.Flags().StringVarP(&pluginUninstallFlags.engineVersion, "version", "v", "", "Imposter engine version (default \"latest\")")
+	pluginUninstallCmd.Flags().StringVarP(&pluginUninstallFlags.engineVersion, "version", "v", "", "Imposter engine version, e.g. \"5.21.3\", \"5\" (highest v5 release) or \"latest\" (default \"latest\")")
 	pluginUninstallCmd.Flags().BoolVarP(&pluginUninstallFlags.removeDefault, "remove-default", "d", false, "Whether to remove the plugin from defaults")
 	pluginCmd.AddCommand(pluginUninstallCmd)
 }

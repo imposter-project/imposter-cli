@@ -52,7 +52,7 @@ Example 2: Install all plugins in config file
 }
 
 func init() {
-	pluginInstallCmd.Flags().StringVarP(&pluginInstallFlags.engineVersion, "version", "v", "", "Imposter engine version (default \"latest\")")
+	pluginInstallCmd.Flags().StringVarP(&pluginInstallFlags.engineVersion, "version", "v", "", "Imposter engine version, e.g. \"5.21.3\", \"5\" (highest v5 release) or \"latest\" (default \"latest\")")
 	pluginInstallCmd.Flags().BoolVarP(&pluginInstallFlags.saveDefault, "save-default", "d", false, "Whether to save the plugin as a default")
 	pluginCmd.AddCommand(pluginInstallCmd)
 }

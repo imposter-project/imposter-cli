@@ -159,8 +159,9 @@ func getConfiguredType(typeOverride string, versionOverride string, defaultType 
 	}
 	// No explicit engine type configured. If the user has pinned a specific
 	// engine version we can sometimes derive the engine type from it (e.g.
-	// 5.x implies the native engine). "latest" intentionally does not derive
-	// — callers keep the supplied default until "latest" is re-pointed at v5.
+	// 5.x, or the bare "5" alias, implies the native engine). "latest"
+	// intentionally does not derive — callers keep the supplied default
+	// until "latest" is re-pointed at v5.
 	version := stringutil.GetFirstNonEmpty(versionOverride, viper.GetString("version"))
 	if derived := DeriveEngineTypeFromVersion(version); derived != EngineTypeNone {
 		return derived
@@ -172,18 +173,31 @@ func GetConfiguredVersion(engineType EngineType, override string, allowCached bo
 	return GetConfiguredVersionOrResolve(engineType, override, allowCached, true)
 }
 
-func GetConfiguredVersionOrResolve(engineType EngineType, override string, allowCached bool, resolveIfLatest bool) string {
+// GetConfiguredVersionOrResolve returns the configured engine version. If
+// resolveAliases is set, version aliases - "latest", or a bare major version
+// such as "4" or "5" - are resolved to the concrete release they denote.
+func GetConfiguredVersionOrResolve(engineType EngineType, override string, allowCached bool, resolveAliases bool) string {
 	version := stringutil.GetFirstNonEmpty(
 		override,
 		viper.GetString("version"),
-		"latest",
+		VersionLatest,
 	)
-	if version == "latest" && resolveIfLatest {
+	if !resolveAliases {
+		return version
+	}
+	if version == VersionLatest {
 		latest, err := ResolveLatestToVersion(engineType, allowCached)
 		if err != nil {
 			panic(err)
 		}
-		version = latest
+		return latest
+	}
+	if major, ok := ParseMajorAlias(version); ok {
+		resolved, err := ResolveMajorToVersion(major, allowCached)
+		if err != nil {
+			panic(err)
+		}
+		return resolved
 	}
 	return version
 }

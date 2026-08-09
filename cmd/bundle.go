@@ -77,7 +77,7 @@ If CONFIG_DIR is not specified, the current working directory is used.`,
 func init() {
 	bundleCmd.Flags().StringVarP(&bundleFlags.output, "output", "o", "", "The destination to write the bundle to. If using the 'docker' engine type, this must be a valid image name. Otherwise, this must be a path to a writeable file. If not specified, a name is generated.")
 	bundleCmd.Flags().StringVarP(&bundleFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: awslambda,docker,jvm)")
-	bundleCmd.Flags().StringVarP(&bundleFlags.engineVersion, "version", "v", "", "Imposter engine version (default \"latest\")")
+	bundleCmd.Flags().StringVarP(&bundleFlags.engineVersion, "version", "v", "", "Imposter engine version, e.g. \"5.21.3\", \"5\" (highest v5 release) or \"latest\" (default \"latest\")")
 	bundleCmd.Flags().StringVarP(&bundleFlags.architecture, "architecture", "a", awslambda.DefaultLambdaArch, "Target CPU architecture for the awslambda engine bundle (amd64 or arm64). Ignored by other engine types.")
 
 	_ = bundleCmd.MarkFlagRequired("engine-type")
