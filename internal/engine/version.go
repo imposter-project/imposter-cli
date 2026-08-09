@@ -66,6 +66,24 @@ func ParseMajorAlias(version string) (int64, bool) {
 	return major, ok
 }
 
+// CheckMajorAliasSupported returns an error if the given major version alias
+// names an engine line that the given engine type cannot run, such as the "5"
+// alias with the JVM engine. Engine types built from both lines - the Docker
+// images and AWS Lambda - accept either alias.
+func CheckMajorAliasSupported(engineType EngineType, alias string, major int64) error {
+	switch engineType {
+	case EngineTypeJvmSingleJar, EngineTypeJvmUnpacked:
+		if major >= 5 {
+			return fmt.Errorf("engine version alias '%s' is not available for the %s engine type - the JVM engine is version 4 and below", alias, engineType)
+		}
+	case EngineTypeNative:
+		if major < 5 {
+			return fmt.Errorf("engine version alias '%s' is not available for the %s engine type - the native engine is version 5 and above", alias, engineType)
+		}
+	}
+	return nil
+}
+
 // parseMajorVersion returns the major component of the given engine version,
 // accepting either a full semver version or a bare major-version alias such as
 // "4". It returns (0, false) if the version can be parsed as neither. Callers
