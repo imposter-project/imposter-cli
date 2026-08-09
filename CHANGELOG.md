@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.13.0] - 2026-08-09
+### Added
+- feat: reject version aliases that name the wrong engine line (#204)
+
 ## [1.12.0] - 2026-08-09
 ### Added
 - feat: support major version aliases for engine version (#203)
