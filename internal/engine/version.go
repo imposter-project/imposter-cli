@@ -7,26 +7,28 @@ import (
 	"github.com/imposter-project/imposter-cli/internal/prefs"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
 
 const latestReleaseApi = "https://api.github.com/repos/imposter-project/%s/releases/latest"
-const releaseListApi = "https://api.github.com/repos/imposter-project/%s/releases?per_page=100&page=%d"
 const checkThresholdSeconds = 86_400
-
-// maxReleaseListPages bounds how far back through the release list a
-// major-version alias lookup will page before giving up.
-const maxReleaseListPages = 5
 
 // VersionLatest is the alias meaning "the newest release of the engine".
 const VersionLatest = "latest"
 
+// majorAliases are the supported short version aliases, each meaning "the
+// newest release of that engine line": "4" is the JVM engine and "5" is the
+// native engine.
+var majorAliases = map[string]int64{
+	"4": 4,
+	"5": 5,
+}
+
 func ResolveLatestToVersion(engineType EngineType, allowCached bool) (string, error) {
 	logger.Tracef("resolving latest version (cache allowed: %v)", allowCached)
 
-	latest, err := resolveAlias(string(engineType), VersionLatest, allowCached, func() (string, error) {
+	latest, err := resolveLatest(string(engineType), allowCached, func() (string, error) {
 		return fetchLatestFromApi(fmt.Sprintf(latestReleaseApi, getRepoNameForEngineType(engineType)))
 	})
 	if err != nil {
@@ -37,16 +39,17 @@ func ResolveLatestToVersion(engineType EngineType, allowCached bool) (string, er
 	return latest, nil
 }
 
-// ResolveMajorToVersion resolves a bare major-version alias, such as "4", to
-// the highest release carrying that major version, such as "4.9.3". The major
-// version alone determines which repository is searched, so this does not
-// depend on the configured engine type.
+// ResolveMajorToVersion resolves a major-version alias to the latest release
+// of the corresponding engine line, so "4" resolves to the latest JVM engine
+// release and "5" to the latest native engine release. The major version alone
+// determines which repository is used, so this does not depend on the
+// configured engine type.
 func ResolveMajorToVersion(major int64, allowCached bool) (string, error) {
 	logger.Tracef("resolving version alias %d (cache allowed: %v)", major, allowCached)
 
 	repo := getRepoNameForMajor(major)
-	resolved, err := resolveAlias(repo, fmt.Sprintf("v%d", major), allowCached, func() (string, error) {
-		return fetchHighestForMajor(repo, major)
+	resolved, err := resolveLatest(repo, allowCached, func() (string, error) {
+		return fetchLatestFromApi(fmt.Sprintf(latestReleaseApi, repo))
 	})
 	if err != nil {
 		return "", err
@@ -56,15 +59,11 @@ func ResolveMajorToVersion(major int64, allowCached bool) (string, error) {
 	return resolved, nil
 }
 
-// ParseMajorAlias returns the major version denoted by a bare major-version
-// alias, such as "4" or "5", or (0, false) if the given version is not such an
-// alias.
+// ParseMajorAlias returns the major version denoted by a major-version alias,
+// or (0, false) if the given version is not one of the supported aliases.
 func ParseMajorAlias(version string) (int64, bool) {
-	major, err := strconv.ParseInt(version, 10, 64)
-	if err != nil || major < 0 {
-		return 0, false
-	}
-	return major, true
+	major, ok := majorAliases[version]
+	return major, ok
 }
 
 // parseMajorVersion returns the major component of the given engine version,
@@ -150,15 +149,15 @@ func getHighestVersion(engines []EngineMetadata, major *int64) string {
 	return ""
 }
 
-// resolveAlias resolves a version alias, such as "latest" or "v4", to a
-// concrete version, using the cached value if permitted and falling back to it
-// if the lookup fails. The scope namespaces the cache entry - the engine type
-// for "latest", or the repository name for a major version alias.
-func resolveAlias(scope string, alias string, allowCached bool, lookup func() (string, error)) (string, error) {
+// resolveLatest resolves the latest version for the given scope, using the
+// cached value if permitted and falling back to it if the lookup fails. The
+// scope namespaces the cache entry - the engine type when resolving "latest",
+// or the repository name when resolving a major version alias.
+func resolveLatest(scope string, allowCached bool, lookup func() (string, error)) (string, error) {
 	now := time.Now().Unix()
 
 	if allowCached {
-		if cached := loadCached(scope, alias, now); cached != "" {
+		if cached := loadCached(scope, now); cached != "" {
 			return cached, nil
 		}
 	}
@@ -166,54 +165,41 @@ func resolveAlias(scope string, alias string, allowCached bool, lookup func() (s
 	resolved, err := lookup()
 	if err != nil {
 		if !allowCached {
-			return "", fmt.Errorf("failed to fetch version for alias '%s' from API: %s", alias, err)
+			return "", fmt.Errorf("failed to fetch latest version from API: %s", err)
 		}
 
-		logger.Warnf("failed to fetch version for alias '%s' from API (%s) - checking cache", alias, err)
-		cached := loadCached(scope, alias, now)
+		logger.Warnf("failed to fetch latest version from API (%s) - checking cache", err)
+		cached := loadCached(scope, now)
 		if cached == "" {
-			return "", fmt.Errorf("failed to resolve version for alias '%s' (%s) and no cached version found", alias, err)
+			return "", fmt.Errorf("failed to resolve latest version (%s) and no cached version found", err)
 		}
 		// don't persist the cached version back to the prefs store
 		return cached, nil
 	}
 
-	storeCached(scope, alias, resolved, now)
+	storeCached(scope, resolved, now)
 	return resolved, nil
 }
 
-// aliasCacheKeys returns the prefs keys holding the resolved version and the
-// last check time for the given alias. The "latest" alias keeps its original
-// key names so existing prefs files remain valid.
-func aliasCacheKeys(scope string, alias string) (versionKey string, checkKey string) {
-	if alias == VersionLatest {
-		return scope + ".latest", scope + ".last_version_check"
-	}
-	prefix := scope + "." + alias
-	return prefix + ".latest", prefix + ".last_version_check"
-}
-
-func loadCached(scope string, alias string, now int64) string {
+func loadCached(scope string, now int64) string {
 	var version string
 
-	versionKey, checkKey := aliasCacheKeys(scope, alias)
 	p := getVersionPrefs()
-	lastCheck, _ := p.ReadPropertyInt(checkKey)
+	lastCheck, _ := p.ReadPropertyInt(scope + ".last_version_check")
 	if now-int64(lastCheck) < checkThresholdSeconds {
-		version, _ = p.ReadPropertyString(versionKey)
+		version, _ = p.ReadPropertyString(scope + ".latest")
 	}
 
-	logger.Tracef("cached value for alias '%s': %s", alias, version)
+	logger.Tracef("latest version cached value for %s: %s", scope, version)
 	return version
 }
 
-func storeCached(scope string, alias string, version string, now int64) {
-	versionKey, checkKey := aliasCacheKeys(scope, alias)
+func storeCached(scope string, version string, now int64) {
 	p := getVersionPrefs()
-	if err := p.WriteProperty(versionKey, version); err != nil {
-		logger.Warnf("failed to record version for alias '%s': %s", alias, err)
+	if err := p.WriteProperty(scope+".latest", version); err != nil {
+		logger.Warnf("failed to record latest version: %s", err)
 	}
-	if err := p.WriteProperty(checkKey, now); err != nil {
+	if err := p.WriteProperty(scope+".last_version_check", now); err != nil {
 		logger.Warnf("failed to record last version check time: %s", err)
 	}
 }
@@ -242,92 +228,4 @@ func fetchLatestFromApi(apiUrl string) (string, error) {
 	}
 	tagName := data["tag_name"].(string)
 	return strings.TrimPrefix(tagName, "v"), nil
-}
-
-type release struct {
-	TagName    string `json:"tag_name"`
-	Draft      bool   `json:"draft"`
-	Prerelease bool   `json:"prerelease"`
-}
-
-// fetchHighestForMajor returns the highest released version of the given repo
-// carrying the given major version. Draft and pre-release entries are ignored,
-// matching the behaviour of the 'latest release' API used for "latest".
-func fetchHighestForMajor(repo string, major int64) (string, error) {
-	var highest *semver.Version
-
-	for page := 1; page <= maxReleaseListPages; page++ {
-		releases, err := fetchReleasesFromApi(fmt.Sprintf(releaseListApi, repo, page))
-		if err != nil {
-			return "", err
-		}
-		if len(releases) == 0 {
-			break
-		}
-
-		pageHighest, sawOlderMajor := selectHighestForMajor(releases, major)
-		if pageHighest != nil && (highest == nil || highest.LessThan(*pageHighest)) {
-			highest = pageHighest
-		}
-		// releases are returned newest first, so once older majors appear
-		// there is nothing further back worth paging for
-		if sawOlderMajor {
-			break
-		}
-	}
-
-	if highest == nil {
-		return "", fmt.Errorf("no release found for major version %d of %s", major, repo)
-	}
-	return highest.String(), nil
-}
-
-// selectHighestForMajor returns the highest of the given releases carrying the
-// given major version, ignoring drafts, pre-releases and unparseable tags. It
-// also reports whether any release with a lower major version was seen.
-func selectHighestForMajor(releases []release, major int64) (*semver.Version, bool) {
-	var highest *semver.Version
-	var sawOlderMajor bool
-
-	for _, r := range releases {
-		if r.Draft || r.Prerelease {
-			continue
-		}
-		v, err := semver.NewVersion(strings.TrimPrefix(r.TagName, "v"))
-		if err != nil {
-			continue
-		}
-		if v.Major < major {
-			sawOlderMajor = true
-			continue
-		}
-		if v.Major > major {
-			continue
-		}
-		if highest == nil || highest.LessThan(*v) {
-			highest = v
-		}
-	}
-	return highest, sawOlderMajor
-}
-
-func fetchReleasesFromApi(apiUrl string) ([]release, error) {
-	logger.Tracef("fetching releases from: %s", apiUrl)
-	resp, err := http.Get(apiUrl)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list releases from %s: %s", apiUrl, err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return nil, fmt.Errorf("failed to list releases from %s - status code: %d", apiUrl, resp.StatusCode)
-	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list releases from %s - cannot read response body: %s", apiUrl, err)
-	}
-	var releases []release
-	if err := json.Unmarshal(body, &releases); err != nil {
-		return nil, fmt.Errorf("failed to list releases from %s - cannot unmarshall response body: %s", apiUrl, err)
-	}
-	return releases, nil
 }

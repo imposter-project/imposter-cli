@@ -170,7 +170,7 @@ func applyDetachOptions(startOptions *engine.StartOptions, engineType engine.Eng
 
 func init() {
 	upCmd.Flags().StringVarP(&upFlags.engineType, "engine-type", "t", "", "Imposter engine type (valid: docker,native,jvm - default \"docker\")")
-	upCmd.Flags().StringVarP(&upFlags.engineVersion, "version", "v", "", "Imposter engine version, e.g. \"5.21.3\", \"5\" (highest v5 release) or \"latest\" (default \"latest\")")
+	upCmd.Flags().StringVarP(&upFlags.engineVersion, "version", "v", "", "Imposter engine version, e.g. \"5.21.3\", \"4\" or \"5\" (latest of that engine line) or \"latest\" (default \"latest\")")
 	upCmd.Flags().IntVarP(&upFlags.port, "port", "p", 8080, "Port on which to listen")
 	upCmd.Flags().BoolVar(&upFlags.forcePull, "pull", false, "Force engine pull")
 	upCmd.Flags().BoolVar(&upFlags.restartOnChange, "auto-restart", true, "Automatically restart when config dir contents change")

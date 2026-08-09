@@ -44,9 +44,8 @@ The currently supported elements are as follows:
 engine: "docker"
 
 # the engine version - valid values are "latest", a binary release such as "5.21.3",
-# or a major version alias such as "5", meaning the highest release of that major version
-# a major version alias also selects the engine line: "5" and above use the native engine,
-# "4" and below use the JVM engine
+# or the shorthand "4" or "5", meaning the latest release of that engine line
+# ("5" is the native engine, "4" is the JVM engine)
 # see: https://github.com/imposter-project/imposter-go/releases
 # and: https://github.com/imposter-project/imposter-jvm-engine/releases
 version: "latest"
