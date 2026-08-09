@@ -56,6 +56,16 @@ Or:
 
     imposter up -t native
 
+### Engine version
+
+The native engine is version 5 and above. Passing `--version 5` (or `-v 5`) runs the latest native engine release, and selects the native engine type if you haven't configured one:
+
+    imposter up -v 5
+
+To pin an exact release, pass it in full:
+
+    imposter up -v 5.21.3
+
 ## Differences from the JVM engine
 
 - **No Groovy scripting** - use JavaScript instead

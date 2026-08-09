@@ -98,6 +98,18 @@ Each command has full help via `imposter <command> --help`.
 | `imposter workspace ...` | Manage workspaces for remote deployments. |
 | `imposter version` | Print CLI and engine version info. |
 
+### Engine version
+
+Commands that run or fetch an engine take `-v` / `--version`. Pin an exact release, or take the shorthand:
+
+```shell
+imposter up -v 5        # latest native engine
+imposter up -v 4        # latest JVM engine
+imposter up -v 5.21.3   # that exact release
+```
+
+Defaults to `latest`. `-v 5` also picks the native engine for you, so there's no need to pass `-t native` as well. To pin it per project, set `version:` in your [config](./docs/config.md).
+
 ### Healthcheck
 
 ```shell

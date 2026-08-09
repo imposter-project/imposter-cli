@@ -226,6 +226,9 @@ func fetchLatestFromApi(apiUrl string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to determine latest version from %s - cannot unmarshall response body: %s", apiUrl, err)
 	}
-	tagName := data["tag_name"].(string)
+	tagName, ok := data["tag_name"].(string)
+	if !ok {
+		return "", fmt.Errorf("failed to determine latest version from %s - no tag name in response body", apiUrl)
+	}
 	return strings.TrimPrefix(tagName, "v"), nil
 }

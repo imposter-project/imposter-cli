@@ -100,6 +100,34 @@ func TestParseMajorAlias(t *testing.T) {
 	}
 }
 
+func TestGetHighestVersion(t *testing.T) {
+	tests := []struct {
+		name    string
+		engines []EngineMetadata
+		want    string
+	}{
+		{
+			name:    "highest of several versions",
+			engines: []EngineMetadata{{Version: "4.9.3"}, {Version: "5.21.10"}, {Version: "5.21.3"}},
+			want:    "5.21.10",
+		},
+		{
+			name:    "unparseable versions are ignored",
+			engines: []EngineMetadata{{Version: "dev"}, {Version: "4.9.3"}},
+			want:    "4.9.3",
+		},
+		{name: "no engines", engines: nil, want: ""},
+		{name: "no parseable engines", engines: []EngineMetadata{{Version: "dev"}}, want: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetHighestVersion(tt.engines); got != tt.want {
+				t.Errorf("GetHighestVersion() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetHighestVersionForMajor(t *testing.T) {
 	engines := []EngineMetadata{
 		{Version: "4.9.3"},

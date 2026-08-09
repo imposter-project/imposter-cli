@@ -25,6 +25,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// provideEngine ensures the given engine version is present in the local cache.
+func provideEngine(t *testing.T, engineType engine.EngineType, version string) {
+	t.Helper()
+	provider := engine.GetLibrary(engineType).GetProvider(version)
+	if err := provider.Provide(engine.PullIfNotPresent); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func Test_describeVersions(t *testing.T) {
 	type args struct {
 		engineType engine.EngineType
@@ -73,6 +82,15 @@ func Test_describeVersions(t *testing.T) {
 			},
 		},
 		{
+			name: "print major alias version (native)",
+			args: args{
+				engineType: engine.EngineTypeNative,
+				version:    "5",
+				full:       true,
+				format:     outputFormatPlain,
+			},
+		},
+		{
 			name: "print explicit version in JSON format",
 			args: args{
 				engineType: engine.EngineTypeDockerCore,
@@ -96,18 +114,31 @@ func Test_describeVersions(t *testing.T) {
 			viper.Set("version", tt.args.version)
 
 			var expectedVersion string
-			if tt.args.version == "latest" {
+			major, isAlias := engine.ParseMajorAlias(tt.args.version)
+			switch {
+			case tt.args.version == "latest":
 				latestVersion, err := engine.ResolveLatestToVersion(tt.args.engineType, true)
 				if err != nil {
 					t.Fatal(err)
 				}
-				library := engine.GetLibrary(tt.args.engineType)
-				provider := library.GetProvider(latestVersion)
-				if err := provider.Provide(engine.PullIfNotPresent); err != nil {
+				provideEngine(t, tt.args.engineType, latestVersion)
+				expectedVersion = latestVersion
+
+			case isAlias:
+				// a major alias reports the highest installed engine with that
+				// major version, so ensure the latest of that line is installed
+				aliasVersion, err := engine.ResolveMajorToVersion(major, true)
+				if err != nil {
 					t.Fatal(err)
 				}
-				expectedVersion = latestVersion
-			} else {
+				provideEngine(t, tt.args.engineType, aliasVersion)
+				engines, err := engine.GetLibrary(tt.args.engineType).List()
+				if err != nil {
+					t.Fatal(err)
+				}
+				expectedVersion = engine.GetHighestVersionForMajor(engines, major)
+
+			default:
 				expectedVersion = tt.args.version
 			}
 
