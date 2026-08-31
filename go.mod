@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.43.8
 	github.com/aws/aws-sdk-go-v2/config v1.32.38
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.38
-	github.com/aws/aws-sdk-go-v2/service/iam v1.59.2
+	github.com/aws/aws-sdk-go-v2/service/iam v1.59.3
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.101.4
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.2
 	github.com/coreos/go-semver v0.3.1
