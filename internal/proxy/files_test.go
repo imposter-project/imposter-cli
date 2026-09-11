@@ -108,7 +108,7 @@ func Test_generateRespFileName(t *testing.T) {
 					},
 				},
 			},
-			wantRespFile: path.Join(outputDir, "GET-index.htm"),
+			wantRespFile: path.Join(outputDir, "GET-index.ehtml"),
 			wantErr:      false,
 		},
 		{
